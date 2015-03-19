@@ -1,0 +1,3 @@
+[submodule "src/humanize"]
+	path = src/humanize
+	url = https://github.com/jmoiron/humanize
