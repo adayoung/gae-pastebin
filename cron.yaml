@@ -1,0 +1,5 @@
+cron:
+- description: cleanup old pastes
+  url: /clean
+  schedule: every 1 hours
+

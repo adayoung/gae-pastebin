@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    {% block meta %}
+    <meta name="author" content="Ada Young">
+    <meta name="description" content="Ada's pretty website!">
+    {% endblock %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+      {% block title %}
+        &nbsp;
+      {% endblock %}
+      - ada-young.appspot.com
+    </title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim IE8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="/static/js/vendor/html5shiv.js"></script>
+    <![endif]-->
+
+    <script src="/static/js/PACE/pace.min.js"></script>
+    <link href="/static/js/PACE/themes/blue/pace-theme-minimal.css" rel="stylesheet" />
+    {% block morehead %}
+    {% endblock %}
+  </head>
+
+  <body>
+    <!--[if lt IE 10]>
+      <p style="text-align: center;background: yellow">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/"><strong>upgrade your browser</strong></a> or <a href="http://www.google.com/chromeframe/?redirect=true"><strong>activate Google Chrome Frame</strong></a> to improve your experience.</p>
+    <![endif]-->
+    {% block main %}
+    <div class="container" style="padding: 60px 15px">
+      <div style="text-align: center">
+        <h1>Lookit the stuff here!</h1>
+        <p class="lead">Oops, nothing to see here. Come back later then!</p>
+      </div>
+    </div><!-- /.container -->
+    {% endblock %}
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    {% block tail %}
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+
+    {% endblock %}
+    {% block moretail %}
+    {% endblock %}
+  </body>
+</html>
