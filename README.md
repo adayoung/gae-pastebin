@@ -10,7 +10,7 @@ Right now it uses the HRD for storage (which kinda sucks) but I'll eventually ma
    - git submodule init
    - git submodule update
  * Make a file called local_settings.py in the root directory, put the following line in it:
-   - SECRET_KEY = '<put a random string here>'
+   - ```SECRET_KEY = '<put a random string here>'```
  * Now launch the App Engine Development Server and you're good to go!
 
 _Make sure to change the application id in app.yaml file before deploying to your own App Engine account!_
