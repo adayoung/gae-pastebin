@@ -1,0 +1,107 @@
+{% extends "pastebin.html" %}
+{% block evenmorehead %}
+{% if q_more %}
+<style type="text/css">
+  .ajaxload {
+    display: none;
+  }
+</style>
+{% endif %}
+
+<style type="text/css">
+body {
+  background: #FFF;
+}
+
+#searchbox {
+  color: #333;
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="row">
+	<div class="spacer"></div>
+  <div class="col-md-12">
+    <table class="table table-stripped table-hover" id="results" style="background-color:#fff;border-radius:5px;">
+			<thead><tr><th>#</th><th>Title</th><th>Posted</th><th>Tags</th></tr></thead>
+    <tbody>
+    {% for p in paste.results %}
+    <tr>
+			<td>
+				{{ loop.index }}
+			</td>
+      <td>
+        <a href="/pastebin/{{ p.paste_id }}">{{ p.title }}</a>
+      </td>
+			<td title="{{ p.i_date }}">{{ p.date }}</td>
+      <td>
+        {% for tag in p.tags %}
+        <a href="/search?tags={{ tag }}" class="label
+          {% if tag in paste.tags %}
+            label-primary
+          {% else %}
+            label-default
+          {% endif %}
+          ">{{ tag }}</a>
+        {% endfor %}
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+  </div>
+</div>
+<div class="row">
+	<div class="col-md-12">
+	{% if q_more %}
+		<a class="btn btn-default btn-block" data-cursor="{{ cursor }}" href="{{ path_qs }}&amp;c={{ cursor }}" id="loadmore">Load more results</a>
+	{% endif %}
+	</div>
+</div>
+{% endblock %}
+{% block evenmoretail %}
+{% if q_more %}
+<script type="text/javascript">
+$(document).ready(function(){
+	$('#loadmore').on('click', function(e) {
+		e.preventDefault();
+
+		$(this).addClass('disabled');
+		$(this).text('Please wait ...');
+
+		$.getJSON(location.href + '&c=' + $(this).data('cursor'), function(data){
+			$('#loadmore').data('cursor', data.cursor);
+			$('#loadmore').attr('href', location.href + '&c=' + data.cursor);
+
+			if (!data.q_more) {
+				$('#loadmore').fadeOut();
+			}
+
+			var lastindex = parseInt($('#results tbody tr').last().find('td').html()) + 1 || 1;
+
+			for (var i = 0; i < data.paste.results.length; i++) {
+				var tags = data.paste.results[i].tags;
+				var htags = [];
+				for (var j=0; j < tags.length; j++) {
+					var label_class = data.paste.tags.indexOf(tags[j]) > -1 ? 'primary' : 'default';
+					htags.push('<a class="label label-' + label_class + '" href="/search?tags=' + tags[j] + '">' + tags[j] + '</a>');
+				}
+
+				$('#results tbody').append('<tr class="ajaxload"><td>' + parseInt(lastindex + i)  +  '</td><td><a href="/pastebin/' + data.paste.results[i].paste_id  + '">' + data.paste.results[i].title  + '</a></td><td title="' + data.paste.results[i].i_date + '">' + data.paste.results[i].date + '</td><td>' + htags.join(' ') +  '</td></tr>');
+			}
+		}).done(function(){
+			$('#loadmore').removeClass('disabled');
+			$('#loadmore').text('Load more results');
+			$('.ajaxload').fadeIn();
+		});
+	});
+
+	if (!$('#results tbody').find('tr').length > 0) { // this is a dumb hack, why won't it work >_<
+		$('#loadmore').click();
+	}
+});
+</script>
+{% endif %}
+{% endblock %}
+{% block footer %}
+{% endblock %}

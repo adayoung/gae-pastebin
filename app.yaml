@@ -1,5 +1,5 @@
 application: ada-young
-version: "github"
+version: "live"
 runtime: python27
 api_version: 1
 threadsafe: yes
@@ -34,5 +34,4 @@ libraries:
   version: "0.15"
 
 builtins:
-- deferred: on
 - appstats: on

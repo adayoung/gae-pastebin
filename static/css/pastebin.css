@@ -1,0 +1,109 @@
+body {
+  background: url("/static/img/bg.png") repeat fixed 0% 0% transparent;
+}
+
+.spacer {
+  padding: 5px;
+}
+
+#pastebar {
+  margin-bottom: 10px;
+
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 0px;
+
+  border-top: 0px;
+  border-left: 0px;
+  border-right: 0px;
+  background-color: transparent;
+}
+
+#pastebar .navbar-brand {
+  font-size: 200%;
+}
+
+#searchdiv {
+  margin-top: 10px;
+}
+
+#searchbox {
+  background-color:transparent;
+  color:#FFF;
+}
+
+textarea#content {
+  font-family: Courier New;
+  height: 65vh;
+}
+
+.havejs {
+  display: none;
+}
+
+#spinner {
+  display: none;
+}
+
+#eep {
+  display: none;
+}
+
+/* Sticky footer styles - http://getbootstrap.com/examples/sticky-footer/
+-------------------------------------------------- */
+
+html,
+body {
+  height: 100%;
+  /* The html and body elements cannot have any padding or margin. */
+}
+
+/* Wrapper for page content to push down footer */
+#wrap {
+  min-height: 100%;
+  height: auto !important;
+  height: 100%;
+  /* Negative indent footer by its height */
+  margin: 0 auto -30px;
+  /* Pad bottom by footer height */
+  padding: 0 0 30px;
+}
+
+/* Set the fixed height of the footer here */
+#footer {
+  height: 30px;
+}
+
+.back-to-top {
+  position: fixed;
+  top: 2em;
+  right: 0px;
+  text-decoration: none;
+  color: #000000;
+  background-color: rgba(235, 235, 235, 0.80);
+  font-size: 12px;
+  padding: 1em;
+  display: none;
+}
+
+.back-to-top:hover {
+  background-color: rgba(135, 135, 135, 0.50);
+}
+
+/* paste.html */
+pre {
+  background-color: rgb(255, 255, 255) !important;
+  border: 0px !important;
+  white-space: pre-wrap;
+}
+
+iframe#content {
+  border: 0px;
+
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+
+  width: 100%;
+  min-height: 80vh;
+}
