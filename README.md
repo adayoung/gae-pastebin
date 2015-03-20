@@ -13,4 +13,4 @@ Right now it uses the HRD for storage (which kinda sucks) but I'll eventually ma
    - ```SECRET_KEY = '<put a random string here>'```
  * Now launch the App Engine Development Server and you're good to go!
 
-_Make sure to change the application id in app.yaml file before deploying to your own App Engine account!_
+_Make sure to change the application id in app.yaml before deploying to your own App Engine account! Oh, and the GA user id in static/js/common.js too!_
