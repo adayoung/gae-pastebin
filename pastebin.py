@@ -5,7 +5,6 @@ from os import getenv
 from traceback import format_exc as p_traceback
 
 from google.appengine.datastore.datastore_query import Cursor
-from google.appengine.api import memcache
 from google.appengine.ext import deferred
 from google.appengine.api import users
 from google.appengine.ext import ndb

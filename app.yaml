@@ -34,4 +34,5 @@ libraries:
   version: "0.15"
 
 builtins:
+- deferred: on
 - appstats: on
