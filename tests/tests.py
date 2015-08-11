@@ -27,7 +27,7 @@ class CheckEnv(unittest.TestCase):
 
 	def test_selenium(self):
 		self.browser.get('http://localhost:8080/')
-		self.assertIn('Bad Gateway', self.browser.title)
+		self.assertIn('Hello, world!', self.browser.title)
 
 if __name__ == '__main__':
 	unittest.main(warnings='ignore')
