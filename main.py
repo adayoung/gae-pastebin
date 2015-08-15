@@ -25,4 +25,4 @@ app = webapp2.WSGIApplication([
 
 	webapp2.Route(r'/', MainHandler, 'index'),
 
-], debug='Development' in getenv('SERVER_SOFTWARE'))
+], debug='Development' in getenv('SERVER_SOFTWARE', ''))
