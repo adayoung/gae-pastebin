@@ -14,9 +14,11 @@ class UITest(unittest.TestCase):
 		access_key = os.environ["SAUCE_ACCESS_KEY"]
 
 		capabilities = {
-			'browserName': 'firefox',
-			'platform': 'Linux',
+			'browserName': 'chrome',
+			'platform': 'Windows 10',
 			'version': 'beta',
+			'recordVideo': False,
+			'recordScreenshots': False
 		}
 
 		capabilities["build"] = os.environ["TRAVIS_BUILD_NUMBER"]
