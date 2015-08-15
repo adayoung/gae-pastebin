@@ -16,7 +16,7 @@ class UITest(unittest.TestCase):
 		capabilities = {
 			'browserName': 'chrome',
 			'platform': 'Windows 10',
-			'version': 'beta',
+			'version': '', # https://docs.saucelabs.com/reference/test-configuration/#version-browser-
 			'recordVideo': False,
 			'recordScreenshots': False
 		}
