@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from selenium.webdriver.common.keys import Keys
@@ -10,24 +9,31 @@ import os
 class UITest(unittest.TestCase):
 
 	def setUp(self):
-		username = os.environ["SAUCE_USERNAME"]
-		access_key = os.environ["SAUCE_ACCESS_KEY"]
+		if os.environ.get('TRAVIS') == 'true':
 
-		capabilities = {
-			'browserName': 'chrome',
-			'platform': 'Windows 10',
-			'version': '', # https://docs.saucelabs.com/reference/test-configuration/#version-browser-
-			'recordVideo': False,
-			'recordScreenshots': False
-		}
+			username = os.environ["SAUCE_USERNAME"]
+			access_key = os.environ["SAUCE_ACCESS_KEY"]
 
-		capabilities["build"] = os.environ["TRAVIS_BUILD_NUMBER"]
-		capabilities["tags"] = [os.environ["TRAVIS_PYTHON_VERSION"], "CI"]
-		capabilities["tunnel-identifier"] = os.environ["TRAVIS_JOB_NUMBER"]
+			capabilities = {
+				'browserName': 'chrome',
+				'platform': 'Windows 10',
+				'version': '', # https://docs.saucelabs.com/reference/test-configuration/#version-browser-
+				'recordVideo': False,
+				'recordScreenshots': False
+			}
 
-		hub_url = "%s:%s@localhost:4445" % (username, access_key)
-		self.browser = webdriver.Remote(desired_capabilities=capabilities, \
-			command_executor="http://%s/wd/hub" % hub_url)
+			capabilities["build"] = os.environ["TRAVIS_BUILD_NUMBER"]
+			capabilities["tags"] = [os.environ["TRAVIS_PYTHON_VERSION"], "CI"]
+			capabilities["tunnel-identifier"] = os.environ["TRAVIS_JOB_NUMBER"]
+
+			hub_url = "%s:%s@localhost:4445" % (username, access_key)
+			self.browser = webdriver.Remote(desired_capabilities=capabilities, \
+				command_executor="http://%s/wd/hub" % hub_url)
+
+		else:
+
+			self.browser = webdriver.Chrome()
+
 		self.browser.implicitly_wait(10)
 
 	def tearDown(self):

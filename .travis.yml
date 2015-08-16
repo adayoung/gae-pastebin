@@ -8,6 +8,10 @@ addons:
     access_key:
       secure: "rP+FpvmsGxAyNRQYwG56ghBY6H/uN9jri6j/I0bic6fsiG6yFt4knt5mO2Nk6HYVPk9g5H8YuY2ZbOmge+V7oxIQ098lP1vQFE6lQEcssNZTrYbOkqLXTd6wqRglIPQZTlnFAqOciJjMOD6XOLkXlemp4uSsdbVnc93AfFP6QuAmWQZ8enPNEw1WzMvnnI6Jhl709CaHhbDgiwHK2yRQe8bSVTAzhQjoiYeqfW37VQvNp4dOBbkW9Xd2oyE9xGCgB/rop/PribM1qKaFBLD50A1iCyuq66/LKGCh81oecyMFkMLr5jgMwPqOWqdvUkrAMq8O8l+khRjeBRQIE2PdtDJ7U4EZRQ552m/A7ltDpKaczOiR0BDaEoGnPOVLGjrs3uTbUkWRETy3zaBJEwvi6Atv1pyWO4sTVINiGheqySijUGeSpowNQPydtdzeVfUBeETYDL103PRC8mRPDtyqpHpDP3+2HnbR6pZahMvEYhQTHCAbcyrk/DWuqrreinAw0ww6q8mBiVPDDyNuqxhMRKe4vCHF7Ks6UNV9Qw82InUKTCbBHKUBHlM1ng5+HElMluMldGl2e1TPd/aIXQPu2CZ8kAG7zh9XoFm2A+2TCHyb0BeBjnGLi26hWR7DDkwKxQHCqxbaPI+vQDbYgXO2oIhaGIrgiBD8Wm7vEQCfVgw="
 
+env:
+  global:
+    - SERVER_SOFTWARE="Development/2.0"
+
 install:
   - "pip install selenium noseGAE"
 
