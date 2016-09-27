@@ -20,12 +20,21 @@ func init() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", utils.ExtraSugar(index)).Name("index")
 	r.HandleFunc("/pastebin/", utils.ExtraSugar(pastebin)).Name("pastebin")
+	r.NotFoundHandler = http.HandlerFunc(Http404)
 
 	http.Handle("/", r)
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/pastebin/", http.StatusFound)
+}
+
+func Http404(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotFound)
+	var tmpl = template.Must(template.ParseFiles("templates/404.tmpl"))
+	if err := tmpl.Execute(w, r); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func pastebin(w http.ResponseWriter, r *http.Request) {
