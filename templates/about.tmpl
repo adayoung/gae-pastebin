@@ -1,0 +1,99 @@
+{{ block "meta" . }}
+  <meta name="author" content="Ada Young">
+  <meta name="description" content="About Ada's HTML Pastebin!">
+  <meta name="application-name" content="Ada's HTML Pastebin!">
+{{ end }}
+
+{{ block "title" . }}About{{ end }}
+
+{{ block "evenmorehead" . }}
+<style type="text/css">
+body {
+  background: #FFF;
+}
+
+#searchbox {
+  color: #333;
+}
+</style>
+{{ end }}
+
+{{ block "content" . }}
+<div class="row">
+  <article id="content" style="background: #fff;padding: 15px;border-radius: 5px;padding-top: 5px" role="main">
+    <div class="row">
+      <div class="col-md-8">
+        <h1>About</h1>
+        <br>
+        <p>Hi! This is a pastebin application just like pastebin.com except here you can paste colourful html content as well.</p>
+
+        <p>I made this primarily to share logs from text games I play, mostly <a href="http://www.achaea.com/" target="_blank">Achaea</a>. I know there are a lot of other such solutions but... either</p>
+        <ul>
+          <li>they don't support pasting in html</li>
+          <li>require you to <span class="text-danger">login</span> when they do</li>
+          <li>or make you <span class="text-danger">upload a file</span></li>
+          <li>... something else I found <span class="text-danger">annoying</span></li>
+        </ul>
+
+        <p>Here the focus is on <span class="text-success">simplicity and utility</span>. Auto-focus on the paste field with keyboard accelerators means <span class="text-success">mouse free operation</span>.</p>
+
+        <p>No required fields means you can paste, hit ctrl-enter (or alt-enter if it's html) and you're done!</p>
+      </div>
+      <div class="col-md-4">
+        <img alt="Tesha and Ada - drawn by Tiibtha" class="img-responsive" src="/static/img/vU1OJdC.jpg">
+        <p class="text-center">
+          <small><em>Lookie Ada and Tesha as drawn by Tibitha!</em></small>
+        </p>
+      </div>
+    </div>
+
+    <h3>Frequently Asked Questions</h3>
+    <br>
+    <p class="lead">What is the Acceptable Use Policy?</p>
+    <p>This site is mostly meant for game logs but it can serve as a general purpose pastebin as well. For that, I'll just reiterate <a href="http://pastebin.com/faq#5" target="_blank">pastebin.com's policy</a> here.</p>
+    <p class="text-danger">Please do NOT post:</p>
+    <ul class="text-danger">
+      <li>email lists</li>
+      <li>login details</li>
+      <li>stolen source code</li>
+      <li>password lists</li>
+      <li>personal information / data</li>
+      <li>pornographic information / data</li>
+      <li>spam links (this includes promoting your own site)</li>
+    </ul>
+    <br>
+
+    <p class="lead">When does stuff expire?</p>
+    <p>Untagged pastes expire after <s>90</s> 60 days have passed since they were last viewed.<br>
+    Tagged pastes expire after <s>180</s> 90 days have passed since they were last viewed.</p>
+    <br>
+
+    <p class="lead">What happens if I sign in?</p>
+    <p>Signing in allows you to manage your pastes. Specifically, it lets you delete your pastes regardless of the expiry schedule.</p>
+    <br>
+
+    <p class="lead">I pasted in html but I'm seeing the html source?</p>
+    <p>You need to click on the 'Colourful HTML' button to flag your paste as html content before pasting.</p>
+    <br>
+
+    <p class="lead">How do I make private pastes?</p>
+    <p>Just don't add any tags to your paste and it won't appear in the search results.</p>
+    <br>
+
+    <p class="lead">What is the max paste size?</p>
+    <p>The maximum size a paste can be is 950 kilobytes (~1 megabyte). You can try to paste more too, but anything beyond that is compressed. The paste is rejected if it's still over 950 kilobytes after compression.</p>
+    <br>
+
+    <p class="lead">How do I contact you?</p>
+    <p>Umm.. I'm <a href="http://www.achaea.com/user/2354/honors" target="_blank">Ada</a> on <a href="http://www.achaea.com/" target="_blank">Achaea</a>. I don't want to give out my email here, sorry!</p>
+  </article>
+</div>
+{{ end }}
+
+{{ block "footer" . }}
+<span></span>
+{{ end }}
+
+{{ block "evenmoretail" . }}
+<span></span>
+{{ end }}

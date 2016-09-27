@@ -20,8 +20,8 @@ var sc = securecookie.New(hashKey, blockKey)
 
 func Autograph(w http.ResponseWriter) (http.ResponseWriter, string) {
 	t_value, _ := uuid.NewV4()
-	values := map[string]*uuid.UUID{
-		"token" : t_value, // TODO: replace this with uuid_v4
+	values := map[string]*uuid.UUID {
+		"token": t_value,
 	}
 
 	enc_val, err := sc.Encode("_xsrf_token", values)
