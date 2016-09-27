@@ -10,6 +10,7 @@ import (
 
 	// The Gorilla Web Toolkit
 	"github.com/gorilla/mux"
+	"github.com/gorilla/context"
 
 	// Local Packages
 	"pastebin/utils"
@@ -31,7 +32,9 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 	// c := appengine.NewContext(r)
 	var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "templates/pastebin.tmpl"))
 
-	if err := tmpl.Execute(w, r); err != nil {
+	_xsrf_token := context.Get(r, "_xsrf_token")
+
+	if err := tmpl.Execute(w, _xsrf_token); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
