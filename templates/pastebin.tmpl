@@ -1,0 +1,129 @@
+{{ block "meta" . }}
+  <meta name="author" content="Ada Young">
+  <meta name="description" content="Ada's HTML Pastebin!">
+  <meta name="application-name" content="Ada's HTML Pastebin!">
+{{ end }}
+
+{{ block "morehead" . }}
+  <link href="/static/css/pastebin.css" rel="stylesheet">
+  {{ block "evenmorehead" . }}
+  {{ end }}
+{{ end }}
+
+{{ block "title" . }}Pastebin{{ end }}
+
+{{ block "main" . }}
+  <div id="wrap">
+    <div class="navbar navbar-default" id="pastebar" role="navigation">
+      <div class="navbar-header">
+        <button class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse" type="button">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">Pastebin!!</a>
+      </div>
+      <div class="navbar-collapse collapse">
+        <ul class="nav navbar-nav">
+          <li><a href="#">Home</a></li>
+          <li><a href="#">About</a></li>
+        </ul>
+        <div class="col-md-3 navbar-nav navbar-right">
+          <div id="searchdiv">
+            <form action="/search" method="get" role="search">
+              <label class="sr-only" for="searchbox">Search Tags</label>
+              <input
+                class="form-control tagbox"
+                id="searchbox"
+                name="tags"
+                placeholder="Search Tags"
+                type="search"
+              >
+            </form>
+          </div>
+        </div>
+      </div><!--/.nav-collapse -->
+    </div>
+    <div class="container">
+      {{ block "content" . }}
+      <div class="row">
+        <h1 class="sr-only">Welcome to Ada's HTML Pastebin!</h1>
+        <form method="post" role="form">
+          <fieldset>
+          <legend class="sr-only">Pastebin</legend>
+           <div class="spacer"></div>
+          <div class="row">
+            <div class="col-md-12">
+              <label class="sr-only" for="content">Content</label>
+              <textarea class="form-control" id="content" name="content"></textarea>
+            </div>
+          </div>
+          <div class="spacer"></div>
+          <div class="row">
+            <div class="col-md-6">
+              <label class="sr-only" for="title">Title</label>
+              <input class="form-control noenter" id="title" maxlength="250" name="title" placeholder="Name / Title" type="text">
+            </div>
+            <div class="spacer visible-sm visible-xs"></div>
+            <div class="col-md-6">
+              <label class="sr-only" for="tags">Tags</label>
+              <input class="form-control tagbox noenter" id="tags" name="tags" placeholder="Tags" type="text">
+            </div>
+          </div>
+          <div class="spacer"></div>
+          <div class="row">
+            <div class="col-md-12">
+              <label class="radio-inline text-muted nojs" for="plain_nojs">
+                <input checked="" id="plain_nojs" name="format" type="radio" value="plain"> Plain text
+              </label>
+              <label class="radio-inline text-muted nojs" for="html_nojs">
+                <input id="html_nojs" name="format" type="radio" value="html"> Colourful HTML
+              </label>
+              <div class="btn-group havejs" data-toggle="buttons">
+                <label class="btn btn-primary" for="plain" id="label_plain">
+                  <input id="plain" name="format" type="radio" value="plain"> Plain Text
+                </label>
+                <label class="btn btn-primary" for="html" id="label_html">
+                  <input id="html" name="format" type="radio" value="html"> Colourful HTML
+                </label>
+              </div>
+              <input id="csrf_token" name="csrf_token" type="hidden" value="#">
+              &nbsp;
+              <button class="btn btn-primary" data-title="Ctrl-Enter to paste in plain, Alt-Enter to paste in HTML!" id="paste_btn" type="submit">Paste it!</button>
+              <img alt="pretty spinner" id="spinner" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" height="24" width="24" data-src="/static/img/spinner.gif">
+              <em><span class="pull-right text-muted havejs" id="noc_wrap"><span id="noc">0</span> characters.</span></em>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <span class="text-danger" id="eep">
+                <strong>Eep! Paste is too long!</strong>
+                <em>Will attempt compression!</em>
+              </span>
+            </div>
+          </div>
+          </fieldset>
+        </form>
+      </div>
+      {{ end }}
+      <a href="#" class="back-to-top">Back to Top</a>
+    </div>
+  </div>
+
+  <div id="footer">
+    {{ block "footer" . }}
+    <div class="pull-right">
+      <a href="https://cloud.google.com/products/app-engine/" target="_blank">
+        <img alt="Powered by Google App Engine" id="appengine" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" height="30" width="120" data-src="https://developers.google.com/appengine/images/appengine-noborder-120x30.gif">
+      </a>
+    </div>
+    {{ end }}
+  </div>
+{{ end }}
+
+{{ block "moretail" . }}
+  <script src="/static/js/common.js"></script>
+  {{ block "evenmoretail" . }}
+    <script src="/static/js/pastebin.js"></script>
+  {{ end }}
+{{ end }}

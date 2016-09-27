@@ -1,5 +1,14 @@
+@font-face {
+  font-family: 'Love Ya Like A Sister';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Love Ya Like A Sister Regular'), local('LoveYaLikeASister-Regular'), url(https://fonts.gstatic.com/s/loveyalikeasister/v7/LzkxWS-af0Br2Sk_YgSJY9N6oT7VVZB_kATuDWj1CMI.woff2) format('woff2');
+}
+
 body {
   background: url("/static/img/bg.png") repeat fixed 0% 0% transparent;
+  font-family: 'Love Ya Like A Sister', cursive;
+  font-size: 18px;
 }
 
 .spacer {
