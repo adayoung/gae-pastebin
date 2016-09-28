@@ -35,6 +35,24 @@ func pasteKey(c appengine.Context) (*datastore.Key, string) {
 	return datastore.NewKey(c, PasteDSKind, x, 0, nil), x
 }
 
+func (p Paste) validate() error {
+	// FIXME: Implement input validation here
+	return nil
+}
+
+func (p Paste) save(c appengine.Context) (string, error) {
+	if err := p.validate(); err == nil {
+		key, stringID := pasteKey(c)
+		_, err := datastore.Put(c, key, &p)
+		if err != nil {
+			log.Panicln(err)
+		}
+		return stringID, nil
+	} else {
+		return "", err
+	}
+}
+
 func NewPaste(c appengine.Context, r *http.Request) string {
 	var paste Paste
 	paste.Title = r.PostForm.Get("title")
@@ -56,11 +74,6 @@ func NewPaste(c appengine.Context, r *http.Request) string {
 	paste.Date = time.Now()
 	paste.Expired = false
 
-	key, stringID := pasteKey(c)
-	_, err := datastore.Put(c, key, &paste)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
+	stringID, _ := paste.save(c) // FIXME: do something if this returns an error
 	return stringID
 }
