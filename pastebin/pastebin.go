@@ -24,6 +24,7 @@ func init() {
 	r := mux.NewRouter().StrictSlash(true)
 	r.HandleFunc("/pastebin/", utils.ExtraSugar(pastebin)).Methods("GET", "POST").Name("pastebin")
 	r.HandleFunc("/pastebin/about", utils.ExtraSugar(about)).Methods("GET").Name("about")
+	r.NotFoundHandler = http.HandlerFunc(Http404)
 
 	http.Handle("/pastebin/", CSRF(r))
 }
@@ -34,10 +35,6 @@ func Http404(w http.ResponseWriter, r *http.Request) {
 	if err := tmpl.Execute(w, nil); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-}
-
-func index(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/pastebin", http.StatusFound)
 }
 
 func about(w http.ResponseWriter, r *http.Request) {

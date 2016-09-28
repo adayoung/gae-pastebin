@@ -37,17 +37,17 @@ func pasteKey(c appengine.Context) (*datastore.Key, string) {
 
 func NewPaste(c appengine.Context, r *http.Request) string {
 	var paste Paste
-	paste.Title = r.FormValue("title")
+	paste.Title = r.PostForm.Get("title")
 
 	var content bytes.Buffer
 	w := zlib.NewWriter(&content)
-	w.Write([]byte(r.FormValue("content")))
+	w.Write([]byte(r.PostForm.Get("content")))
 	w.Close()
 	paste.Content = content.Bytes()
 	paste.Zlib = true
 
-	paste.Tags = strings.Split(r.FormValue("tags"), " ")
-	paste.Format = r.FormValue("format")
+	paste.Tags = strings.Split(r.PostForm.Get("tags"), " ")
+	paste.Format = r.PostForm.Get("format")
 
 	if ipaddr := net.ParseIP(r.RemoteAddr); ipaddr != nil {
 		paste.IPAddr = net.IP(ipaddr)
