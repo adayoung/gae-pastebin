@@ -22,6 +22,7 @@ $(document).ready(function(){
 m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
+// FIXME: load GA user id from elsewhere!
 ga('create', 'UA-44889074-1', 'ada-young.appspot.com');
 ga('require', 'displayfeatures');
 ga('send', 'pageview');
