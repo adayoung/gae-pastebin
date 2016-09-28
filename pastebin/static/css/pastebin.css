@@ -6,7 +6,7 @@
 }
 
 body {
-  background: url("/static/img/bg.png") repeat fixed 0% 0% transparent;
+  background: url("/pastebin/static/img/bg.png") repeat fixed 0% 0% transparent;
   font-family: 'Love Ya Like A Sister', cursive;
   font-size: 18px;
 }

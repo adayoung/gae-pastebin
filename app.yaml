@@ -1,5 +1,3 @@
-application: ada-young
-version: "godev"
 runtime: go
 api_version: go1
 
@@ -16,6 +14,13 @@ handlers:
 
 - url: /static
   static_dir: static
+  # secure: always
+  http_headers:
+    X-Content-Type-Options: nosniff
+    Vary: Accept-Encoding
+
+- url: /pastebin/static
+  static_dir: pastebin/static
   # secure: always
   http_headers:
     X-Content-Type-Options: nosniff

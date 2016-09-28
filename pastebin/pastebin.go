@@ -21,12 +21,10 @@ var CSRF = csrf.Protect([]byte("32-byte-long-auth-keyauth-key123"), csrf.Secure(
 
 func init() {
 	r := mux.NewRouter().StrictSlash(true)
-	r.HandleFunc("/", utils.ExtraSugar(index)).Methods("GET").Name("index")
-	r.HandleFunc("/pastebin", utils.ExtraSugar(pastebin)).Methods("GET", "POST").Name("pastebin")
-	r.HandleFunc("/about", utils.ExtraSugar(about)).Methods("GET").Name("about")
-	r.NotFoundHandler = http.HandlerFunc(Http404)
+	r.HandleFunc("/pastebin/", utils.ExtraSugar(pastebin)).Methods("GET", "POST").Name("pastebin")
+	r.HandleFunc("/pastebin/about", utils.ExtraSugar(about)).Methods("GET").Name("about")
 
-	http.Handle("/", CSRF(r))
+	http.Handle("/pastebin/", CSRF(r))
 }
 
 func Http404(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +40,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 }
 
 func about(w http.ResponseWriter, r *http.Request) {
-	var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "templates/pastebin.tmpl", "templates/about.tmpl"))
+	var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl", "pastebin/templates/about.tmpl"))
 	if err := tmpl.Execute(w, nil); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -51,7 +49,7 @@ func about(w http.ResponseWriter, r *http.Request) {
 func pastebin(w http.ResponseWriter, r *http.Request) {
 	// c := appengine.NewContext(r)
 	if r.Method == "GET" {
-		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "templates/pastebin.tmpl"))
+		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl"))
 
 		// http://www.gorillatoolkit.org/pkg/csrf
 		if err := tmpl.Execute(w, map[string]interface{} {
