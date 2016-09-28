@@ -73,6 +73,7 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("X-Requested-With") == "XMLHttpRequest" { // AJAX
 			w.Write([]byte("/pastebin/" + paste_id))
 		} else {
+			// http://tools.ietf.org/html/rfc2616#section-10.3.4 / Http 303
 			http.Redirect(w, r, "/pastebin/"+paste_id, http.StatusSeeOther)
 		}
 	}

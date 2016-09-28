@@ -4,6 +4,8 @@ import (
 	// Go Builtin Packages
 	"bytes"
 	"compress/zlib"
+	"crypto/sha256"
+	"encoding/hex"
 	"log"
 	"net"
 	"net/http"
@@ -31,9 +33,16 @@ type Paste struct {
 
 const PasteDSKind string = "Paste"
 
-func pasteKey(c appengine.Context) (*datastore.Key, string) {
-	x := "xyz" // FIXME: Generate unique keys here
-	return datastore.NewKey(c, PasteDSKind, x, 0, nil), x
+func pasteKey(c appengine.Context, p *Paste) (*datastore.Key, string) {
+	timestamp := time.Now().Format(time.StampNano)
+
+	hasher := sha256.New()
+	hasher.Write([]byte(timestamp))
+	hasher.Write(p.Content)
+	digest := hex.EncodeToString(hasher.Sum(nil))
+
+	paste_id := digest[:8] // This is probably a silly way to go about it xD
+	return datastore.NewKey(c, PasteDSKind, paste_id, 0, nil), paste_id
 }
 
 func (p Paste) validate() error {
@@ -43,7 +52,7 @@ func (p Paste) validate() error {
 
 func (p Paste) save(c appengine.Context) (string, error) {
 	if err := p.validate(); err == nil {
-		key, stringID := pasteKey(c)
+		key, stringID := pasteKey(c, &p)
 		_, err := datastore.Put(c, key, &p)
 		if err != nil {
 			log.Panicln(err)
