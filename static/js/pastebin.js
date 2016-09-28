@@ -28,7 +28,7 @@ $(document).ready(function(){
       title: $('#title').val(),
       tags: $('#tags').val(),
       format: $('input[name=format]:checked').val(),
-      _xsrf_token: $('#_xsrf_token').val()
+      "gorilla.csrf.Token": $('input[name="gorilla.csrf.Token"]').val()
     }).done(function(e){
       location.replace(e);
     }).fail(function(e){

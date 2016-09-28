@@ -4,18 +4,20 @@ import (
 	// Go Builtin Packages
 	"html/template"
 	"net/http"
-	// "log"
+	"log"
 
 	// Google Appengine Packages
 	// "appengine"
 
 	// The Gorilla Web Toolkit
-	"github.com/gorilla/context"
+	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 
 	// Local Packages
 	"pastebin/utils"
 )
+
+var CSRF = csrf.Protect([]byte("32-byte-long-auth-keyauth-key123"), csrf.Secure(false))
 
 func init() {
 	r := mux.NewRouter().StrictSlash(true)
@@ -24,7 +26,7 @@ func init() {
 	r.HandleFunc("/about", utils.ExtraSugar(about)).Methods("GET").Name("about")
 	r.NotFoundHandler = http.HandlerFunc(Http404)
 
-	http.Handle("/", r)
+	http.Handle("/", CSRF(r))
 }
 
 func Http404(w http.ResponseWriter, r *http.Request) {
@@ -51,10 +53,13 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "templates/pastebin.tmpl"))
 
-		_xsrf_token := context.Get(r, "_xsrf_token")
-
-		if err := tmpl.Execute(w, _xsrf_token); err != nil {
+		// http://www.gorillatoolkit.org/pkg/csrf
+		if err := tmpl.Execute(w, map[string]interface{} {
+			csrf.TemplateTag: csrf.TemplateField(r),
+		}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
+	} else if r.Method == "POST" {
+		log.Println("Yay!")
 	}
 }

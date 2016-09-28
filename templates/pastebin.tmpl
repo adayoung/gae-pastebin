@@ -87,7 +87,7 @@
                   <input id="html" name="format" type="radio" value="html"> Colourful HTML
                 </label>
               </div>
-              <input id="_xsrf_token" name="_xsrf_token" type="hidden" value="{{.}}">
+              {{ .csrfField }}
               &nbsp;
               <button class="btn btn-primary" data-title="Ctrl-Enter to paste in plain, Alt-Enter to paste in HTML!" id="paste_btn" type="submit">Paste it!</button>
               <img alt="pretty spinner" id="spinner" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" height="24" width="24" data-src="/static/img/spinner.gif">
