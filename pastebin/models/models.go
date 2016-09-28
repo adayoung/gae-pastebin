@@ -13,6 +13,7 @@ import (
 	// Google Appengine Packages
 	"appengine"
 	"appengine/datastore"
+	"appengine/user"
 )
 
 type Tags []string
@@ -55,6 +56,11 @@ func (p Paste) save(c appengine.Context) (string, error) {
 
 func NewPaste(c appengine.Context, r *http.Request) string {
 	var paste Paste
+
+	if usr := user.Current(c); usr != nil {
+		paste.UserID = usr.ID
+	}
+
 	paste.Title = r.PostForm.Get("title")
 
 	var content bytes.Buffer

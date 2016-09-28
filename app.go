@@ -26,5 +26,5 @@ func Http404(w http.ResponseWriter, r *http.Request) {
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/pastebin", http.StatusFound)
+	http.Redirect(w, r, "/pastebin/", http.StatusFound)
 }

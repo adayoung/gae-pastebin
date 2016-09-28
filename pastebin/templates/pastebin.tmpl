@@ -28,6 +28,11 @@
         <ul class="nav navbar-nav">
           <li><a href="/">Home</a></li>
           <li><a href="/pastebin/about">About</a></li>
+          {{ if .user }}
+            <li><a href="/pastebin/logout">Sign out ({{ .user.Email }})</a></li>
+          {{ else }}
+            <li><a href="/pastebin/login">Sign in</a></li>
+          {{ end }}
         </ul>
         <div class="col-md-3 navbar-nav navbar-right">
           <div id="searchdiv">

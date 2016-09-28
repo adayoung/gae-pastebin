@@ -7,12 +7,14 @@ import (
 
 	// Google Appengine Packages
 	"appengine"
+	"appengine/user"
 
 	// The Gorilla Web Toolkit
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 
 	// Local Packages
+	"pastebin/auth"
 	"pastebin/models"
 	"pastebin/utils"
 )
@@ -24,6 +26,8 @@ func init() {
 	r := mux.NewRouter().StrictSlash(true)
 	r.HandleFunc("/pastebin/", utils.ExtraSugar(pastebin)).Methods("GET", "POST").Name("pastebin")
 	r.HandleFunc("/pastebin/about", utils.ExtraSugar(about)).Methods("GET").Name("about")
+	r.HandleFunc("/pastebin/login", auth.Login).Methods("GET").Name("login")
+	r.HandleFunc("/pastebin/logout", auth.Logout).Methods("GET").Name("logout")
 	r.NotFoundHandler = http.HandlerFunc(Http404)
 
 	http.Handle("/pastebin/", CSRF(r))
@@ -38,19 +42,24 @@ func Http404(w http.ResponseWriter, r *http.Request) {
 }
 
 func about(w http.ResponseWriter, r *http.Request) {
+	c := appengine.NewContext(r)
 	var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl", "pastebin/templates/about.tmpl"))
-	if err := tmpl.Execute(w, nil); err != nil {
+	if err := tmpl.Execute(w, map[string]interface{}{
+		"user": user.Current(c),
+	}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
 func pastebin(w http.ResponseWriter, r *http.Request) {
+	c := appengine.NewContext(r)
 	if r.Method == "GET" {
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl"))
 
 		// http://www.gorillatoolkit.org/pkg/csrf
 		if err := tmpl.Execute(w, map[string]interface{}{
 			csrf.TemplateTag: csrf.TemplateField(r),
+			"user":           user.Current(c),
 		}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
@@ -59,13 +68,12 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
-		c := appengine.NewContext(r)
-		x := models.NewPaste(c, r)
+		paste_id := models.NewPaste(c, r)
 
-		if r.Header.Get("X-Requested-With") == "XMLHttpRequest" {
-			w.Write([]byte("/pastebin/" + x))
+		if r.Header.Get("X-Requested-With") == "XMLHttpRequest" { // AJAX
+			w.Write([]byte("/pastebin/" + paste_id))
 		} else {
-			http.Redirect(w, r, "/pastebin/"+x, http.StatusSeeOther)
+			http.Redirect(w, r, "/pastebin/"+paste_id, http.StatusSeeOther)
 		}
 	}
 }
