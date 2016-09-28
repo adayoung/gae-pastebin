@@ -33,7 +33,7 @@ type Paste struct {
 
 const PasteDSKind string = "Paste"
 
-func pasteKey(c appengine.Context, p *Paste) (*datastore.Key, string) {
+func genpasteKey(c appengine.Context, p *Paste) (*datastore.Key, string) {
 	timestamp := time.Now().Format(time.StampNano)
 
 	hasher := sha256.New()
@@ -52,7 +52,7 @@ func (p Paste) validate() error {
 
 func (p Paste) save(c appengine.Context) (string, error) {
 	if err := p.validate(); err == nil {
-		key, stringID := pasteKey(c, &p)
+		key, stringID := genpasteKey(c, &p)
 		_, err := datastore.Put(c, key, &p)
 		if err != nil {
 			log.Panicln(err)
@@ -90,5 +90,15 @@ func NewPaste(c appengine.Context, r *http.Request) string {
 	paste.Expired = false
 
 	stringID, _ := paste.save(c) // FIXME: do something if this returns an error
+	// stringID := "meep" // DEBUG: Let's not write to the datastore at the moment :o
 	return stringID
+}
+
+func GetPaste(c appengine.Context, paste_id string) (*Paste, error) {
+	key := datastore.NewKey(c, PasteDSKind, paste_id, 0, nil)
+	paste := new(Paste)
+	if err := datastore.Get(c, key, paste); err != nil {
+		return paste, err
+	}
+	return paste, nil
 }
