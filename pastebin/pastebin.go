@@ -4,16 +4,16 @@ import (
 	// Go Builtin Packages
 	"html/template"
 	"net/http"
-	"log"
 
 	// Google Appengine Packages
-	// "appengine"
+	"appengine"
 
 	// The Gorilla Web Toolkit
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 
 	// Local Packages
+	"pastebin/models"
 	"pastebin/utils"
 )
 
@@ -48,7 +48,6 @@ func about(w http.ResponseWriter, r *http.Request) {
 }
 
 func pastebin(w http.ResponseWriter, r *http.Request) {
-	// c := appengine.NewContext(r)
 	if r.Method == "GET" {
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl"))
 
@@ -62,13 +61,14 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 		if err := r.ParseForm(); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-		log.Println(r.Form)
 
-		// FIXME: This should actually point to the actual paste
+		c := appengine.NewContext(r)
+		x := models.NewPaste(c, r)
+
 		if r.Header.Get("X-Requested-With") == "XMLHttpRequest" {
-			w.Write([]byte("/pastebin/"))
+			w.Write([]byte("/pastebin/" + x))
 		} else {
-			http.Redirect(w, r, "/pastebin/", http.StatusSeeOther)
+			http.Redirect(w, r, "/pastebin/"+x, http.StatusSeeOther)
 		}
 	}
 }
