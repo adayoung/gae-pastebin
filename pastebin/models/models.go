@@ -29,6 +29,18 @@ type Paste struct {
 	Date    time.Time `datastore:"date_published"`
 }
 
+func (p *Paste) Load(ds <-chan datastore.Property) error {
+	// TODO: Do something with ErrFieldMismatch here
+	if err := datastore.LoadStruct(p, ds); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *Paste) Save(ds chan<- datastore.Property) error {
+	return datastore.SaveStruct(p, ds)
+}
+
 const PasteDSKind string = "Paste"
 
 func genpasteKey(c appengine.Context, p *Paste) (*datastore.Key, string) {
