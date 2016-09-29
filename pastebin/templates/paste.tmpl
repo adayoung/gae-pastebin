@@ -21,7 +21,12 @@
     </span>
 
     <span class="text-muted pull-right">
-        <small title="The hit counter is broken :(">HITS - N/A</small>&nbsp;&nbsp;
+      <small title="The hit counter is broken :(">HITS - N/A</small>&nbsp;&nbsp;
+
+      <a href="/pastebin/{{ .paste_id }}/content" class="btn btn-default btn-xs" title="Fullscreen">
+        <span class="glyphicon glyphicon-fullscreen"></span>
+        <span class="sr-only">Fullscreen</span>
+      </a>
       <a href="/pastebin/{{ .paste_id }}/download" class="btn btn-default btn-xs" title="Download">
         <span class="glyphicon glyphicon-save"></span>
         <span class="sr-only">Download</span>
