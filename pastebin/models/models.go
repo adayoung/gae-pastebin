@@ -48,7 +48,7 @@ func (p Paste) validate() error {
 	return nil
 }
 
-func (p Paste) Save(c appengine.Context) (string, error) {
+func (p Paste) save(c appengine.Context) (string, error) {
 	if err := p.validate(); err == nil {
 		key, stringID := genpasteKey(c, &p)
 		_, err := datastore.Put(c, key, &p)
@@ -92,7 +92,7 @@ func NewPaste(c appengine.Context, r *http.Request) string {
 
 	paste.Date = time.Now()
 
-	stringID, _ := paste.Save(c) // FIXME: do something if this returns an error
+	stringID, _ := paste.save(c) // FIXME: do something if this returns an error
 	// stringID := "meep" // DEBUG: Let's not write to the datastore at the moment :o
 	return stringID
 }
