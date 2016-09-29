@@ -160,15 +160,12 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Disposition", dl_disposition)
 		}
 
-		if paste.Zlib == true {
-			zbuffer := bytes.NewReader(paste.Content)
-			ureader, err := zlib.NewReader(zbuffer)
-			if err != nil {
-				log.Panic(err)
-			}
-			io.Copy(w, ureader)
-		} else {
-			w.Write(paste.Content)
+		zbuffer := bytes.NewReader(paste.Content)
+		ureader, err := zlib.NewReader(zbuffer)
+		if err != nil {
+			log.Panic(err)
 		}
+
+		io.Copy(w, ureader)
 	}
 }

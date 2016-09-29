@@ -26,7 +26,6 @@ type Paste struct {
 	Tags    Tags
 	Format  string
 	IPAddr  net.IP
-	Zlib    bool
 	Date    time.Time
 	Expired bool
 }
@@ -77,7 +76,6 @@ func NewPaste(c appengine.Context, r *http.Request) string {
 	w.Write([]byte(r.PostForm.Get("content")))
 	w.Close()
 	paste.Content = content.Bytes()
-	paste.Zlib = true
 
 	paste.Tags = strings.Split(r.PostForm.Get("tags"), " ")
 	paste.Format = r.PostForm.Get("format")
