@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
-	"regexp"
 
 	// Google Appengine Packages
 	"appengine"
@@ -77,7 +77,7 @@ func (p Paste) validate() error {
 	// Tags - accept a maximum of 15 tags only, each of max length 15
 	// Tags - must consist of alphanumeric characters only
 	filter_exp := regexp.MustCompile("[^A-Za-z0-9]+")
-	for index := 0; index < len(p.Tags); index ++ {
+	for index := 0; index < len(p.Tags); index++ {
 		p.Tags[index] = filter_exp.ReplaceAllString(p.Tags[index], "")
 		p.Tags[index] = strings.ToLower(strings.Trim(p.Tags[index], "-"))
 		if len(p.Tags[index]) > 15 {

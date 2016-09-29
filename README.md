@@ -14,7 +14,8 @@ Hi! Here's a pastebin that runs on Google App Engine!
 
 _Oh, make sure to update static/js/base.js with your own GA user id!_
 
-## ToDo
+## TODO
 
  * Loading app secrets from external sources
  * Scheduler for deleting old pastes
+ * Oops, search is broken too
