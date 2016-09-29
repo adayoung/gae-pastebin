@@ -32,7 +32,7 @@ $(document).ready(function(){
     }).done(function(e){
       location.replace(e);
     }).fail(function(e){
-      alert("Oops, we couldn't post your paste :( The following was encountered:\n\n" + e.status + " - " + e.statusText);
+      alert("Oops, we couldn't post your paste :( The following was encountered:\n\n" + e.status + " - " + e.statusText + '\n' + e.responseText);
       $('#searchbox').attr('disabled', false);
       $('#content').attr('disabled', false);
       $('#title').attr('disabled', false);

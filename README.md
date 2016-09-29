@@ -16,7 +16,5 @@ _Oh, make sure to update static/js/base.js with your own GA user id!_
 
 ## ToDo
 
- * Input Validation
  * Loading app secrets from external sources
  * Scheduler for deleting old pastes
- * Error handling

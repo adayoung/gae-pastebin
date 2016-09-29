@@ -83,7 +83,16 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			log.Panic(err)
 		}
 
-		paste_id := models.NewPaste(c, r)
+		paste_id, err := models.NewPaste(c, r)
+		if err != nil {
+			if _, ok := err.(models.ValidationError); !ok {
+				http.Error(w, err.Error(), 400)
+				return
+			} else {
+				http.Error(w, err.Error(), 500)
+				return
+			}
+		}
 
 		if r.Header.Get("X-Requested-With") == "XMLHttpRequest" { // AJAX
 			w.Write([]byte("/pastebin/" + paste_id))

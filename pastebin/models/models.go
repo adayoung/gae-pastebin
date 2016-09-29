@@ -6,11 +6,12 @@ import (
 	"compress/zlib"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"log"
-	"net"
 	"net/http"
 	"strings"
 	"time"
+	"regexp"
 
 	// Google Appengine Packages
 	"appengine"
@@ -25,7 +26,6 @@ type Paste struct {
 	Content []byte    `datastore:"content,noindex"`
 	Tags    Tags      `datastore:"tags"`
 	Format  string    `datastore:"format,noindex"`
-	IPAddr  net.IP    `datastore:"ipaddr,noindex"`
 	Date    time.Time `datastore:"date_published"`
 	// We need the Zlib flag to correctly process old, uncompressed content
 	Zlib bool `datastore:"zlib,noindex"`
@@ -57,19 +57,50 @@ func genpasteKey(c appengine.Context, p *Paste) (*datastore.Key, string) {
 	return datastore.NewKey(c, PasteDSKind, paste_id, 0, nil), paste_id
 }
 
+type ValidationError struct {
+	What string // What is invalid
+	Why  string // Why is it invalid
+}
+
+func (e ValidationError) Error() string {
+	return fmt.Sprintf("%s - %s", e.What, e.Why)
+}
+
 func (p Paste) validate() error {
-	// FIXME: Implement input validation here
+	// ... this looks more like a cleaner than a validator O_o
+
+	// Title - truncate title to 50
+	if len(p.Title) > 50 {
+		p.Title = p.Title[:50]
+	}
+
+	// Tags - accept a maximum of 15 tags only, each of max length 15
+	// Tags - must consist of alphanumeric characters only
+	filter_exp := regexp.MustCompile("[^A-Za-z0-9]+")
+	for index := 0; index < len(p.Tags); index ++ {
+		p.Tags[index] = filter_exp.ReplaceAllString(p.Tags[index], "")
+		p.Tags[index] = strings.ToLower(strings.Trim(p.Tags[index], "-"))
+		if len(p.Tags[index]) > 15 {
+			p.Tags[index] = p.Tags[index][:15]
+		}
+	}
+	if len(p.Tags) > 15 {
+		p.Tags = p.Tags[:15]
+	}
+
+	// return &ValidationError{"Huh?", "Why?"}
 	return nil
 }
 
 func (p Paste) save(c appengine.Context) (string, error) {
 	if err := p.validate(); err == nil {
-		key, stringID := genpasteKey(c, &p)
+		key, paste_id := genpasteKey(c, &p)
+		log.Printf("Creating new paste with paste_id [%s]", paste_id)
 		_, err := datastore.Put(c, key, &p)
 		if err != nil {
-			log.Panic(err)
+			return "", err
 		}
-		return stringID, nil
+		return paste_id, nil
 	} else {
 		return "", err
 	}
@@ -77,12 +108,13 @@ func (p Paste) save(c appengine.Context) (string, error) {
 
 func (p Paste) Delete(c appengine.Context, paste_id string) {
 	key := datastore.NewKey(c, PasteDSKind, paste_id, 0, nil)
+	log.Printf("Delete paste with paste_id [%s]", paste_id)
 	if err := datastore.Delete(c, key); err != nil {
 		log.Panic(err)
 	}
 }
 
-func NewPaste(c appengine.Context, r *http.Request) string {
+func NewPaste(c appengine.Context, r *http.Request) (string, error) {
 	var paste Paste
 
 	if usr := user.Current(c); usr != nil {
@@ -101,15 +133,15 @@ func NewPaste(c appengine.Context, r *http.Request) string {
 	paste.Tags = strings.Split(r.PostForm.Get("tags"), " ")
 	paste.Format = r.PostForm.Get("format")
 
-	if ipaddr := net.ParseIP(r.RemoteAddr); ipaddr != nil {
-		paste.IPAddr = net.IP(ipaddr)
-	}
-
 	paste.Date = time.Now()
 
-	stringID, _ := paste.save(c) // FIXME: do something if this returns an error
-	// stringID := "meep" // DEBUG: Let's not write to the datastore at the moment :o
-	return stringID
+	paste_id, err := paste.save(c)
+	if err != nil {
+		return "", err
+	}
+
+	// paste_id = "meep" // DEBUG: Remove this when we're confident about write* ops
+	return paste_id, nil
 }
 
 func GetPaste(c appengine.Context, paste_id string) (*Paste, error) {
