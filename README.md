@@ -18,6 +18,5 @@ _Oh, make sure to update static/js/base.js with your own GA user id!_
 
  * Enable HTTPS again
  * Loading app secrets from external sources
- * Enable timestamping in teh Hit Counter again
  * Scheduler for deleting old pastes
  * Oops, search is broken too

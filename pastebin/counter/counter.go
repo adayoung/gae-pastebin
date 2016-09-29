@@ -9,6 +9,7 @@ package sharded_counter
 import (
 	"fmt"
 	"math/rand"
+	"time"
 
 	"appengine"
 
@@ -22,7 +23,8 @@ type counterConfig struct {
 
 type shard struct {
 	Name  string
-	Count int
+	Count int       `datastore:"count"`
+	Last  time.Time `datastore:"last_viewed"`
 }
 
 const (
@@ -89,6 +91,7 @@ func Increment(ctx appengine.Context, name string) error {
 		}
 		s.Name = name
 		s.Count++
+		s.Last = time.Now() // ~adayoung was here -dances about-
 		_, err = datastore.Put(ctx, key, &s)
 		return err
 	}, nil)
