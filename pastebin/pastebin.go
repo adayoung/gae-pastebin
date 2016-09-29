@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	// Google Appengine Packages
 	"appengine"
@@ -39,6 +40,7 @@ func init() {
 	r.HandleFunc("/pastebin/logout", auth.Logout).Methods("GET").Name("logout")
 
 	r.HandleFunc("/pastebin/", utils.ExtraSugar(pastebin)).Methods("GET", "POST").Name("pastebin")
+	r.HandleFunc("/pastebin/clean", clean).Methods("GET").Name("pastecleanr") // Order is important! :o
 	r.HandleFunc("/pastebin/{paste_id}", utils.ExtraSugar(pasteframe)).Methods("GET").Name("pasteframe")
 	r.HandleFunc("/pastebin/{paste_id}/content", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastecontent")
 	r.HandleFunc("/pastebin/{paste_id}/download", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastedownload")
@@ -222,5 +224,71 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 			buffer := bytes.NewReader(paste.Content)
 			io.Copy(w, buffer)
 		}
+	}
+}
+
+func clean(w http.ResponseWriter, r *http.Request) {
+	// https://cloud.google.com/appengine/docs/go/config/cron#securing_urls_for_cron
+	if r.Header.Get("X-Appengine-Cron") != "true" {
+		http.Error(w, "The /clean route is avaiable to cron job only.", http.StatusForbidden)
+	}
+
+	c := appengine.NewContext(r)
+	threemonthsago := time.Now().AddDate(0, 0, -90) // 3 months/90 days ago
+
+	var shard counter.Shard
+	paste_ids := make(map[string]time.Time)
+	keys := datastore.NewQuery("GeneralCounterShard").
+		Filter("last_viewed <", threemonthsago).
+		Order("last_viewed").
+		Limit(150)
+
+	for i := keys.Run(c); ; {
+		_, err := i.Next(&shard)
+		if err == datastore.Done {
+			break
+		}
+		if err != nil {
+			log.Panic(err)
+		}
+		paste_ids[shard.Name] = shard.Last
+	}
+
+	// Avoid deleting pastes who's last_viewed > threemonthsago
+	for paste_id, timestamp := range paste_ids {
+		if timestamp.After(threemonthsago) {
+			delete(paste_ids, paste_id)
+		}
+	}
+
+	var d_keys []*datastore.Key
+	for paste_id, _ := range paste_ids {
+		key := datastore.NewKey(c, models.PasteDSKind, paste_id, 0, nil)
+		d_keys = append(d_keys, key)
+	}
+
+	log.Printf("About to delete the following pastes: %s", d_keys)
+	if err := datastore.DeleteMulti(c, d_keys); err != nil {
+		log.Panic(err)
+	}
+
+	// Clear counter shards here
+	var shardc_dkeys []*datastore.Key
+	for paste_id, _ := range paste_ids {
+		c_key := datastore.NewKey(c, "GeneralCounterShardConfig", paste_id, 0, nil)
+		shardc_dkeys = append(shardc_dkeys, c_key)
+
+		shard_keys := datastore.NewQuery("GeneralCounterShard").Filter("Name =", paste_id).KeysOnly()
+		if shard_dkeys, err := shard_keys.GetAll(c, nil); err == nil {
+			if derr := datastore.DeleteMulti(c, shard_dkeys); derr != nil {
+				log.Panic(derr)
+			}
+		} else {
+			log.Panic(err)
+		}
+	}
+
+	if err := datastore.DeleteMulti(c, shardc_dkeys); err != nil {
+		log.Panic(err)
 	}
 }

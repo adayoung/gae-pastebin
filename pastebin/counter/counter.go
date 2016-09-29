@@ -21,7 +21,7 @@ type counterConfig struct {
 	Shards int
 }
 
-type shard struct {
+type Shard struct {
 	Name  string
 	Count int       `datastore:"count"`
 	Last  time.Time `datastore:"last_viewed"`
@@ -46,7 +46,7 @@ func Count(ctx appengine.Context, name string) (int, error) {
 	}
 	q := datastore.NewQuery(shardKind).Filter("Name =", name)
 	for t := q.Run(ctx); ; {
-		var s shard
+		var s Shard
 		_, err := t.Next(&s)
 		if err == datastore.Done {
 			break
@@ -80,7 +80,7 @@ func Increment(ctx appengine.Context, name string) error {
 	if err != nil {
 		return err
 	}
-	var s shard
+	var s Shard
 	err = datastore.RunInTransaction(ctx, func(ctx appengine.Context) error {
 		shardName := fmt.Sprintf("%s-shard%d", name, rand.Intn(cfg.Shards))
 		key := datastore.NewKey(ctx, shardKind, shardName, 0, nil)

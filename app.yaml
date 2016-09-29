@@ -26,6 +26,11 @@ handlers:
     X-Content-Type-Options: nosniff
     Vary: Accept-Encoding
 
+- url: /pastebin/clean
+  # secure: always
+  script: _go_app
+  login: admin
+
 - url: /.*
   # secure: always
   script: _go_app
