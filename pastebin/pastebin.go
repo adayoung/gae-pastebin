@@ -41,7 +41,7 @@ func init() {
 	r.HandleFunc("/pastebin/{paste_id}", utils.ExtraSugar(pasteframe)).Methods("GET").Name("pasteframe")
 	r.HandleFunc("/pastebin/{paste_id}/content", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastecontent")
 	r.HandleFunc("/pastebin/{paste_id}/download", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastedownload")
-	// r.HandleFunc("/pastebin/{paste_id}/delete", pastedelete).Methods("POST").Name("pastedelete")
+	r.HandleFunc("/pastebin/{paste_id}/delete", utils.ExtraSugar(pastecontent)).Methods("POST").Name("pastedelete")
 
 	r.NotFoundHandler = http.HandlerFunc(Http404)
 
@@ -106,6 +106,11 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 	} else if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
+		if paste.Expired {
+			Http404(w, r)
+			return
+		}
+
 		showDeleteBtn := false
 		if usr != nil {
 			if paste.UserID == usr.ID || user.IsAdmin(c) {
@@ -153,6 +158,12 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 	} else if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
+		if paste.Expired {
+			Http404(w, r)
+			return
+		}
+
+		// Add a Content-Disposition header on the /download route
 		if dl := strings.Split(r.URL.Path, "/"); dl[len(dl)-1] == "download" {
 			var p_title, p_extn, dl_disposition string
 
@@ -170,6 +181,23 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 
 			dl_disposition = fmt.Sprintf("attachment; filename=\"%s.%s\"", p_title, p_extn)
 			w.Header().Set("Content-Disposition", dl_disposition)
+		}
+
+		// Check ownership and expire paste on the /delete route
+		if dl := strings.Split(r.URL.Path, "/"); dl[len(dl)-1] == "delete" {
+			if usr := user.Current(c); usr != nil {
+				if paste.UserID == usr.ID || user.IsAdmin(c) {
+					paste.Expired = true
+					paste.Save(c, paste_id)
+					if r.Header.Get("X-Requested-With") == "XMLHttpRequest" { // AJAX
+						w.Write([]byte("/pastebin/"))
+					} else {
+						// http://tools.ietf.org/html/rfc2616#section-10.3.4 / Http 303
+						http.Redirect(w, r, "/pastebin/", http.StatusSeeOther)
+					}
+					return
+				}
+			}
 		}
 
 		zbuffer := bytes.NewReader(paste.Content)

@@ -33,8 +33,8 @@ $(document).ready(function(){
       delete: "yes",
       "gorilla.csrf.Token": $('input[name="gorilla.csrf.Token"]').val()
     }).done(function(data) {
-      alert(data);
-      location.replace('/pastebin/');
+      alert("Okay! This paste is no longer available.");
+      location.replace(data);
     }).fail(function(e){
       alert("Oops, we couldn't delete this paste :( The following was encountered:\n\n" + e.status + " - " + e.statusText);
     }).always(function(e){
