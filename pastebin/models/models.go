@@ -27,12 +27,14 @@ type Paste struct {
 	Format  string    `datastore:"format,noindex"`
 	IPAddr  net.IP    `datastore:"ipaddr,noindex"`
 	Date    time.Time `datastore:"date_published"`
+	// We need the Zlib flag to correctly process old, uncompressed content
+	Zlib    bool      `datastore:"zlib,noindex"`
 }
 
 func (p *Paste) Load(ds <-chan datastore.Property) error {
 	// TODO: Do something with ErrFieldMismatch here
 	if err := datastore.LoadStruct(p, ds); err != nil {
-		return err
+		return nil // Do nothing D:
 	}
 	return nil
 }
@@ -94,6 +96,7 @@ func NewPaste(c appengine.Context, r *http.Request) string {
 	w.Write([]byte(r.PostForm.Get("content")))
 	w.Close()
 	paste.Content = content.Bytes()
+	paste.Zlib = true
 
 	paste.Tags = strings.Split(r.PostForm.Get("tags"), " ")
 	paste.Format = r.PostForm.Get("format")

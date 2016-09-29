@@ -116,13 +116,18 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 		var p_content bytes.Buffer
 		if paste.Format == "plain" {
 			_p_content := bufio.NewWriter(&p_content)
-			zbuffer := bytes.NewReader(paste.Content)
-			ureader, err := zlib.NewReader(zbuffer)
-			if err != nil {
-				log.Panic(err)
-			}
+			if paste.Zlib {
+				zbuffer := bytes.NewReader(paste.Content)
+				ureader, err := zlib.NewReader(zbuffer)
+				if err != nil {
+					log.Panic(err)
+				}
 
-			io.Copy(_p_content, ureader)
+				io.Copy(_p_content, ureader)
+			} else {
+				buffer := bytes.NewReader(paste.Content)
+				io.Copy(_p_content, buffer)
+			}
 		}
 
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl", "pastebin/templates/paste.tmpl"))
@@ -189,13 +194,18 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		// Decompress content and write out the response
-		zbuffer := bytes.NewReader(paste.Content)
-		ureader, err := zlib.NewReader(zbuffer)
-		if err != nil {
-			log.Panic(err)
-		}
+		if paste.Zlib {
+			// Decompress content and write out the response
+			zbuffer := bytes.NewReader(paste.Content)
+			ureader, err := zlib.NewReader(zbuffer)
+			if err != nil {
+				log.Panic(err)
+			}
 
-		io.Copy(w, ureader)
+			io.Copy(w, ureader)
+		} else {
+			buffer := bytes.NewReader(paste.Content)
+			io.Copy(w, buffer)
+		}
 	}
 }
