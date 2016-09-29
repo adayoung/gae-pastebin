@@ -46,7 +46,7 @@ func (p *Paste) Save(ds chan<- datastore.Property) error {
 const PasteDSKind string = "Paste"
 
 func genpasteKey(c appengine.Context, p *Paste) (*datastore.Key, string) {
-	timestamp := time.Now().Format(time.StampNano)
+	timestamp := p.Date.Format(time.StampNano)
 
 	hasher := sha256.New()
 	hasher.Write([]byte(timestamp))
