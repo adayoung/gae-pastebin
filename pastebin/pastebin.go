@@ -2,6 +2,7 @@ package pastebin
 
 import (
 	// Go Builtin Packages
+	"bufio"
 	"bytes"
 	"compress/zlib"
 	"fmt"
@@ -112,13 +113,24 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		// TODO: Decompress paste.Content if paste.Zlib is true and paste.format is 'plain' here
+		var p_content bytes.Buffer
+		if paste.Format == "plain" {
+			_p_content := bufio.NewWriter(&p_content)
+			zbuffer := bytes.NewReader(paste.Content)
+			ureader, err := zlib.NewReader(zbuffer)
+			if err != nil {
+				log.Panic(err)
+			}
+
+			io.Copy(_p_content, ureader)
+		}
 
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl", "pastebin/templates/paste.tmpl"))
 		if err := tmpl.Execute(w, map[string]interface{}{
 			csrf.TemplateTag: csrf.TemplateField(r),
 			"paste_id":       paste_id,
 			"paste":          paste,
+			"p_content":      p_content.String(),
 			"user":           usr,
 			"deleteBtn":      showDeleteBtn,
 		}); err != nil {
