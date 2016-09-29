@@ -23,6 +23,7 @@ import (
 
 	// Local Packages
 	"pastebin/auth"
+	counter "pastebin/counter"
 	"pastebin/models"
 	"pastebin/utils"
 )
@@ -139,12 +140,16 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		counter.Increment(c, paste_id)
+		p_count, _ := counter.Count(c, paste_id)
+
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl", "pastebin/templates/paste.tmpl"))
 		if err := tmpl.Execute(w, map[string]interface{}{
 			csrf.TemplateTag: csrf.TemplateField(r),
 			"paste_id":       paste_id,
 			"paste":          paste,
 			"p_content":      p_content.String(),
+			"p_count":        p_count,
 			"user":           usr,
 			"deleteBtn":      showDeleteBtn,
 		}); err != nil {

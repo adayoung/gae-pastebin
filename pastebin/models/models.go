@@ -140,7 +140,6 @@ func NewPaste(c appengine.Context, r *http.Request) (string, error) {
 		return "", err
 	}
 
-	// paste_id = "meep" // DEBUG: Remove this when we're confident about write* ops
 	return paste_id, nil
 }
 

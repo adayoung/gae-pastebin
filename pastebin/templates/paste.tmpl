@@ -21,7 +21,7 @@
     </span>
 
     <span class="text-muted pull-right">
-      <small title="The hit counter is broken :(">HITS - N/A</small>&nbsp;&nbsp;
+      <small>HITS - {{ .p_count }}</small>&nbsp;&nbsp;
 
       {{ if eq .paste.Format "html" }}
       <a href="/pastebin/{{ .paste_id }}/content" class="btn btn-default btn-xs" title="Fullscreen">
