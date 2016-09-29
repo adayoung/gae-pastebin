@@ -106,11 +106,6 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 	} else if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
-		if paste.Expired {
-			Http404(w, r)
-			return
-		}
-
 		showDeleteBtn := false
 		if usr != nil {
 			if paste.UserID == usr.ID || user.IsAdmin(c) {
@@ -158,11 +153,6 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 	} else if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
-		if paste.Expired {
-			Http404(w, r)
-			return
-		}
-
 		// Add a Content-Disposition header on the /download route
 		if dl := strings.Split(r.URL.Path, "/"); dl[len(dl)-1] == "download" {
 			var p_title, p_extn, dl_disposition string
@@ -187,8 +177,7 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 		if dl := strings.Split(r.URL.Path, "/"); dl[len(dl)-1] == "delete" {
 			if usr := user.Current(c); usr != nil {
 				if paste.UserID == usr.ID || user.IsAdmin(c) {
-					paste.Expired = true
-					paste.Save(c, paste_id)
+					paste.Delete(c, paste_id)
 					if r.Header.Get("X-Requested-With") == "XMLHttpRequest" { // AJAX
 						w.Write([]byte("/pastebin/"))
 					} else {
@@ -200,6 +189,7 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		// Decompress content and write out the response
 		zbuffer := bytes.NewReader(paste.Content)
 		ureader, err := zlib.NewReader(zbuffer)
 		if err != nil {

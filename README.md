@@ -13,3 +13,11 @@ Hi! Here's a pastebin that runs on Google App Engine!
    - goapp deploy -application [YOUR_PROJECT_ID] -version [YOUR_VERSION_ID]
 
 _Oh, make sure to update static/js/base.js with your own GA user id!_
+
+## ToDo
+
+ * Implement PropertyLoadSaver with the Paste struct
+ * Input Validation
+ * Loading app secrets from external sources
+ * Scheduler for deleting old pastes
+ * Error handling
