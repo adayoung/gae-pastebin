@@ -22,10 +22,11 @@ Hi! Here's a pastebin that runs on Google App Engine!
    * `<sdk path>/goapp deploy -application [YOUR_PROJECT_ID] -version [YOUR_VERSION_ID]`
 
 _Oh, make sure to update static/js/base.js with your own GA user id!_
+_And pastebin/pastebin.go to change the csrf_auth_key as well!_
 
 ## TODO
 
- * Enable HTTPS again
- * Loading app secrets from external sources
+ * Loading app secrets/config from external sources
  * Scheduler for deleting old pastes
  * Oops, search is broken too
+ * Enable HTTPS again

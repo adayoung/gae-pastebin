@@ -29,7 +29,7 @@ import (
 )
 
 // FIXME: load auth key from elsewhere!
-var CSRF = csrf.Protect([]byte("32-byte-long-auth-keyauth-key123"), csrf.Secure(false))
+const csrf_auth_key string = "u<:>ZoTv3d<45!Bn?ionCt4*4&t;SpV;"
 
 func init() {
 	r := mux.NewRouter().StrictSlash(true)
@@ -46,6 +46,7 @@ func init() {
 
 	r.NotFoundHandler = http.HandlerFunc(Http404)
 
+	CSRF := csrf.Protect([]byte(csrf_auth_key), csrf.Secure(false))
 	http.Handle("/pastebin/", CSRF(r))
 }
 
