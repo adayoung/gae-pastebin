@@ -52,7 +52,7 @@ func Http404(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 	var tmpl = template.Must(template.ParseFiles("templates/404.tmpl"))
 	if err := tmpl.Execute(w, nil); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Panic(err)
 	}
 }
 
@@ -62,7 +62,7 @@ func about(w http.ResponseWriter, r *http.Request) {
 	if err := tmpl.Execute(w, map[string]interface{}{
 		"user": user.Current(c),
 	}); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Panic(err)
 	}
 }
 
@@ -76,11 +76,11 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			csrf.TemplateTag: csrf.TemplateField(r),
 			"user":           user.Current(c),
 		}); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Panic(err)
 		}
 	} else if r.Method == "POST" {
 		if err := r.ParseForm(); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Panic(err)
 		}
 
 		paste_id := models.NewPaste(c, r)
@@ -104,7 +104,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 		Http404(w, r)
 		return
 	} else if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Panic(err)
 	} else {
 		showDeleteBtn := false
 		if usr != nil {
@@ -139,7 +139,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			"user":           usr,
 			"deleteBtn":      showDeleteBtn,
 		}); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Panic(err)
 		}
 	}
 }
@@ -156,7 +156,7 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 		Http404(w, r)
 		return
 	} else if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Panic(err)
 	} else {
 		// Add a Content-Disposition header on the /download route
 		if dl := strings.Split(r.URL.Path, "/"); dl[len(dl)-1] == "download" {

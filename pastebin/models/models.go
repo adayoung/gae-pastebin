@@ -28,7 +28,7 @@ type Paste struct {
 	IPAddr  net.IP    `datastore:"ipaddr,noindex"`
 	Date    time.Time `datastore:"date_published"`
 	// We need the Zlib flag to correctly process old, uncompressed content
-	Zlib    bool      `datastore:"zlib,noindex"`
+	Zlib bool `datastore:"zlib,noindex"`
 }
 
 func (p *Paste) Load(ds <-chan datastore.Property) error {

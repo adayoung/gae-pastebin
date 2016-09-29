@@ -16,7 +16,6 @@ _Oh, make sure to update static/js/base.js with your own GA user id!_
 
 ## ToDo
 
- * Implement PropertyLoadSaver with the Paste struct
  * Input Validation
  * Loading app secrets from external sources
  * Scheduler for deleting old pastes
