@@ -2,13 +2,14 @@ package pastebin
 
 import (
 	// Go Builtin Packages
-	"html/template"
-	"net/http"
-	"compress/zlib"
 	"bytes"
-	"bufio"
+	"compress/zlib"
+	"fmt"
+	"html/template"
 	"io"
 	"log"
+	"net/http"
+	"strings"
 
 	// Google Appengine Packages
 	"appengine"
@@ -38,7 +39,7 @@ func init() {
 	r.HandleFunc("/pastebin/", utils.ExtraSugar(pastebin)).Methods("GET", "POST").Name("pastebin")
 	r.HandleFunc("/pastebin/{paste_id}", utils.ExtraSugar(pasteframe)).Methods("GET").Name("pasteframe")
 	r.HandleFunc("/pastebin/{paste_id}/content", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastecontent")
-	// r.HandleFunc("/pastebin/{paste_id}/download", utils.ExtraSugar(pastedownload)).Methods("GET").Name("pastedownload")
+	r.HandleFunc("/pastebin/{paste_id}/download", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastedownload")
 	// r.HandleFunc("/pastebin/{paste_id}/delete", pastedelete).Methods("POST").Name("pastedelete")
 
 	r.NotFoundHandler = http.HandlerFunc(Http404)
@@ -127,6 +128,9 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 }
 
 func pastecontent(w http.ResponseWriter, r *http.Request) {
+	// This is what keeps people from abusing our pastebin ^_^
+	w.Header().Set("Content-Security-Policy", "default-src 'none'; style-src 'self' 'unsafe-inline'; img-src *")
+
 	c := appengine.NewContext(r)
 	v := mux.Vars(r)
 	paste_id := v["paste_id"]
@@ -137,6 +141,25 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 	} else if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
+		if dl := strings.Split(r.URL.Path, "/"); dl[len(dl)-1] == "download" {
+			var p_title, p_extn, dl_disposition string
+
+			if len(paste.Title) > 0 {
+				p_title = paste.Title
+			} else {
+				p_title = paste_id
+			}
+
+			if paste.Format == "html" {
+				p_extn = "html"
+			} else {
+				p_extn = "txt"
+			}
+
+			dl_disposition = fmt.Sprintf("attachment; filename=\"%s.%s\"", p_title, p_extn)
+			w.Header().Set("Content-Disposition", dl_disposition)
+		}
+
 		if paste.Zlib == true {
 			zbuffer := bytes.NewReader(paste.Content)
 			ureader, err := zlib.NewReader(zbuffer)
