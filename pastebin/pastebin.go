@@ -89,7 +89,7 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, err.Error(), 400)
 				return
 			} else {
-				http.Error(w, err.Error(), 500)
+				http.Error(w, "BARF!@ Something's broken!@%", 500)
 				return
 			}
 		}
