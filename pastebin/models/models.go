@@ -92,11 +92,11 @@ func (p *Paste) validate() error {
 	return nil
 }
 
-func (p Paste) save(c appengine.Context) (string, error) {
+func (p *Paste) save(c appengine.Context) (string, error) {
 	if err := p.validate(); err == nil {
-		key, paste_id := genpasteKey(c, &p)
+		key, paste_id := genpasteKey(c, p)
 		log.Printf("Creating new paste with paste_id [%s]", paste_id)
-		_, err := datastore.Put(c, key, &p)
+		_, err := datastore.Put(c, key, p)
 		if err != nil {
 			return "", err
 		}
@@ -106,7 +106,7 @@ func (p Paste) save(c appengine.Context) (string, error) {
 	}
 }
 
-func (p Paste) Delete(c appengine.Context, paste_id string) {
+func (p *Paste) Delete(c appengine.Context, paste_id string) {
 	key := datastore.NewKey(c, PasteDSKind, paste_id, 0, nil)
 	log.Printf("Delete paste with paste_id [%s]", paste_id)
 	if err := datastore.Delete(c, key); err != nil {
