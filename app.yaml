@@ -1,8 +1,7 @@
 runtime: go
 api_version: go1
 
-# Let's enable this when we're done with porting
-# default_expiration: "180d 0h"
+default_expiration: "180d 0h"
 
 handlers:
 - url: /favicon\.ico
