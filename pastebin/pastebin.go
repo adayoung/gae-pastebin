@@ -48,7 +48,7 @@ func init() {
 
 	r.NotFoundHandler = http.HandlerFunc(Http404)
 
-	CSRF := csrf.Protect([]byte(csrf_auth_key), csrf.Secure(false))
+	CSRF := csrf.Protect([]byte(csrf_auth_key), csrf.Secure(true))
 	http.Handle("/pastebin/", CSRF(r))
 }
 

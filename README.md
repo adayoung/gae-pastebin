@@ -26,6 +26,6 @@ _And pastebin/pastebin.go to change the csrf_auth_key as well!_
 
 ## TODO
 
- * Loading app secrets/config from external sources
+ * Load app secrets/config from external sources
  * Implement the /search route again
- * Enable HTTPS again
+ * Remove the 'construction' hat
