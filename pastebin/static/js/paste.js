@@ -41,4 +41,11 @@ $(document).ready(function(){
       $('#deletebtn').removeClass('disabled');
     });
   });
+
+  // This is a temporary, ugly fix for https://github.com/adayoung/gae-pastebin/issues/1
+  if ($('pre').length > 0) {
+    if ($('pre').text().length == 0) {
+      $.get(location.href + '/content').done(function(e){$('pre').text(e)});
+    }
+  }
 });
