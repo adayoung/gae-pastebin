@@ -13,7 +13,7 @@ func ExtraSugar(f http.HandlerFunc) http.HandlerFunc {
 		w.Header().Set("Ada", "*skips about* Hi! <3 ^_^")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("X-Frame-Options", "SAMEORIGIN")
-		w.Header().Set("Content-Security-Policy", "default-src 'self'; font-src netdna.bootstrapcdn.com fonts.gstatic.com; script-src 'self' netdna.bootstrapcdn.com ajax.googleapis.com www.google-analytics.com; style-src 'self' netdna.bootstrapcdn.com 'unsafe-inline'; img-src 'self' *; object-src 'none'; media-src 'none'")
+		w.Header().Set("Content-Security-Policy", "default-src 'self'; font-src netdna.bootstrapcdn.com fonts.gstatic.com; script-src 'self' netdna.bootstrapcdn.com ajax.googleapis.com linkhelp.clients.google.com www.google-analytics.com; style-src 'self' netdna.bootstrapcdn.com 'unsafe-inline'; img-src 'self' *; object-src 'none'; media-src 'none'")
 		w.Header().Set("Strict-Transport-Security", "max-age=15552000")
 
 		if strings.Contains(strings.ToLower(r.UserAgent()), "msie") {
