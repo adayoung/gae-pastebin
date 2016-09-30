@@ -236,49 +236,34 @@ func clean(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 	threemonthsago := time.Now().AddDate(0, 0, -90) // 3 months/90 days ago
 
-	var shard counter.Shard
-	paste_ids := make(map[string]time.Time)
-	keys := datastore.NewQuery("GeneralCounterShard").
-		Filter("last_viewed <", threemonthsago).
-		Order("last_viewed").
-		Limit(150)
-
-	for i := keys.Run(c); ; {
-		_, err := i.Next(&shard)
-		if err == datastore.Done {
-			break
-		}
-		if err != nil {
-			log.Panic(err)
-		}
-		paste_ids[shard.Name] = shard.Last
+	old_stuff := datastore.NewQuery(models.PasteDSKind).
+		Filter("date_published >", threemonthsago). // DEBUG: This should be '<'
+		KeysOnly().Limit(150) // Find up to 150 old pastes
+	old_keys, err := old_stuff.GetAll(c, nil)
+	if err != nil {
+		log.Panic(err)
 	}
 
-	// Avoid deleting pastes who's last_viewed > threemonthsago
-	for paste_id, timestamp := range paste_ids {
-		if timestamp.After(threemonthsago) {
-			delete(paste_ids, paste_id)
+	var paste_ids []*datastore.Key
+	for _, old_key := range old_keys {
+		paste_id := old_key.StringID()
+		if last, _ := counter.Last(c, paste_id); threemonthsago.After(last) == true {
+			paste_ids = append(paste_ids, old_key)
 		}
 	}
 
-	var d_keys []*datastore.Key
-	for paste_id, _ := range paste_ids {
-		key := datastore.NewKey(c, models.PasteDSKind, paste_id, 0, nil)
-		d_keys = append(d_keys, key)
-	}
-
-	log.Printf("About to delete the following pastes: %s", d_keys)
-	if err := datastore.DeleteMulti(c, d_keys); err != nil {
+	log.Printf("About to delete the following pastes: %s", paste_ids)
+	if err := datastore.DeleteMulti(c, paste_ids); err != nil {
 		log.Panic(err)
 	}
 
 	// Clear counter shards here
 	var shardc_dkeys []*datastore.Key
-	for paste_id, _ := range paste_ids {
-		c_key := datastore.NewKey(c, "GeneralCounterShardConfig", paste_id, 0, nil)
+	for _, paste_id := range paste_ids {
+		c_key := datastore.NewKey(c, "GeneralCounterShardConfig", paste_id.StringID(), 0, nil)
 		shardc_dkeys = append(shardc_dkeys, c_key)
 
-		shard_keys := datastore.NewQuery("GeneralCounterShard").Filter("Name =", paste_id).KeysOnly()
+		shard_keys := datastore.NewQuery("GeneralCounterShard").Filter("Name =", paste_id.StringID()).KeysOnly()
 		if shard_dkeys, err := shard_keys.GetAll(c, nil); err == nil {
 			if derr := datastore.DeleteMulti(c, shard_dkeys); derr != nil {
 				log.Panic(derr)

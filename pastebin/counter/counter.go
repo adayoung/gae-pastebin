@@ -21,7 +21,7 @@ type counterConfig struct {
 	Shards int
 }
 
-type Shard struct {
+type shard struct {
 	Name  string
 	Count int       `datastore:"count"`
 	Last  time.Time `datastore:"last_viewed"`
@@ -46,7 +46,7 @@ func Count(ctx appengine.Context, name string) (int, error) {
 	}
 	q := datastore.NewQuery(shardKind).Filter("Name =", name)
 	for t := q.Run(ctx); ; {
-		var s Shard
+		var s shard
 		_, err := t.Next(&s)
 		if err == datastore.Done {
 			break
@@ -62,6 +62,27 @@ func Count(ctx appengine.Context, name string) (int, error) {
 		Expiration: 60,
 	})
 	return total, nil
+}
+
+// Last retrieves the latest timestamp value across all counter shards for a given name
+func Last(ctx appengine.Context, name string) (time.Time, error) {
+	// I think we can do this with q.Order('-last_viewed').Limit(1) or something too
+	last := time.Now().AddDate(0, 0, -180) // let's start from six months ago
+	q := datastore.NewQuery(shardKind).Filter("Name =", name)
+	for t := q.Run(ctx); ; {
+		var s shard
+		_, err := t.Next(&s)
+		if err == datastore.Done {
+			break
+		}
+		if err != nil {
+			return last, err
+		}
+		if s.Last.After(last) {
+			last = s.Last
+		}
+	}
+	return last, nil
 }
 
 // Increment increments the named counter.
@@ -80,7 +101,7 @@ func Increment(ctx appengine.Context, name string) error {
 	if err != nil {
 		return err
 	}
-	var s Shard
+	var s shard
 	err = datastore.RunInTransaction(ctx, func(ctx appengine.Context) error {
 		shardName := fmt.Sprintf("%s-shard%d", name, rand.Intn(cfg.Shards))
 		key := datastore.NewKey(ctx, shardKind, shardName, 0, nil)
