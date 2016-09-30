@@ -66,7 +66,7 @@ func (e ValidationError) Error() string {
 	return fmt.Sprintf("%s - %s", e.What, e.Why)
 }
 
-func (p Paste) validate() error {
+func (p *Paste) validate() error {
 	// ... this looks more like a cleaner than a validator O_o
 
 	// Title - truncate title to 50
