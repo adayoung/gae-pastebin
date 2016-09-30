@@ -237,7 +237,7 @@ func clean(w http.ResponseWriter, r *http.Request) {
 	threemonthsago := time.Now().AddDate(0, 0, -90) // 3 months/90 days ago
 
 	old_stuff := datastore.NewQuery(models.PasteDSKind).
-		Filter("date_published >", threemonthsago). // DEBUG: This should be '<'
+		Filter("date_published <", threemonthsago).
 		KeysOnly().Limit(150) // Find up to 150 old pastes
 	old_keys, err := old_stuff.GetAll(c, nil)
 	if err != nil {
