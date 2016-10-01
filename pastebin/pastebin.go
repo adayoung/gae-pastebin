@@ -127,10 +127,14 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 		counter.Increment(c, paste_id)
 		p_count, _ := counter.Count(c, paste_id)
 
-		var p_content bytes.Buffer
-		if paste.Format == "plain" {
-			_p_content := bufio.NewWriter(&p_content)
+		var p_content string
+		if paste.Format == "plain" && paste.Zlib == true {
+			var _b_content bytes.Buffer
+			_p_content := bufio.NewWriter(&_b_content)
 			paste.ZContent(_p_content)
+			p_content = _b_content.String()
+		} else {
+			p_content = string(paste.Content)
 		}
 
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl", "pastebin/templates/paste.tmpl"))
@@ -138,7 +142,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			csrf.TemplateTag: csrf.TemplateField(r),
 			"paste_id":       paste_id,
 			"paste":          paste,
-			"p_content":      p_content.String(),
+			"p_content":      p_content,
 			"p_count":        p_count,
 			"user":           usr,
 			"deleteBtn":      showDeleteBtn,
