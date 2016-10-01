@@ -4,7 +4,6 @@ import (
 	// Go Builtin Packages
 	"bufio"
 	"bytes"
-	"compress/zlib"
 	"fmt"
 	"html/template"
 	"io"
@@ -113,7 +112,9 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 	v := mux.Vars(r)
 	paste_id := v["paste_id"]
 
-	if paste, err := models.GetPaste(c, paste_id); err == datastore.ErrNoSuchEntity {
+	var p_content bytes.Buffer
+	_p_content := bufio.NewWriter(&p_content)
+	if paste, err := models.GetPaste(c, paste_id, _p_content); err == datastore.ErrNoSuchEntity {
 		Http404(w, r)
 		return
 	} else if err != nil {
@@ -123,23 +124,6 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 		if usr != nil {
 			if paste.UserID == usr.ID || user.IsAdmin(c) {
 				showDeleteBtn = true
-			}
-		}
-
-		var p_content bytes.Buffer
-		if paste.Format == "plain" {
-			_p_content := bufio.NewWriter(&p_content)
-			if paste.Zlib {
-				zbuffer := bytes.NewReader(paste.Content)
-				ureader, err := zlib.NewReader(zbuffer)
-				if err != nil {
-					log.Panic(err)
-				}
-
-				io.Copy(_p_content, ureader)
-			} else {
-				buffer := bytes.NewReader(paste.Content)
-				io.Copy(_p_content, buffer)
 			}
 		}
 
@@ -169,7 +153,9 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 	v := mux.Vars(r)
 	paste_id := v["paste_id"]
 
-	if paste, err := models.GetPaste(c, paste_id); err == datastore.ErrNoSuchEntity {
+	var p_content bytes.Buffer
+	_p_content := bufio.NewWriter(&p_content)
+	if paste, err := models.GetPaste(c, paste_id, _p_content); err == datastore.ErrNoSuchEntity {
 		Http404(w, r)
 		return
 	} else if err != nil {
@@ -211,19 +197,9 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		if paste.Zlib {
-			// Decompress content and write out the response
-			zbuffer := bytes.NewReader(paste.Content)
-			ureader, err := zlib.NewReader(zbuffer)
-			if err != nil {
-				log.Panic(err)
-			}
-
-			io.Copy(w, ureader)
-		} else {
-			buffer := bytes.NewReader(paste.Content)
-			io.Copy(w, buffer)
-		}
+		// Because we can't set headers once we've written anything in the ResponseWriter
+		buffer := bytes.NewReader(p_content.Bytes())
+		io.Copy(w, buffer)
 	}
 }
 

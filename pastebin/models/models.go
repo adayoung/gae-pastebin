@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"regexp"
@@ -143,11 +144,30 @@ func NewPaste(c appengine.Context, r *http.Request) (string, error) {
 	return paste_id, nil
 }
 
-func GetPaste(c appengine.Context, paste_id string) (*Paste, error) {
+type pasteContent interface {
+	Write([]byte) (int, error)
+}
+
+func GetPaste(c appengine.Context, paste_id string, pc pasteContent) (*Paste, error) {
 	key := datastore.NewKey(c, PasteDSKind, paste_id, 0, nil)
 	paste := new(Paste)
 	if err := datastore.Get(c, key, paste); err != nil {
 		return paste, err
 	}
+
+	if paste.Zlib { // always the case with new content
+		// Decompress content and write out the response
+		zbuffer := bytes.NewReader(paste.Content)
+		ureader, err := zlib.NewReader(zbuffer)
+		if err != nil {
+			return paste, err
+		}
+
+		io.Copy(pc, ureader)
+	} else { // here be old, uncompressed content
+		buffer := bytes.NewReader(paste.Content)
+		io.Copy(pc, buffer)
+	}
+
 	return paste, nil
 }
