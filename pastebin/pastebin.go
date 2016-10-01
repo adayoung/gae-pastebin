@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
-	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -112,9 +111,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 	v := mux.Vars(r)
 	paste_id := v["paste_id"]
 
-	var p_content bytes.Buffer
-	_p_content := bufio.NewWriter(&p_content)
-	if paste, err := models.GetPaste(c, paste_id, _p_content); err == datastore.ErrNoSuchEntity {
+	if paste, err := models.GetPaste(c, paste_id); err == datastore.ErrNoSuchEntity {
 		Http404(w, r)
 		return
 	} else if err != nil {
@@ -129,6 +126,12 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 
 		counter.Increment(c, paste_id)
 		p_count, _ := counter.Count(c, paste_id)
+
+		var p_content bytes.Buffer
+		if paste.Format == "plain" {
+			_p_content := bufio.NewWriter(&p_content)
+			paste.ZContent(_p_content)
+		}
 
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl", "pastebin/templates/paste.tmpl"))
 		if err := tmpl.Execute(w, map[string]interface{}{
@@ -153,9 +156,7 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 	v := mux.Vars(r)
 	paste_id := v["paste_id"]
 
-	var p_content bytes.Buffer
-	_p_content := bufio.NewWriter(&p_content)
-	if paste, err := models.GetPaste(c, paste_id, _p_content); err == datastore.ErrNoSuchEntity {
+	if paste, err := models.GetPaste(c, paste_id); err == datastore.ErrNoSuchEntity {
 		Http404(w, r)
 		return
 	} else if err != nil {
@@ -197,9 +198,7 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		// Because we can't set headers once we've written anything in the ResponseWriter
-		buffer := bytes.NewReader(p_content.Bytes())
-		io.Copy(w, buffer)
+		paste.ZContent(w)
 	}
 }
 
