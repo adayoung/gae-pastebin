@@ -67,7 +67,7 @@ func (e ValidationError) Error() string {
 	return fmt.Sprintf("%s - %s", e.What, e.Why)
 }
 
-func (p *Paste) validate() error {
+func (p *Paste) Validate() error {
 	// ... this looks more like a cleaner than a validator O_o
 
 	// Title - truncate title to 50
@@ -89,12 +89,23 @@ func (p *Paste) validate() error {
 		p.Tags = p.Tags[:15]
 	}
 
+	var u_tags []string
+	u_tag_map := make(map[string]string)
+	for _, tag := range p.Tags {
+		if u_tag_map[tag] == "" {
+			u_tags = append(u_tags, tag)
+		}
+		u_tag_map[tag] = tag
+	}
+
+	p.Tags = u_tags // Yay no more duplicates!
+
 	// return &ValidationError{"Huh?", "Why?"}
 	return nil
 }
 
 func (p *Paste) save(c appengine.Context) (string, error) {
-	if err := p.validate(); err == nil {
+	if err := p.Validate(); err == nil {
 		key, paste_id := genpasteKey(c, p)
 		log.Printf("Creating new paste with paste_id [%s]", paste_id)
 		_, err := datastore.Put(c, key, p)
