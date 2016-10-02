@@ -55,6 +55,7 @@ func genpasteKey(c appengine.Context, p *Paste) (*datastore.Key, string) {
 	digest := hex.EncodeToString(hasher.Sum(nil))
 
 	paste_id := digest[:8] // This is probably a silly way to go about it xD
+	// We're such trolls, we don't even check for collisions ^_^
 	return datastore.NewKey(c, PasteDSKind, paste_id, 0, nil), paste_id
 }
 

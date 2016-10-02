@@ -4,6 +4,7 @@ import (
 	// Go Builtin Packages
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -39,6 +40,7 @@ func init() {
 
 	r.HandleFunc("/pastebin/", utils.ExtraSugar(pastebin)).Methods("GET", "POST").Name("pastebin")
 	r.HandleFunc("/pastebin/clean", clean).Methods("GET").Name("pastecleanr") // Order is important! :o
+	r.HandleFunc("/pastebin/search/", search).Methods("GET").Name("pastesearch")
 	r.HandleFunc("/pastebin/{paste_id}", utils.ExtraSugar(pasteframe)).Methods("GET").Name("pasteframe")
 	r.HandleFunc("/pastebin/{paste_id}/content", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastecontent")
 	r.HandleFunc("/pastebin/{paste_id}/download", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastedownload")
@@ -254,5 +256,74 @@ func clean(w http.ResponseWriter, r *http.Request) {
 
 	if err := datastore.DeleteMulti(c, shardc_dkeys); err != nil {
 		log.Panic(err)
+	}
+}
+
+func search(w http.ResponseWriter, r *http.Request) {
+	c := appengine.NewContext(r)
+	usr := user.Current(c)
+
+	if r.Header.Get("X-Requested-With") == "XMLHttpRequest" { // AJAX
+		cursor := r.URL.Query().Get("c")
+		// Let's abuse an empty Paste object to validate/clean tags
+		p := new(models.Paste)
+		p.Tags = strings.Split(r.URL.Query().Get("tags"), " ")
+		p.Validate()
+
+		q := datastore.NewQuery(models.PasteDSKind)
+		// q = q.Project("title", "date_published", "tags") // <-- That's not allowed for '='' filter queries O_o
+		for _, tag := range p.Tags {
+			q = q.Filter("tags =", tag)
+		}
+		q = q.Order("-date_published").Limit(10)
+		if len(cursor) > 0 {
+			if cursor, err := datastore.DecodeCursor(cursor); err != nil {
+				http.Error(w, "Oops, invalid cursor supplied.", http.StatusBadRequest)
+			} else {
+				q = q.Start(cursor)
+			}
+		}
+
+		var results []interface{}
+		t := q.Run(c)
+		for {
+			q := models.Paste{}
+			key, err := t.Next(&q)
+			if err == datastore.Done {
+				break
+			}
+			if err != nil {
+				log.Panic(c, "Running query: ", err)
+				break
+			}
+
+			results = append(results, map[string]interface{}{
+				"paste_id": key.StringID(),
+				"title":    q.Title,
+				"tags":     q.Tags,
+				"date":     q.Date.Format(time.ANSIC),
+			})
+		}
+
+		q_result := map[string]interface{}{
+			"paste": map[string]interface{}{
+				"results": results,
+				"tags":    p.Tags,
+			},
+		}
+
+		if cursor, err := t.Cursor(); err == nil {
+			q_result["cursor"] = cursor.String()
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(q_result)
+	} else {
+		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl", "pastebin/templates/search.tmpl"))
+		if err := tmpl.Execute(w, map[string]interface{}{
+			"user": usr,
+		}); err != nil {
+			log.Panic(err)
+		}
 	}
 }

@@ -1,0 +1,57 @@
+{{ block "evenmorehead" . }}
+<style type="text/css">
+  .ajaxload {
+    display: none;
+  }
+
+  .havejs {
+    display: none;
+  }
+</style>
+
+<style type="text/css">
+body {
+  background: #FFF;
+}
+
+#searchbox {
+  color: #333;
+}
+
+table {
+  background-color: #FFF;
+  border-radius: 5px;
+}
+</style>
+{{ end }}
+
+{{ block "content" . }}
+<div class="row">
+  <div class="spacer"></div>
+  <div class="col-md-12 havejs">
+    <table class="table table-stripped table-hover" id="results">
+      <thead><tr><th>#</th><th>Title</th><th>Posted</th><th>Tags</th></tr></thead>
+    <tbody>
+    </tbody>
+    </table>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12 havejs">
+    <a class="btn btn-default btn-block" data-cursor="" href="#" id="loadmore">Load more results</a>
+  </div>
+  <noscript>
+    <div class="col-md-12 text-center">
+      <h1>Oops, this page requires Javascript enabled to work properly! Sorry!</h1>
+    </div>
+  </noscript>
+</div>
+{{ end }}
+
+{{ block "footer" . }}
+<span></span>
+{{ end }}
+
+{{ block "evenmoretail" . }}
+<script src="/pastebin/static/js/search.js"></script>
+{{ end }}

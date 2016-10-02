@@ -27,4 +27,3 @@ _And pastebin/pastebin.go to change the csrf_auth_key as well!_
 ## TODO
 
  * Load app secrets/config from external sources
- * Implement the /search route again
