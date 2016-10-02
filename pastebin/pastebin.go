@@ -215,10 +215,10 @@ func clean(w http.ResponseWriter, r *http.Request) {
 	}
 
 	c := appengine.NewContext(r)
-	threemonthsago := time.Now().AddDate(0, 0, -90) // 3 months/90 days ago
+	sixmonthsago := time.Now().AddDate(0, 0, -180) // 180 days ago!
 
 	old_stuff := datastore.NewQuery(models.PasteDSKind).
-		Filter("date_published <", threemonthsago).
+		Filter("date_published <", sixmonthsago).
 		KeysOnly().Limit(150) // Find up to 150 old pastes
 	old_keys, err := old_stuff.GetAll(c, nil)
 	if err != nil {
@@ -228,7 +228,7 @@ func clean(w http.ResponseWriter, r *http.Request) {
 	var paste_ids []*datastore.Key
 	for _, old_key := range old_keys {
 		paste_id := old_key.StringID()
-		if last, _ := counter.Last(c, paste_id); threemonthsago.After(last) == true {
+		if last, _ := counter.Last(c, paste_id); sixmonthsago.After(last) == true {
 			paste_ids = append(paste_ids, old_key)
 		}
 	}
