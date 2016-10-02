@@ -30,11 +30,16 @@ $(document).ready(function(){
         $('#results tbody').append('<tr class="ajaxload"><td>' + parseInt(lastindex + i)  +  '</td><td><a href="/pastebin/' + data.paste.results[i].paste_id  + '">' + data.paste.results[i].title  + '</a></td><td title="' + data.paste.results[i].i_date + '">' + data.paste.results[i].date + '</td><td>' + htags.join(' ') +  '</td></tr>');
       }
 
-      $('#loadmore').removeClass('disabled');
-      $('#loadmore').text('Load more results');
+      if (data.paste.results.length < 10) {
+        $('#loadmore').text('No more results ...');
+        $('#loadmore').fadeOut(1500);
+      } else {
+        $('#loadmore').removeClass('disabled');
+        $('#loadmore').text('Load more results');
+      }
+
       $('.ajaxload').fadeIn();
     }).fail(function(e){
-      // Huh? Why is it coming here?!
       alert("Oops, we couldn't get search results :( The following was encountered:\n\n" + e.status + " - " + e.statusText + '\n' + e.responseText);
     });
   });
