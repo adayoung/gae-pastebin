@@ -299,7 +299,7 @@ func search(w http.ResponseWriter, r *http.Request) {
 
 			results = append(results, map[string]interface{}{
 				"paste_id": key.StringID(),
-				"title":    q.Title,
+				"title":    template.HTMLEscapeString(q.Title),
 				"tags":     q.Tags,
 				"date":     q.Date.Format(time.ANSIC),
 			})
