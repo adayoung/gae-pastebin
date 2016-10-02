@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"compress/zlib"
 	"crypto/sha256"
-	"encoding/hex"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"log"
@@ -52,7 +52,8 @@ func genpasteKey(c appengine.Context, p *Paste) (*datastore.Key, string) {
 	hasher := sha256.New()
 	hasher.Write([]byte(timestamp))
 	hasher.Write(p.Content)
-	digest := hex.EncodeToString(hasher.Sum(nil))
+	// This, because Gwawr was here, and Gwawr is awesome!
+	digest := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(hasher.Sum(nil))
 
 	paste_id := digest[:8] // This is probably a silly way to go about it xD
 	// We're such trolls, we don't even check for collisions ^_^
