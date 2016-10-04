@@ -45,11 +45,6 @@ func create(w http.ResponseWriter, r *http.Request) {
 		log.Panic(c, err)
 	}
 
-	if !(len(r.PostForm.Get("content")) > 0) {
-		http.Error(w, "Oops, we need 'content' for this.", http.StatusBadRequest)
-		return
-	}
-
 	var auth_token string
 	if err := sc.Decode("auth-token", r.PostForm.Get("auth"), &auth_token); err != nil {
 		at_url := r.URL.Scheme + "://" + r.URL.Host + "/pastebin/api/v1/echo"

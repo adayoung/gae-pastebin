@@ -30,6 +30,8 @@ type Paste struct {
 	Date    time.Time `datastore:"date_published"`
 	// We need the Zlib flag to correctly process old, uncompressed content
 	Zlib bool `datastore:"zlib,noindex"`
+	// Private, uncompressed content, for validation and processing
+	uContent string `datastore:"-"`
 }
 
 func (p *Paste) Load(ds <-chan datastore.Property) error {
@@ -72,9 +74,19 @@ func (e ValidationError) Error() string {
 func (p *Paste) Validate() error {
 	// ... this looks more like a cleaner than a validator O_o
 
+	// A paste must have content!@
+	if !(len(p.uContent) > 0) {
+		return &ValidationError{"Content", "Oops, we need 'content' for this."}
+	}
+
 	// Title - truncate title to 50
 	if len(p.Title) > 50 {
 		p.Title = p.Title[:50]
+	}
+
+	// Force format to 'plain' if nothing valid is specified
+	if !(p.Format == "plain" || p.Format == "html") {
+		p.Format = "plain"
 	}
 
 	// Tags - accept a maximum of 15 tags only, each of max length 15
@@ -108,6 +120,14 @@ func (p *Paste) Validate() error {
 
 func (p *Paste) save(c appengine.Context) (string, error) {
 	if err := p.Validate(); err == nil {
+		// Compress content here, AFTER validation
+		var content bytes.Buffer
+		w := zlib.NewWriter(&content)
+		w.Write([]byte(p.uContent))
+		w.Close()
+		p.Content = content.Bytes()
+		p.Zlib = true
+
 		key, paste_id := genpasteKey(c, p)
 		c.Infof("Creating new paste with paste_id [%s]", paste_id)
 		_, err := datastore.Put(c, key, p)
@@ -152,20 +172,10 @@ func NewPaste(c appengine.Context, r *http.Request) (string, error) {
 	}
 
 	paste.Title = r.PostForm.Get("title")
-
-	var content bytes.Buffer
-	w := zlib.NewWriter(&content)
-	w.Write([]byte(r.PostForm.Get("content")))
-	w.Close()
-	paste.Content = content.Bytes()
-	paste.Zlib = true
+	paste.uContent = r.PostForm.Get("content")
 
 	paste.Tags = strings.Split(r.PostForm.Get("tags"), " ")
 	paste.Format = r.PostForm.Get("format")
-	if !(paste.Format == "plain" || paste.Format == "html") {
-		paste.Format = "plain"
-	}
-
 	paste.Date = time.Now()
 
 	paste_id, err := paste.save(c)

@@ -91,11 +91,6 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			log.Panic(c, err)
 		}
 
-		if !(len(r.PostForm.Get("content")) > 0) {
-			http.Error(w, "Oops, we need 'content' for this.", http.StatusBadRequest)
-			return
-		}
-
 		paste_id, err := models.NewPaste(c, r)
 		if err != nil {
 			if _, ok := err.(models.ValidationError); !ok {
