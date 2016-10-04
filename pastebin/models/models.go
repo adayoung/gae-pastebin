@@ -162,6 +162,9 @@ func NewPaste(c appengine.Context, r *http.Request) (string, error) {
 
 	paste.Tags = strings.Split(r.PostForm.Get("tags"), " ")
 	paste.Format = r.PostForm.Get("format")
+	if !(paste.Format == "plain" || paste.Format == "html") {
+		paste.Format = "plain"
+	}
 
 	paste.Date = time.Now()
 

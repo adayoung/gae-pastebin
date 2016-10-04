@@ -23,6 +23,7 @@ import (
 	"github.com/gorilla/mux"
 
 	// Local Packages
+	api_v1 "pastebin/api/v1"
 	"pastebin/auth"
 	counter "pastebin/counter"
 	"pastebin/models"
@@ -49,6 +50,9 @@ func init() {
 	CSRFAuthKey := os.Getenv("CSRFAuthKey")
 	CSRF := csrf.Protect([]byte(CSRFAuthKey), csrf.Secure(!appengine.IsDevAppServer()))
 	http.Handle("/pastebin/", CSRF(r))
+
+	// Here be API handlers
+	http.Handle("/pastebin/api/v1/", api_v1.API_Router)
 }
 
 func Http404(w http.ResponseWriter, r *http.Request) {
@@ -85,6 +89,11 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 	} else if r.Method == "POST" {
 		if err := r.ParseForm(); err != nil {
 			log.Panic(c, err)
+		}
+
+		if !(len(r.PostForm.Get("content")) > 0) {
+			http.Error(w, "Oops, we need 'content' for this.", http.StatusBadRequest)
+			return
 		}
 
 		paste_id, err := models.NewPaste(c, r)
