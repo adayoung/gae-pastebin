@@ -6,6 +6,7 @@ Hi! Here's a pastebin that runs on Google App Engine!
  * [Google App Engine Go SDK](https://cloud.google.com/appengine/downloads)
  * [github.com/gorilla/mux](http://www.gorillatoolkit.org/pkg/mux)
  * [github.com/gorilla/csrf](http://www.gorillatoolkit.org/pkg/csrf)
+ * [github.com/gorilla/securecookie](http://www.gorillatoolkit.org/pkg/securecookie)
 
 ## How to use
 
@@ -22,8 +23,4 @@ Hi! Here's a pastebin that runs on Google App Engine!
    * `<sdk path>/goapp deploy -application [YOUR_PROJECT_ID] -version [YOUR_VERSION_ID]`
 
 _Oh, make sure to update static/js/base.js with your own GA user id!_
-_And keys.yaml to change the CSRFAuthKey as well!_
-
-## TODO
-
- * Load app secrets/config from external sources
+_And keys.yaml to change the CSRFAuthKey and EncryptionK as well!_

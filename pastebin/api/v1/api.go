@@ -41,7 +41,6 @@ func create(w http.ResponseWriter, r *http.Request) {
 	EncryptionK := []byte(os.Getenv("EncryptionK"))
 	sc := securecookie.New(CSRFAuthKey, EncryptionK)
 
-	log.Printf("Hello, world! :D")
 	if err := r.ParseForm(); err != nil {
 		log.Panic(c, err)
 	}
@@ -54,7 +53,7 @@ func create(w http.ResponseWriter, r *http.Request) {
 	var auth_token string
 	if err := sc.Decode("auth-token", r.PostForm.Get("auth"), &auth_token); err != nil {
 		at_url := r.URL.Scheme + "://" + r.URL.Host + "/pastebin/api/v1/echo"
-		http.Error(w, "Auth token invalid/not supplied, you can get one here: " + at_url, http.StatusUnauthorized)
+		http.Error(w, "Auth token invalid/not supplied, you can get one here: "+at_url, http.StatusUnauthorized)
 		return
 	}
 
@@ -69,5 +68,7 @@ func create(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Is that a good idea? O_o I dunno :<
+	http.Redirect(w, r, r.URL.Scheme + "://" + r.URL.Host + "/pastebin/" + paste_id, http.StatusSeeOther)
 	w.Write([]byte(r.URL.Scheme + "://" + r.URL.Host + "/pastebin/" + paste_id))
 }
