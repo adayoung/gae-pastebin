@@ -52,10 +52,11 @@ func init() {
 }
 
 func Http404(w http.ResponseWriter, r *http.Request) {
+	c := appengine.NewContext(r)
 	w.WriteHeader(http.StatusNotFound)
 	var tmpl = template.Must(template.ParseFiles("templates/404.tmpl"))
 	if err := tmpl.Execute(w, nil); err != nil {
-		log.Panic(err)
+		log.Panic(c, err)
 	}
 }
 
@@ -65,7 +66,7 @@ func about(w http.ResponseWriter, r *http.Request) {
 	if err := tmpl.Execute(w, map[string]interface{}{
 		"user": user.Current(c),
 	}); err != nil {
-		log.Panic(err)
+		log.Panic(c, err)
 	}
 }
 
@@ -79,11 +80,11 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			csrf.TemplateTag: csrf.TemplateField(r),
 			"user":           user.Current(c),
 		}); err != nil {
-			log.Panic(err)
+			log.Panic(c, err)
 		}
 	} else if r.Method == "POST" {
 		if err := r.ParseForm(); err != nil {
-			log.Panic(err)
+			log.Panic(c, err)
 		}
 
 		paste_id, err := models.NewPaste(c, r)
@@ -116,7 +117,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 		Http404(w, r)
 		return
 	} else if err != nil {
-		log.Panic(err)
+		log.Panic(c, err)
 	} else {
 		showDeleteBtn := false
 		if usr != nil {
@@ -148,7 +149,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			"user":           usr,
 			"deleteBtn":      showDeleteBtn,
 		}); err != nil {
-			log.Panic(err)
+			log.Panic(c, err)
 		}
 	}
 }
@@ -165,7 +166,7 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 		Http404(w, r)
 		return
 	} else if err != nil {
-		log.Panic(err)
+		log.Panic(c, err)
 	} else {
 		// Add a Content-Disposition header on the /download route
 		if dl := strings.Split(r.URL.Path, "/"); dl[len(dl)-1] == "download" {
@@ -221,7 +222,7 @@ func clean(w http.ResponseWriter, r *http.Request) {
 		KeysOnly().Limit(150) // Find up to 150 old pastes
 	old_keys, err := old_stuff.GetAll(c, nil)
 	if err != nil {
-		log.Panic(err)
+		log.Panic(c, err)
 	}
 
 	var paste_ids []*datastore.Key
@@ -232,9 +233,9 @@ func clean(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	log.Printf("About to delete the following pastes: %s", paste_ids)
+	c.Infof("About to delete the following pastes: %s", paste_ids)
 	if err := datastore.DeleteMulti(c, paste_ids); err != nil {
-		log.Panic(err)
+		log.Panic(c, err)
 	}
 
 	// Clear counter shards here
@@ -246,15 +247,15 @@ func clean(w http.ResponseWriter, r *http.Request) {
 		shard_keys := datastore.NewQuery("GeneralCounterShard").Filter("Name =", paste_id.StringID()).KeysOnly()
 		if shard_dkeys, err := shard_keys.GetAll(c, nil); err == nil {
 			if derr := datastore.DeleteMulti(c, shard_dkeys); derr != nil {
-				log.Panic(derr)
+				log.Panic(c, derr)
 			}
 		} else {
-			log.Panic(err)
+			log.Panic(c, err)
 		}
 	}
 
 	if err := datastore.DeleteMulti(c, shardc_dkeys); err != nil {
-		log.Panic(err)
+		log.Panic(c, err)
 	}
 }
 

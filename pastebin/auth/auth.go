@@ -24,7 +24,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		if url, err := user.LoginURL(c, dest); err == nil {
 			http.Redirect(w, r, url, http.StatusFound)
 		} else {
-			log.Panicln(err)
+			log.Panic(c, err)
 		}
 	}
 }
@@ -43,7 +43,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 		if url, err := user.LogoutURL(c, dest); err == nil {
 			http.Redirect(w, r, url, http.StatusFound)
 		} else {
-			log.Panicln(err)
+			log.Panic(c, err)
 		}
 	}
 }
