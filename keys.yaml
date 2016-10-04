@@ -1,0 +1,3 @@
+# Here be a 32-byte-long auth-key, so gibberish!
+env_variables:
+  - CSRFAuthKey: 'u<:>ZoTv3d<45!Bn?ionCt4*4&t;SpV;'

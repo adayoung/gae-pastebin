@@ -1,7 +1,7 @@
 runtime: go
 api_version: go1
 
-default_expiration: "180d 0h"
+default_expiration: '180d 0h'
 
 handlers:
 - url: /favicon\.ico
@@ -33,3 +33,6 @@ handlers:
 - url: /.*
   secure: always
   script: _go_app
+
+includes:
+  - keys.yaml
