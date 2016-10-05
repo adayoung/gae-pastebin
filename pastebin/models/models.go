@@ -18,6 +18,9 @@ import (
 	"appengine"
 	"appengine/datastore"
 	"appengine/user"
+
+	// Local Packages
+	"pastebin/utils"
 )
 
 type Tags []string
@@ -171,11 +174,13 @@ func NewPaste(c appengine.Context, r *http.Request) (string, error) {
 		paste.UserID = usr.ID
 	}
 
-	paste.Title = r.PostForm.Get("title")
-	paste.uContent = r.PostForm.Get("content")
+	utils.ProcessForm(c, r)
 
-	paste.Tags = strings.Split(r.PostForm.Get("tags"), " ")
-	paste.Format = r.PostForm.Get("format")
+	paste.Title = r.Form.Get("title")
+	paste.uContent = r.Form.Get("content")
+
+	paste.Tags = strings.Split(r.Form.Get("tags"), " ")
+	paste.Format = r.Form.Get("format")
 	paste.Date = time.Now()
 
 	paste_id, err := paste.save(c)

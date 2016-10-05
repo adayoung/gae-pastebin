@@ -2,8 +2,12 @@ package utils
 
 import (
 	// Go Builtin Packages
+	"log"
 	"net/http"
 	"strings"
+
+	// Google Appengine Packages
+	"appengine"
 )
 
 // http://andyrees.github.io/2015/your-code-a-mess-maybe-its-time-to-bring-in-the-decorators/
@@ -22,5 +26,17 @@ func ExtraSugar(f http.HandlerFunc) http.HandlerFunc {
 		}
 
 		f(w, r)
+	}
+}
+
+func ProcessForm(c appengine.Context, r *http.Request) {
+	var err error
+	if strings.Contains(strings.ToLower(r.Header.Get("content-type")), "multipart") {
+		err = r.ParseMultipartForm(32 << 20) // 32 MB - http.defaultMaxMemory
+	} else {
+		err = r.ParseForm()
+	}
+	if err != nil {
+		log.Panic(c, err)
 	}
 }

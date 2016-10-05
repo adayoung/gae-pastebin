@@ -87,10 +87,6 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			log.Panic(c, err)
 		}
 	} else if r.Method == "POST" {
-		if err := r.ParseForm(); err != nil {
-			log.Panic(c, err)
-		}
-
 		paste_id, err := models.NewPaste(c, r)
 		if err != nil {
 			if _, ok := err.(models.ValidationError); !ok {

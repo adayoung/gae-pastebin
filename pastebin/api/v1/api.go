@@ -42,12 +42,9 @@ func create(w http.ResponseWriter, r *http.Request) {
 	EncryptionK := []byte(os.Getenv("EncryptionK"))
 	sc := securecookie.New(CSRFAuthKey, EncryptionK)
 
-	if err := r.ParseForm(); err != nil {
-		log.Panic(c, err)
-	}
-
+	utils.ProcessForm(c, r)
 	var auth_token string
-	received_token := strings.TrimSpace(r.PostForm.Get("auth"))
+	received_token := strings.TrimSpace(r.Form.Get("auth"))
 	if err := sc.Decode("auth-token", received_token, &auth_token); err != nil {
 		c.Warningf("API call rejected, received_token -> " + received_token)
 		log.Print(c, err)
