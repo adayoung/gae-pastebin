@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	// Google Appengine Packages
@@ -46,7 +47,10 @@ func create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var auth_token string
-	if err := sc.Decode("auth-token", r.PostForm.Get("auth"), &auth_token); err != nil {
+	received_token := strings.TrimSpace(r.PostForm.Get("auth"))
+	if err := sc.Decode("auth-token", received_token, &auth_token); err != nil {
+		c.Warningf("API call rejected, received_token -> " + received_token)
+		log.Print(c, err)
 		at_url := r.URL.Scheme + "://" + r.URL.Host + "/pastebin/api/v1/echo"
 		http.Error(w, "Auth token invalid/not supplied, you can get one here: "+at_url, http.StatusUnauthorized)
 		return

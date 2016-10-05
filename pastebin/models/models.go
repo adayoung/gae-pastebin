@@ -94,7 +94,7 @@ func (p *Paste) Validate() error {
 	filter_exp := regexp.MustCompile("[^A-Za-z0-9]+")
 	for index := 0; index < len(p.Tags); index++ {
 		p.Tags[index] = filter_exp.ReplaceAllString(p.Tags[index], "")
-		p.Tags[index] = strings.ToLower(strings.Trim(p.Tags[index], " "))
+		p.Tags[index] = strings.ToLower(strings.TrimSpace(p.Tags[index]))
 		if len(p.Tags[index]) > 15 {
 			p.Tags[index] = p.Tags[index][:15]
 		}
