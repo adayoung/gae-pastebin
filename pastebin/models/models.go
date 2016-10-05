@@ -183,10 +183,11 @@ func NewPaste(c appengine.Context, r *http.Request) (string, error) {
 	paste.Format = r.Form.Get("format")
 	paste.Date = time.Now()
 
-	paste_id, err := paste.save(c)
-	if err != nil {
-		return "", err
-	}
+	// paste_id, err := paste.save(c)
+	// if err != nil {
+	// 	return "", err
+	// }
+	paste_id := "meep" // No saving!@
 
 	return paste_id, nil
 }
