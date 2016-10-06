@@ -33,6 +33,13 @@ func ExtraSugar(f http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+func PanicOnErr(c appengine.Context, err error) {
+	if err != nil {
+		c.Errorf(err.Error())
+		log.Panic(err)
+	}
+}
+
 func ProcessForm(c appengine.Context, r *http.Request) {
 	var err error
 	if strings.Contains(strings.ToLower(r.Header.Get("content-type")), "multipart") {

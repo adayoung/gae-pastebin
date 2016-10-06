@@ -49,7 +49,7 @@ func init() {
 	http.Handle("/pastebin/", CSRF(r))
 
 	// Here be auth handlers
-	http.Handle("/pastebin/auth/", auth.Router)
+	http.Handle("/pastebin/auth/", CSRF(auth.Router))
 
 	// Here be API handlers
 	http.Handle("/pastebin/api/v1/", api_v1.API_Router)
@@ -79,10 +79,21 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl"))
 
+		usr := user.Current(c)
+		// This presence of this cookie indicates we _may_ have an authorization
+		// token for Google Drive available for the currently logged in user
+		gdrive_auth := false
+		if usr != nil {
+			if _, err := r.Cookie("gdrive-token"); err == nil {
+				gdrive_auth = true
+			}
+		}
+
 		// http://www.gorillatoolkit.org/pkg/csrf
 		if err := tmpl.Execute(w, map[string]interface{}{
 			csrf.TemplateTag: csrf.TemplateField(r),
-			"user":           user.Current(c),
+			"user":           usr,
+			"gdrive_auth":    gdrive_auth,
 		}); err != nil {
 			log.Panic(c, err)
 		}
@@ -126,7 +137,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		counter.Increment(c, paste_id)
+		defer counter.Increment(c, paste_id)
 		p_count, _ := counter.Count(c, paste_id)
 
 		var p_content string

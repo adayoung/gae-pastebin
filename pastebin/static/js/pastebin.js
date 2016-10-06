@@ -1,6 +1,7 @@
 $(document).ready(function(){
   $('.nojs').hide();
   $('.havejs').show();
+  $('#paste_gdrv').attr('disabled', false);
 
   $('#label_plain').addClass('active');
   $('#plain').attr('checked', true);
@@ -11,6 +12,8 @@ $(document).ready(function(){
     event.preventDefault();
 
     if (!$('#content').val().length > 0) {
+      $('#content').parent().addClass('has-error');
+      $('#content').focus();
       return false;
     }
 
@@ -28,6 +31,7 @@ $(document).ready(function(){
       title: $('#title').val(),
       tags: $('#tags').val(),
       format: $('input[name=format]:checked').val(),
+      destination: $('input[name=destination]').val(),
       "gorilla.csrf.Token": $('input[name="gorilla.csrf.Token"]').val()
     }).done(function(e){
       location.replace(e);
@@ -41,6 +45,7 @@ $(document).ready(function(){
 
       $('#paste_btn').text('Paste it!');
       $('#paste_btn').removeClass('disabled');
+      $('#paste_gdrv').removeClass('disabled');
       $('#content').focus();
       $('#content').select();
     });
@@ -50,6 +55,12 @@ $(document).ready(function(){
   $('#content').bind('input propertychange', function(){
     var noc = $('#content').val().length;
     $('#noc').text(noc);
+
+    if (noc > 1) {
+      if ($('#content').parent().hasClass('has-error')) {
+        $('#content').parent().removeClass('has-error');
+      }
+    }
 
     if (noc > 950 * 1024) {
       $('#eep').toggle(true);
@@ -91,7 +102,32 @@ $(document).ready(function(){
 
   $('#paste_gdrv').on('click', function(event){
     event.preventDefault();
-  })
+
+    if (!$('#content').val().length > 0) {
+      $('#content').parent().addClass('has-error');
+      $('#content').focus();
+      return false;
+    }
+
+    if ($('input[name="destination"]').val() !== "gdrive") {
+      window.open(gauth_url, 'gauth_frame').close();
+      var gauth_url = "/pastebin/auth/login?next=/pastebin/auth/gdrive"
+      var auth_window = window.open(gauth_url, 'gauth_frame');
+    } else {
+      $('#paste_gdrv').addClass('disabled');
+      $('#paste_btn').click();
+    }
+  });
 
   $('#content').focus();
 });
+
+var HandleGAuthComplete = function(auth_result) {
+  if (auth_result === "success") {
+    $('input[name="destination"]').val("gdrive");
+    $('#paste_gdrv').click();
+  } else {
+    $('#paste_gdrv').addClass("btn-danger");
+    $('#paste_gdrv_txt').text(auth_result);
+  }
+};

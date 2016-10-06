@@ -11,14 +11,20 @@ import (
 
 	// The Gorilla Web Toolkit
 	"github.com/gorilla/mux"
+
+	// Local Packages
+	"pastebin/utils"
 )
 
 var Router *mux.Router
 
 func init() {
 	Router = mux.NewRouter()
-	Router.HandleFunc("/pastebin/auth/login", login).Methods("GET").Name("login")
-	Router.HandleFunc("/pastebin/auth/logout", logout).Methods("GET").Name("logout")
+	Router.HandleFunc("/pastebin/auth/login", utils.ExtraSugar(login)).Methods("GET").Name("login")
+	Router.HandleFunc("/pastebin/auth/logout", utils.ExtraSugar(logout)).Methods("GET").Name("logout")
+
+	Router.HandleFunc("/pastebin/auth/gdrive", utils.ExtraSugar(auth_gdrive_begin)).Methods("GET").Name("auth_gdrive_begin")
+	Router.HandleFunc("/pastebin/auth/gdrive/complete", utils.ExtraSugar(auth_gdrive_complete)).Methods("GET").Name("auth_gdrive_complete")
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
