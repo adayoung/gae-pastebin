@@ -4,7 +4,6 @@ import (
 	// Go Builtin Packages
 	"log"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -13,7 +12,6 @@ import (
 
 	// The Gorilla Web Toolkit
 	"github.com/gorilla/mux"
-	"github.com/gorilla/securecookie"
 
 	// Local Packages
 	"pastebin/models"
@@ -29,23 +27,17 @@ func init() {
 }
 
 func echo(w http.ResponseWriter, r *http.Request) {
-	CSRFAuthKey := []byte(os.Getenv("CSRFAuthKey"))
-	EncryptionK := []byte(os.Getenv("EncryptionK"))
-	sc := securecookie.New(CSRFAuthKey, EncryptionK)
-	t, _ := sc.Encode("auth-token", time.Now().Format(time.StampNano))
+	t, _ := utils.SC().Encode("auth-token", time.Now().Format(time.StampNano))
 	w.Write([]byte(t))
 }
 
 func create(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
-	CSRFAuthKey := []byte(os.Getenv("CSRFAuthKey"))
-	EncryptionK := []byte(os.Getenv("EncryptionK"))
-	sc := securecookie.New(CSRFAuthKey, EncryptionK)
 
 	utils.ProcessForm(c, r)
 	var auth_token string
 	received_token := strings.TrimSpace(r.Form.Get("auth"))
-	if err := sc.Decode("auth-token", received_token, &auth_token); err != nil {
+	if err := utils.SC().Decode("auth-token", received_token, &auth_token); err != nil {
 		c.Warningf("API call rejected, received_token -> " + received_token)
 		log.Print(c, err)
 		at_url := r.URL.Scheme + "://" + r.URL.Host + "/pastebin/api/v1/echo"

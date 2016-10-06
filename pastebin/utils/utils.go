@@ -4,10 +4,14 @@ import (
 	// Go Builtin Packages
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	// Google Appengine Packages
 	"appengine"
+
+	// The Gorilla Web Toolkit
+	"github.com/gorilla/securecookie"
 )
 
 // http://andyrees.github.io/2015/your-code-a-mess-maybe-its-time-to-bring-in-the-decorators/
@@ -39,4 +43,11 @@ func ProcessForm(c appengine.Context, r *http.Request) {
 	if err != nil {
 		log.Panic(c, err)
 	}
+}
+
+func SC() *securecookie.SecureCookie {
+	CSRFAuthKey := []byte(os.Getenv("CSRFAuthKey"))
+	EncryptionK := []byte(os.Getenv("EncryptionK"))
+	sc := securecookie.New(CSRFAuthKey, EncryptionK)
+	return sc
 }
