@@ -5,7 +5,9 @@ Hi! Here's a pastebin that runs on Google App Engine!
 
  * [Google App Engine Go SDK](https://cloud.google.com/appengine/downloads)
  * [github.com/gorilla/mux](http://www.gorillatoolkit.org/pkg/mux)
+ * [golang.org/x/oauth2/...](https://godoc.org/golang.org/x/oauth2)
  * [github.com/gorilla/csrf](http://www.gorillatoolkit.org/pkg/csrf)
+ * [google.golang.org/api/drive/v3](https://godoc.org/google.golang.org/api/drive/v3)
  * [github.com/gorilla/securecookie](http://www.gorillatoolkit.org/pkg/securecookie)
 
 ## How to use

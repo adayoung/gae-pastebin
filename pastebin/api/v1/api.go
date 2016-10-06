@@ -57,6 +57,6 @@ func create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Is that a good idea? O_o I dunno :<
-	http.Redirect(w, r, r.URL.Scheme + "://" + r.URL.Host + "/pastebin/" + paste_id, http.StatusSeeOther)
+	http.Redirect(w, r, r.URL.Scheme+"://"+r.URL.Host+"/pastebin/"+paste_id, http.StatusSeeOther)
 	w.Write([]byte(r.URL.Scheme + "://" + r.URL.Host + "/pastebin/" + paste_id))
 }
