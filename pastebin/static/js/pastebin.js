@@ -84,10 +84,14 @@ $(document).ready(function(){
     }
   });
 
-  $('#paste_btn').tooltip({
+  $('.btn').tooltip({
     placement: 'auto',
-    title: $('#paste_btn').data('title')
+    title: $(this).data('title')
   });
+
+  $('#paste_gdrv').on('click', function(event){
+    event.preventDefault();
+  })
 
   $('#content').focus();
 });
