@@ -1,3 +1,4 @@
+var auth_window;
 $(document).ready(function(){
   $('.nojs').hide();
   $('.havejs').show();
@@ -110,9 +111,11 @@ $(document).ready(function(){
     }
 
     if ($('input[name="destination"]').val() !== "gdrive") {
-      window.open(gauth_url, 'gauth_frame').close();
+      if (auth_window != undefined) {
+        auth_window.close();
+      }
       var gauth_url = "/pastebin/auth/login?next=/pastebin/auth/gdrive"
-      var auth_window = window.open(gauth_url, 'gauth_frame');
+      auth_window = window.open(gauth_url, 'gauth_frame');
     } else {
       $('#paste_gdrv').addClass('disabled');
       $('#paste_btn').click();
