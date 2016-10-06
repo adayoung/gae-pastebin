@@ -33,11 +33,8 @@ import (
 func init() {
 	r := mux.NewRouter().StrictSlash(true)
 
-	r.HandleFunc("/pastebin/about", utils.ExtraSugar(about)).Methods("GET").Name("about")
-	r.HandleFunc("/pastebin/login", auth.Login).Methods("GET").Name("login")
-	r.HandleFunc("/pastebin/logout", auth.Logout).Methods("GET").Name("logout")
-
 	r.HandleFunc("/pastebin/", utils.ExtraSugar(pastebin)).Methods("GET", "POST").Name("pastebin")
+	r.HandleFunc("/pastebin/about", utils.ExtraSugar(about)).Methods("GET").Name("about")
 	r.HandleFunc("/pastebin/clean", clean).Methods("GET").Name("pastecleanr") // Order is important! :o
 	r.HandleFunc("/pastebin/search/", search).Methods("GET").Name("pastesearch")
 	r.HandleFunc("/pastebin/{paste_id}", utils.ExtraSugar(pasteframe)).Methods("GET").Name("pasteframe")
@@ -50,6 +47,9 @@ func init() {
 	CSRFAuthKey := os.Getenv("CSRFAuthKey")
 	CSRF := csrf.Protect([]byte(CSRFAuthKey), csrf.Secure(!appengine.IsDevAppServer()))
 	http.Handle("/pastebin/", CSRF(r))
+
+	// Here be auth handlers
+	http.Handle("/pastebin/auth/", auth.Router)
 
 	// Here be API handlers
 	http.Handle("/pastebin/api/v1/", api_v1.API_Router)

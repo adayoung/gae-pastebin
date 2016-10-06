@@ -8,11 +8,27 @@ import (
 	// Google Appengine Packages
 	"appengine"
 	"appengine/user"
+
+	// The Gorilla Web Toolkit
+	"github.com/gorilla/mux"
 )
 
-func Login(w http.ResponseWriter, r *http.Request) {
+var Router *mux.Router
+
+func init() {
+	Router = mux.NewRouter()
+	Router.HandleFunc("/pastebin/auth/login", login).Methods("GET").Name("login")
+	Router.HandleFunc("/pastebin/auth/logout", logout).Methods("GET").Name("logout")
+}
+
+func login(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
-	dest := r.Referer()
+	var dest string
+	if dest = r.FormValue("next"); dest == "" {
+		if dest = r.Referer(); dest == "" {
+			dest = "/pastebin/"
+		}
+	}
 
 	if usr := user.Current(c); usr != nil { // already logged in
 		if dest != "/pastebin/login/" {
@@ -29,7 +45,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Logout(w http.ResponseWriter, r *http.Request) {
+func logout(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 	dest := r.Referer()
 

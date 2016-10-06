@@ -30,9 +30,9 @@
           <li><a href="/pastebin/about">About</a></li>
           <li><a href="https://github.com/adayoung/gae-pastebin/" target="_blank">GitHub!</a></li>
           {{ if .user }}
-            <li><a href="/pastebin/logout">Sign out ({{ .user.Email }})</a></li>
+            <li><a href="/pastebin/auth/logout">Sign out ({{ .user.Email }})</a></li>
           {{ else }}
-            <li><a href="/pastebin/login">Sign in</a></li>
+            <li><a href="/pastebin/auth/login">Sign in</a></li>
           {{ end }}
         </ul>
         <div class="col-md-3 navbar-nav navbar-right">
