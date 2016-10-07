@@ -1,0 +1,21 @@
+{{ block "meta" . }}
+  <meta name="author" content="Ada Young">
+  <meta name="description" content="Ada's HTML Pastebin!">
+  <meta name="application-name" content="Ada's HTML Pastebin!">
+{{ end }}
+
+{{ block "main" . }}
+<div class="container" style="padding: 60px 15px">
+  <div style="text-align: center">
+    <form method="POST">
+      {{ .csrfField }}
+      <p class="lead">You're logged in the application as {{ .user.Email }}<br>
+      Is that the correct account? <button class="btn btn-primary btn-sm" type="submit">Yes</button> / <a href="/pastebin/auth/logout?next={{ .dest }}">No</a></p>
+    </form>
+  </div>
+</div><!-- /.container -->
+{{ end }}
+
+{{ block "btop" . }}
+<span></span>
+{{end }}
