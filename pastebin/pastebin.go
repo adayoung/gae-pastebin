@@ -139,7 +139,11 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 		if paste.Format == "plain" && paste.Zlib == true {
 			var _b_content bytes.Buffer
 			_p_content := bufio.NewWriter(&_b_content)
-			paste.ZContent(_p_content)
+			err := paste.ZContent(c, r, _p_content)
+			if err != nil {
+				c.Errorf(err.Error())
+				log.Panic(c, err)
+			}
 			p_content = _b_content.String()
 		} else {
 			p_content = string(paste.Content)
@@ -210,7 +214,11 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		paste.ZContent(w)
+		err := paste.ZContent(c, r, w)
+		if err != nil {
+			c.Errorf(err.Error())
+			log.Panic(err)
+		}
 	}
 }
 
@@ -329,7 +337,7 @@ func search(w http.ResponseWriter, r *http.Request) {
 		if err := tmpl.Execute(w, map[string]interface{}{
 			"user": usr,
 		}); err != nil {
-			log.Panic(err)
+			log.Panic(c, err)
 		}
 	}
 }

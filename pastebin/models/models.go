@@ -33,8 +33,9 @@ type Paste struct {
 	Date    time.Time `datastore:"date_published"`
 	// We need the Zlib flag to correctly process old, uncompressed content
 	Zlib bool `datastore:"zlib,noindex"`
-	// Private, uncompressed content, for validation and processing
+	// Private content, for validation and processing
 	uContent string `datastore:"-"`
+	GDriveID string `datastore:"gdrive_id,noindex"`
 }
 
 func (p *Paste) Load(ds <-chan datastore.Property) error {
@@ -121,18 +122,28 @@ func (p *Paste) Validate() error {
 	return nil
 }
 
-func (p *Paste) save(c appengine.Context) (string, error) {
+func (p *Paste) save(c appengine.Context, r *http.Request) (string, error) {
 	if err := p.Validate(); err == nil {
 		// Compress content here, AFTER validation
 		var content bytes.Buffer
 		w := zlib.NewWriter(&content)
 		w.Write([]byte(p.uContent))
 		w.Close()
-		p.Content = content.Bytes()
-		p.Zlib = true
 
 		key, paste_id := genpasteKey(c, p)
 		c.Infof("Creating new paste with paste_id [%s]", paste_id)
+
+		if token, valid := utils.TokenCookie(c, r); valid {
+			// TODO: This should should probably happen in a goroutine
+			err = p.saveToDrive(c, r, &content, paste_id, &token)
+			if err != nil {
+				// totally abusing ValidationError here, ima bad person :<
+				return "", &ValidationError{"Google Drive Error", err.Error()}
+			}
+		} else {
+			p.Content = content.Bytes()
+		}
+
 		_, err := datastore.Put(c, key, p)
 		if err != nil {
 			return "", err
@@ -147,16 +158,25 @@ type pasteContent interface {
 	Write([]byte) (int, error)
 }
 
-func (p *Paste) ZContent(pc pasteContent) {
+func (p *Paste) ZContent(c appengine.Context, r *http.Request, pc pasteContent) error {
 	if p.Zlib { // always the case with new content
 		// Decompress content and write out the response
-		zbuffer := bytes.NewReader(p.Content)
+		var zbuffer io.Reader
+		if len(p.GDriveID) > 0 {
+			// TODO: load content from Google Drive here
+			if err := p.loadFromDrive(c, r); err != nil {
+				return err
+			}
+		}
+		zbuffer = bytes.NewReader(p.Content)
 		ureader, _ := zlib.NewReader(zbuffer)
 		io.Copy(pc, ureader)
 	} else { // here be old, uncompressed content
 		buffer := bytes.NewReader(p.Content)
 		io.Copy(pc, buffer)
 	}
+
+	return nil
 }
 
 func (p *Paste) Delete(c appengine.Context, paste_id string) {
@@ -182,12 +202,13 @@ func NewPaste(c appengine.Context, r *http.Request) (string, error) {
 	paste.Tags = strings.Split(r.Form.Get("tags"), " ")
 	paste.Format = r.Form.Get("format")
 	paste.Date = time.Now()
+	// This, because we're close to two centuries old &_&
+	paste.Zlib = true
 
-	paste_id, err := paste.save(c)
+	paste_id, err := paste.save(c, r)
 	if err != nil {
 		return "", err
 	}
-	// paste_id := "meep" // No saving!@
 
 	return paste_id, nil
 }

@@ -32,7 +32,6 @@ $(document).ready(function(){
       title: $('#title').val(),
       tags: $('#tags').val(),
       format: $('input[name=format]:checked').val(),
-      destination: $('input[name=destination]').val(),
       "gorilla.csrf.Token": $('input[name="gorilla.csrf.Token"]').val()
     }).done(function(e){
       location.replace(e);
@@ -96,11 +95,6 @@ $(document).ready(function(){
     }
   });
 
-  $('.btn').tooltip({
-    placement: 'auto',
-    title: $(this).data('title')
-  });
-
   $('#paste_gdrv').on('click', function(event){
     event.preventDefault();
 
@@ -120,6 +114,16 @@ $(document).ready(function(){
       $('#paste_gdrv').addClass('disabled');
       $('#paste_btn').click();
     }
+  });
+
+  if ($('input[name="destination"]').val() === "gdrive") {
+    $('#paste_gdrv_txt').text('Pasting to Google Drive!');
+    $('#paste_gdrv').data('title', 'We ken do it!!');
+  };
+
+  $('.btn').tooltip({
+    placement: 'auto',
+    title: $(this).data('title')
   });
 
   $('#content').focus();
