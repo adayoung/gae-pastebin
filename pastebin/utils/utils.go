@@ -2,6 +2,7 @@ package utils
 
 import (
 	// Go Builtin Packages
+	"encoding/json"
 	"log"
 	"net/http"
 	"os"
@@ -9,6 +10,7 @@ import (
 
 	// Google Appengine Packages
 	"appengine"
+	"appengine/user"
 
 	// The Gorilla Web Toolkit
 	"github.com/gorilla/securecookie"
@@ -57,4 +59,28 @@ func SC() *securecookie.SecureCookie {
 	EncryptionK := []byte(os.Getenv("EncryptionK"))
 	sc := securecookie.New(CSRFAuthKey, EncryptionK)
 	return sc
+}
+
+func ValidateOToken(c appengine.Context, r *http.Request) bool {
+	// This presence of this cookie indicates we _may_ have an authorization
+	// token for Google Drive available for the currently logged in user
+	if cookie, err := r.Cookie("gdrive-token"); err == nil {
+		value := make(map[string]string)
+		if err = SC().Decode("gdrive-token", cookie.Value, &value); err != nil {
+			return false
+		}
+		lookietoken := make(map[string]interface{})
+		if err = json.Unmarshal([]byte(value["gdrive-token"]), &lookietoken); err == nil {
+			usr := user.Current(c)
+			if usr != nil {
+				if lookietoken["userid"] == usr.ID {
+					return true
+				}
+			}
+		} else {
+			return false // invalid JSON or something lol
+		}
+	}
+
+	return false
 }

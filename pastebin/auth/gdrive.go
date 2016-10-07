@@ -56,13 +56,11 @@ func auth_gdrive_begin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Attempt retrieving the auth token from cookie first. Yay cookies!
-	if cookie, err := r.Cookie("gdrive-token"); err == nil {
-		value := make(map[string]string)
-		if err = utils.SC().Decode("gdrive-token", cookie.Value, &value); err == nil {
-			err := responseTemplate.Execute(w, "success")
-			utils.PanicOnErr(c, err)
-			return
-		}
+	if valid := utils.ValidateOToken(c, r); valid == true {
+		err := responseTemplate.Execute(w, "success")
+		utils.PanicOnErr(c, err)
+		return
+
 	}
 
 	// Oops, no such cookie. Let's make a new one!
@@ -82,8 +80,13 @@ func auth_gdrive_complete(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Security-Policy", "default-src 'none'; script-src 'unsafe-inline'")
 
 	c := appengine.NewContext(r)
-	utils.ProcessForm(c, r)
+	usr := user.Current(c)
+	if usr == nil { // Oops, we need a logged in user for this ^_^
+		http.Redirect(w, r, "/pastebin/auth/login?next=/pastebin/auth/gdrive", http.StatusFound)
+		return
+	}
 
+	utils.ProcessForm(c, r)
 	// Parse and validate state-token here
 	var state_token string
 	received_token := strings.TrimSpace(r.Form.Get("state"))
@@ -115,8 +118,11 @@ func auth_gdrive_complete(w http.ResponseWriter, r *http.Request) {
 	token, err := config.Exchange(ctx, code)
 	utils.PanicOnErr(c, err)
 
-	// TODO: Save teh token here and do window.opener.GDriveSuccess thingie
-	lookietoken, err := json.Marshal(token)
+	_lookietoken := make(map[string]interface{})
+	_lookietoken["userid"] = user.Current(c).ID
+	_lookietoken["token"] = token
+
+	lookietoken, err := json.Marshal(_lookietoken)
 	utils.PanicOnErr(c, err)
 
 	yaycookie := map[string]string{

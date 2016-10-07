@@ -79,20 +79,15 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl"))
 
-		usr := user.Current(c)
-		// This presence of this cookie indicates we _may_ have an authorization
-		// token for Google Drive available for the currently logged in user
 		gdrive_auth := false
-		if usr != nil {
-			if _, err := r.Cookie("gdrive-token"); err == nil {
-				gdrive_auth = true
-			}
+		if valid := utils.ValidateOToken(c, r); valid == true {
+			gdrive_auth = true
 		}
 
 		// http://www.gorillatoolkit.org/pkg/csrf
 		if err := tmpl.Execute(w, map[string]interface{}{
 			csrf.TemplateTag: csrf.TemplateField(r),
-			"user":           usr,
+			"user":           user.Current(c),
 			"gdrive_auth":    gdrive_auth,
 		}); err != nil {
 			log.Panic(c, err)
