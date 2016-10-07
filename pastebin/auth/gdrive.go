@@ -3,10 +3,8 @@ package auth
 import (
 	// Go Builtin Packages
 	"encoding/json"
-	// "log"
 	"html/template"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -16,8 +14,6 @@ import (
 
 	// Google OAuth2/Drive Packages
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
-	"google.golang.org/api/drive/v3"
 	go_ae "google.golang.org/appengine"
 
 	// Local Packages
@@ -56,21 +52,17 @@ func auth_gdrive_begin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Attempt retrieving the auth token from cookie first. Yay cookies!
-	if valid := utils.ValidateOToken(c, r); valid == true {
+	if _, valid := utils.TokenCookie(c, r); valid == true {
 		err := responseTemplate.Execute(w, "success")
 		utils.PanicOnErr(c, err)
 		return
 
 	}
 
-	// Oops, no such cookie. Let's make a new one!
-	GCPOAuthCID := []byte(os.Getenv("GCPOAuthCID"))
-	config, err := google.ConfigFromJSON([]byte(GCPOAuthCID), drive.DriveFileScope)
-	utils.PanicOnErr(c, err)
-
 	state_token, err := utils.SC().Encode("state-token", time.Now().Format(time.StampNano))
 	utils.PanicOnErr(c, err)
 
+	config := utils.OAuthConfigDance(c)
 	authURL := config.AuthCodeURL(state_token, oauth2.AccessTypeOffline)
 	http.Redirect(w, r, authURL, http.StatusFound)
 }
@@ -108,10 +100,7 @@ func auth_gdrive_complete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Do the config dance again!
-	GCPOAuthCID := []byte(os.Getenv("GCPOAuthCID"))
-	config, err := google.ConfigFromJSON([]byte(GCPOAuthCID), drive.DriveAppdataScope)
-	utils.PanicOnErr(c, err)
+	config := utils.OAuthConfigDance(c)
 
 	ctx := go_ae.NewContext(r)
 	code := r.Form.Get("code")

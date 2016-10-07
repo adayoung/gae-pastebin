@@ -80,7 +80,7 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl"))
 
 		gdrive_auth := false
-		if valid := utils.ValidateOToken(c, r); valid == true {
+		if _, valid := utils.TokenCookie(c, r); valid == true {
 			gdrive_auth = true
 		}
 
