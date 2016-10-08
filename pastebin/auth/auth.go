@@ -26,8 +26,8 @@ func init() {
 	Router.HandleFunc("/pastebin/auth/login", utils.ExtraSugar(login)).Methods("GET", "POST").Name("login")
 	Router.HandleFunc("/pastebin/auth/logout", utils.ExtraSugar(logout)).Methods("GET").Name("logout")
 
-	Router.HandleFunc("/pastebin/auth/gdrive", utils.ExtraSugar(auth_gdrive_begin)).Methods("GET").Name("auth_gdrive_begin")
-	Router.HandleFunc("/pastebin/auth/gdrive/complete", utils.ExtraSugar(auth_gdrive_complete)).Methods("GET").Name("auth_gdrive_complete")
+	Router.HandleFunc("/pastebin/auth/gdrive", utils.ExtraSugar(auth_gdrive_start)).Methods("GET").Name("auth_gdrive_start")
+	Router.HandleFunc("/pastebin/auth/gdrive/finish", utils.ExtraSugar(auth_gdrive_finish)).Methods("GET").Name("auth_gdrive_finish")
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
@@ -41,11 +41,11 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 	if usr := user.Current(c); usr != nil { // already logged in
 		if r.Method == "GET" {
-			var tmpl = template.Must(template.ParseFiles("templates/base.tmpl","pastebin/templates/auth.tmpl"))
+			var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/auth.tmpl"))
 			if err := tmpl.Execute(w, map[string]interface{}{
 				csrf.TemplateTag: csrf.TemplateField(r),
-				"dest": dest,
-				"user": user.Current(c),
+				"dest":           dest,
+				"user":           user.Current(c),
 			}); err != nil {
 				log.Panic(c, err)
 			}

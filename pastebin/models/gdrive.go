@@ -3,12 +3,13 @@ package models
 import (
 	// Go Builtin Packages
 	"bytes"
-	"encoding/json"
 	"log"
 	"net/http"
 
 	// Google Appengine Packages
 	"appengine"
+	"appengine/datastore"
+	"appengine/user"
 
 	// Google OAuth2/Drive Packages
 	"golang.org/x/oauth2"
@@ -20,17 +21,58 @@ import (
 	"pastebin/utils"
 )
 
-func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, content *bytes.Buffer, paste_id string, t *interface{}) error {
-	token := &oauth2.Token{}
-	lolwhat, _ := json.Marshal(t)
-	err := json.Unmarshal(lolwhat, &token)
-	if err != nil {
+type OAuthToken struct {
+	UserID string       `datastore:"user_id"`
+	Token  oauth2.Token `datastore:"token,noindex"`
+}
+
+func SaveOAuthToken(c appengine.Context, t *oauth2.Token) error {
+	user_id := user.Current(c).ID
+	token := new(OAuthToken)
+	token.UserID = user_id
+	token.Token = *t
+	key := datastore.NewKey(c, "OAuthToken", user_id, 0, nil)
+	if _, err := datastore.Put(c, key, token); err != nil {
 		return err
 	}
+	return nil
+}
 
-	ctx := go_ae.NewContext(r)
-	config := utils.OAuthConfigDance(c)
-	client := config.Client(ctx, token)
+func CheckOAuthToken(c appengine.Context) (bool, error) {
+	if usr := user.Current(c); usr != nil {
+		if count, err := datastore.NewQuery("OAuthToken").Filter("user_id =", usr.ID).Limit(1).Count(c); err != nil {
+			return false, err
+		} else if count > 0 {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func GetOAuthClient(c appengine.Context, r *http.Request) *http.Client {
+	if usr := user.Current(c); usr != nil {
+		key := datastore.NewKey(c, "OAuthToken", usr.ID, 0, nil)
+		token := new(OAuthToken)
+		if err := datastore.Get(c, key, token); err == nil {
+			ctx := go_ae.NewContext(r)
+			config := utils.OAuthConfigDance(c)
+			client := config.Client(ctx, &token.Token)
+
+			if _, derr := datastore.Put(c, key, token); derr != nil {
+				utils.PanicOnErr(c, derr)
+			}
+
+			return client
+		} else {
+			utils.PanicOnErr(c, err)
+		}
+	}
+
+	return nil
+}
+
+func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, content *bytes.Buffer, paste_id string) error {
+	client := GetOAuthClient(c, r)
 
 	if service, err := drive.New(client); err != nil {
 		log.Panic(c, err)
@@ -56,10 +98,11 @@ func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, content *bytes
 				Key:   response.Id,
 				Value: content.Bytes(),
 			}
+
+			ctx := go_ae.NewContext(r)
 			memcache.Add(ctx, mc_item)
 		}
 	}
-
 
 	return nil
 }

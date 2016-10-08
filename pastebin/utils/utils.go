@@ -2,7 +2,6 @@ package utils
 
 import (
 	// Go Builtin Packages
-	"encoding/json"
 	"log"
 	"net/http"
 	"os"
@@ -10,7 +9,6 @@ import (
 
 	// Google Appengine Packages
 	"appengine"
-	"appengine/user"
 
 	// Google OAuth2/Drive Packages
 	"golang.org/x/oauth2"
@@ -64,30 +62,6 @@ func SC() *securecookie.SecureCookie {
 	EncryptionK := []byte(os.Getenv("EncryptionK"))
 	sc := securecookie.New(CSRFAuthKey, EncryptionK)
 	return sc
-}
-
-func TokenCookie(c appengine.Context, r *http.Request) (interface{}, bool) {
-	// This presence of this cookie indicates we _may_ have an authorization
-	// token for Google Drive available for the currently logged in user
-	if cookie, err := r.Cookie("gdrive-token"); err == nil {
-		value := make(map[string]string)
-		if err = SC().Decode("gdrive-token", cookie.Value, &value); err != nil {
-			return nil, false
-		}
-		lookietoken := make(map[string]interface{})
-		if err = json.Unmarshal([]byte(value["gdrive-token"]), &lookietoken); err == nil {
-			usr := user.Current(c)
-			if usr != nil {
-				if lookietoken["userid"] == usr.ID {
-					return lookietoken["token"], true
-				}
-			}
-		} else {
-			return nil, false // invalid JSON or something lol
-		}
-	}
-
-	return nil, false
 }
 
 func OAuthConfigDance(c appengine.Context) *oauth2.Config {

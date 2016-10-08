@@ -133,9 +133,12 @@ func (p *Paste) save(c appengine.Context, r *http.Request) (string, error) {
 		key, paste_id := genpasteKey(c, p)
 		c.Infof("Creating new paste with paste_id [%s]", paste_id)
 
-		if token, valid := utils.TokenCookie(c, r); valid {
+		havetoken, verr := CheckOAuthToken(c)
+		utils.PanicOnErr(c, verr)
+
+		if havetoken == true {
 			// TODO: This should should probably happen in a goroutine
-			err = p.saveToDrive(c, r, &content, paste_id, &token)
+			err = p.saveToDrive(c, r, &content, paste_id)
 			if err != nil {
 				// totally abusing ValidationError here, ima bad person :<
 				return "", &ValidationError{"Google Drive Error", err.Error()}

@@ -2,7 +2,6 @@ package auth
 
 import (
 	// Go Builtin Packages
-	"encoding/json"
 	"html/template"
 	"net/http"
 	"strings"
@@ -17,6 +16,7 @@ import (
 	go_ae "google.golang.org/appengine"
 
 	// Local Packages
+	"pastebin/models"
 	"pastebin/utils"
 )
 
@@ -40,7 +40,7 @@ const response_template = `
 
 var responseTemplate = template.Must(template.New("response").Parse(response_template))
 
-func auth_gdrive_begin(w http.ResponseWriter, r *http.Request) {
+func auth_gdrive_start(w http.ResponseWriter, r *http.Request) {
 	// We need to be able to serve an inline script on this route for window.opener.*
 	w.Header().Set("Content-Security-Policy", "default-src 'none'; script-src 'unsafe-inline'")
 
@@ -52,11 +52,13 @@ func auth_gdrive_begin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Attempt retrieving the auth token from cookie first. Yay cookies!
-	if _, valid := utils.TokenCookie(c, r); valid == true {
+	havetoken, verr := models.CheckOAuthToken(c)
+	utils.PanicOnErr(c, verr)
+
+	if havetoken == true {
 		err := responseTemplate.Execute(w, "success")
 		utils.PanicOnErr(c, err)
 		return
-
 	}
 
 	state_token, err := utils.SC().Encode("state-token", time.Now().Format(time.StampNano))
@@ -67,7 +69,7 @@ func auth_gdrive_begin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, authURL, http.StatusFound)
 }
 
-func auth_gdrive_complete(w http.ResponseWriter, r *http.Request) {
+func auth_gdrive_finish(w http.ResponseWriter, r *http.Request) {
 	// We need to be able to serve an inline script on this route for window.opener.*
 	w.Header().Set("Content-Security-Policy", "default-src 'none'; script-src 'unsafe-inline'")
 
@@ -107,27 +109,8 @@ func auth_gdrive_complete(w http.ResponseWriter, r *http.Request) {
 	token, err := config.Exchange(ctx, code)
 	utils.PanicOnErr(c, err)
 
-	_lookietoken := make(map[string]interface{})
-	_lookietoken["userid"] = user.Current(c).ID
-	_lookietoken["token"] = token
-
-	lookietoken, err := json.Marshal(_lookietoken)
+	err = models.SaveOAuthToken(c, token)
 	utils.PanicOnErr(c, err)
-
-	yaycookie := map[string]string{
-		"gdrive-token": string(lookietoken),
-	}
-	if encoded, err := utils.SC().Encode("gdrive-token", yaycookie); err == nil {
-		cookie := &http.Cookie{
-			Name:     "gdrive-token",
-			Value:    encoded,
-			Path:     "/pastebin/",
-			MaxAge:   1.577e+7, // six months!
-			Secure:   !appengine.IsDevAppServer(),
-			HttpOnly: true,
-		}
-		http.SetCookie(w, cookie)
-	}
 
 	err = responseTemplate.Execute(w, "success")
 	utils.PanicOnErr(c, err)

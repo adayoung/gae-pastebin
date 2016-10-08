@@ -79,10 +79,8 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl"))
 
-		gdrive_auth := false
-		if _, valid := utils.TokenCookie(c, r); valid == true {
-			gdrive_auth = true
-		}
+		gdrive_auth, verr := models.CheckOAuthToken(c)
+		utils.PanicOnErr(c, verr)
 
 		// http://www.gorillatoolkit.org/pkg/csrf
 		if err := tmpl.Execute(w, map[string]interface{}{
