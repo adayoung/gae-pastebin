@@ -3,6 +3,7 @@ package models
 import (
 	// Go Builtin Packages
 	"bytes"
+	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -49,30 +50,28 @@ func CheckOAuthToken(c appengine.Context) (bool, error) {
 	return false, nil
 }
 
-func GetOAuthClient(c appengine.Context, r *http.Request) *http.Client {
-	if usr := user.Current(c); usr != nil {
-		key := datastore.NewKey(c, "OAuthToken", usr.ID, 0, nil)
-		token := new(OAuthToken)
-		if err := datastore.Get(c, key, token); err == nil {
-			ctx := go_ae.NewContext(r)
-			config := utils.OAuthConfigDance(c)
-			client := config.Client(ctx, &token.Token)
+func GetOAuthClient(c appengine.Context, r *http.Request, user_id string) *http.Client {
+	key := datastore.NewKey(c, "OAuthToken", user_id, 0, nil)
+	token := new(OAuthToken)
+	if err := datastore.Get(c, key, token); err == nil {
+		ctx := go_ae.NewContext(r)
+		config := utils.OAuthConfigDance(c)
+		client := config.Client(ctx, &token.Token)
 
-			if _, derr := datastore.Put(c, key, token); derr != nil {
-				utils.PanicOnErr(c, derr)
-			}
-
-			return client
-		} else {
-			utils.PanicOnErr(c, err)
+		if _, derr := datastore.Put(c, key, token); derr != nil {
+			utils.PanicOnErr(c, derr)
 		}
+
+		return client
+	} else {
+		utils.PanicOnErr(c, err)
 	}
 
 	return nil
 }
 
 func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, content *bytes.Buffer, paste_id string) error {
-	client := GetOAuthClient(c, r)
+	client := GetOAuthClient(c, r, p.UserID)
 
 	if service, err := drive.New(client); err != nil {
 		log.Panic(c, err)
@@ -114,8 +113,38 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 		return nil
 	} else if err == memcache.ErrCacheMiss {
 		// TODO: https://godoc.org/google.golang.org/api/drive/v3#FilesService.Get .. !@#
+		client := GetOAuthClient(c, r, p.UserID)
+
+		if service, err := drive.New(client); err != nil {
+			return err
+		} else {
+			fg_call := service.Files.Get(p.GDriveID)
+			response, err := fg_call.Download()
+			if err != nil {
+				log.Panic(c, err)
+			} else {
+				if response.StatusCode == 200 {
+					if p_content, err := ioutil.ReadAll(response.Body); err == nil {
+						p.Content = p_content
+
+						// Set the thing in memcache for immediate retrieval
+						mc_item := &memcache.Item{
+							Key:   p.GDriveID,
+							Value: p_content,
+						}
+
+						ctx := go_ae.NewContext(r)
+						memcache.Add(ctx, mc_item)
+
+					} else {
+						return err
+					}
+
+				} // else {} TODO: Delete paste metadata if StatusCode == 404
+			}
+		}
 	} else {
-		log.Panic(c, err)
+		return err
 	}
 
 	return nil
