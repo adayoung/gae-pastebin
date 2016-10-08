@@ -52,9 +52,7 @@ func ProcessForm(c appengine.Context, r *http.Request) {
 	} else {
 		err = r.ParseForm()
 	}
-	if err != nil {
-		log.Panic(c, err)
-	}
+	PanicOnErr(c, err)
 }
 
 func SC() *securecookie.SecureCookie {

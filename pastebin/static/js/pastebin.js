@@ -108,7 +108,7 @@ $(document).ready(function(){
       if (auth_window != undefined) {
         auth_window.close();
       }
-      var gauth_url = "/pastebin/auth/login?next=/pastebin/auth/gdrive"
+      var gauth_url = "/pastebin/auth/login?next=/pastebin/auth/gdrive/start"
       auth_window = window.open(gauth_url, 'gauth_frame');
     } else {
       $('#paste_gdrv').addClass('disabled');

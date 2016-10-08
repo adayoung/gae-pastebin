@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -59,19 +58,17 @@ func Http404(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 	w.WriteHeader(http.StatusNotFound)
 	var tmpl = template.Must(template.ParseFiles("templates/404.tmpl"))
-	if err := tmpl.Execute(w, nil); err != nil {
-		log.Panic(c, err)
-	}
+	err := tmpl.Execute(w, nil)
+	utils.PanicOnErr(c, err)
 }
 
 func about(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 	var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl", "pastebin/templates/about.tmpl"))
-	if err := tmpl.Execute(w, map[string]interface{}{
+	err := tmpl.Execute(w, map[string]interface{}{
 		"user": user.Current(c),
-	}); err != nil {
-		log.Panic(c, err)
-	}
+	})
+	utils.PanicOnErr(c, err)
 }
 
 func pastebin(w http.ResponseWriter, r *http.Request) {
@@ -83,13 +80,12 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 		utils.PanicOnErr(c, verr)
 
 		// http://www.gorillatoolkit.org/pkg/csrf
-		if err := tmpl.Execute(w, map[string]interface{}{
+		err := tmpl.Execute(w, map[string]interface{}{
 			csrf.TemplateTag: csrf.TemplateField(r),
 			"user":           user.Current(c),
 			"gdrive_auth":    gdrive_auth,
-		}); err != nil {
-			log.Panic(c, err)
-		}
+		})
+		utils.PanicOnErr(c, err)
 	} else if r.Method == "POST" {
 		paste_id, err := models.NewPaste(c, r)
 		if err != nil {
@@ -121,7 +117,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 		Http404(w, r)
 		return
 	} else if err != nil {
-		log.Panic(c, err)
+		utils.PanicOnErr(c, err)
 	} else {
 		showDeleteBtn := false
 		if usr != nil {
@@ -138,17 +134,15 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			var _b_content bytes.Buffer
 			_p_content := bufio.NewWriter(&_b_content)
 			err := paste.ZContent(c, r, _p_content)
-			if err != nil {
-				c.Errorf(err.Error())
-				log.Panic(c, err)
-			}
+			utils.PanicOnErr(c, err)
+
 			p_content = _b_content.String()
 		} else {
 			p_content = string(paste.Content)
 		}
 
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl", "pastebin/templates/paste.tmpl"))
-		if err := tmpl.Execute(w, map[string]interface{}{
+		err := tmpl.Execute(w, map[string]interface{}{
 			csrf.TemplateTag: csrf.TemplateField(r),
 			"paste_id":       paste_id,
 			"paste":          paste,
@@ -156,9 +150,8 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			"p_count":        p_count,
 			"user":           usr,
 			"deleteBtn":      showDeleteBtn,
-		}); err != nil {
-			log.Panic(c, err)
-		}
+		})
+		utils.PanicOnErr(c, err)
 	}
 }
 
@@ -174,7 +167,7 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 		Http404(w, r)
 		return
 	} else if err != nil {
-		log.Panic(c, err)
+		utils.PanicOnErr(c, err)
 	} else {
 		// Add a Content-Disposition header on the /download route
 		if dl := strings.Split(r.URL.Path, "/"); dl[len(dl)-1] == "download" {
@@ -213,10 +206,7 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 		}
 
 		err := paste.ZContent(c, r, w)
-		if err != nil {
-			c.Errorf(err.Error())
-			log.Panic(err)
-		}
+		utils.PanicOnErr(c, err)
 	}
 }
 
@@ -224,6 +214,7 @@ func clean(w http.ResponseWriter, r *http.Request) {
 	// https://cloud.google.com/appengine/docs/go/config/cron#securing_urls_for_cron
 	if r.Header.Get("X-Appengine-Cron") != "true" {
 		http.Error(w, "The /clean route is avaiable to cron job only.", http.StatusForbidden)
+		return
 	}
 
 	c := appengine.NewContext(r)
@@ -233,9 +224,7 @@ func clean(w http.ResponseWriter, r *http.Request) {
 		Filter("date_published <", sixmonthsago).
 		KeysOnly().Limit(150) // Find up to 150 old pastes
 	old_keys, err := old_stuff.GetAll(c, nil)
-	if err != nil {
-		log.Panic(c, err)
-	}
+	utils.PanicOnErr(c, err)
 
 	var paste_ids []*datastore.Key
 	for _, old_key := range old_keys {
@@ -246,9 +235,8 @@ func clean(w http.ResponseWriter, r *http.Request) {
 	}
 
 	c.Infof("About to delete the following pastes: %s", paste_ids)
-	if err := datastore.DeleteMulti(c, paste_ids); err != nil {
-		log.Panic(c, err)
-	}
+	err = datastore.DeleteMulti(c, paste_ids)
+	utils.PanicOnErr(c, err)
 
 	// Clear counter shards here
 	var shardc_dkeys []*datastore.Key
@@ -258,17 +246,15 @@ func clean(w http.ResponseWriter, r *http.Request) {
 
 		shard_keys := datastore.NewQuery("GeneralCounterShard").Filter("Name =", paste_id.StringID()).KeysOnly()
 		if shard_dkeys, err := shard_keys.GetAll(c, nil); err == nil {
-			if derr := datastore.DeleteMulti(c, shard_dkeys); derr != nil {
-				log.Panic(c, derr)
-			}
+			derr := datastore.DeleteMulti(c, shard_dkeys)
+			utils.PanicOnErr(c, derr)
 		} else {
-			log.Panic(c, err)
+			utils.PanicOnErr(c, err)
 		}
 	}
 
-	if err := datastore.DeleteMulti(c, shardc_dkeys); err != nil {
-		log.Panic(c, err)
-	}
+	err = datastore.DeleteMulti(c, shardc_dkeys)
+	utils.PanicOnErr(c, err)
 }
 
 func search(w http.ResponseWriter, r *http.Request) {
@@ -291,6 +277,8 @@ func search(w http.ResponseWriter, r *http.Request) {
 		if len(cursor) > 0 {
 			if cursor, err := datastore.DecodeCursor(cursor); err != nil {
 				http.Error(w, "Oops, invalid cursor supplied.", http.StatusBadRequest)
+				utils.PanicOnErr(c, err)
+				return
 			} else {
 				q = q.Start(cursor)
 			}
@@ -305,7 +293,7 @@ func search(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 			if err != nil {
-				log.Panic(c, "Running query: ", err)
+				utils.PanicOnErr(c, err)
 				break
 			}
 
@@ -332,10 +320,9 @@ func search(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(q_result)
 	} else {
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl", "pastebin/templates/search.tmpl"))
-		if err := tmpl.Execute(w, map[string]interface{}{
+		err := tmpl.Execute(w, map[string]interface{}{
 			"user": usr,
-		}); err != nil {
-			log.Panic(c, err)
-		}
+		})
+		utils.PanicOnErr(c, err)
 	}
 }

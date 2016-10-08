@@ -2,7 +2,6 @@ package api_v1
 
 import (
 	// Go Builtin Packages
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -39,7 +38,6 @@ func create(w http.ResponseWriter, r *http.Request) {
 	received_token := strings.TrimSpace(r.Form.Get("auth"))
 	if err := utils.SC().Decode("auth-token", received_token, &auth_token); err != nil {
 		c.Warningf("API call rejected, received_token -> " + received_token)
-		log.Print(c, err)
 		at_url := r.URL.Scheme + "://" + r.URL.Host + "/pastebin/api/v1/echo"
 		http.Error(w, "Auth token invalid/not supplied, you can get one here: "+at_url, http.StatusUnauthorized)
 		return

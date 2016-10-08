@@ -47,7 +47,7 @@ func auth_gdrive_start(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 	usr := user.Current(c)
 	if usr == nil { // Oops, we need a logged in user for this ^_^
-		http.Redirect(w, r, "/pastebin/auth/login?next=/pastebin/auth/gdrive", http.StatusFound)
+		http.Redirect(w, r, "/pastebin/auth/login?next=/pastebin/auth/gdrive/start", http.StatusFound)
 		return
 	}
 
@@ -76,7 +76,7 @@ func auth_gdrive_finish(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 	usr := user.Current(c)
 	if usr == nil { // Oops, we need a logged in user for this ^_^
-		http.Redirect(w, r, "/pastebin/auth/login?next=/pastebin/auth/gdrive", http.StatusFound)
+		http.Redirect(w, r, "/pastebin/auth/login?next=/pastebin/auth/gdrive/start", http.StatusFound)
 		return
 	}
 
@@ -86,6 +86,7 @@ func auth_gdrive_finish(w http.ResponseWriter, r *http.Request) {
 	received_token := strings.TrimSpace(r.Form.Get("state"))
 	if err := utils.SC().Decode("state-token", received_token, &state_token); err != nil {
 		http.Error(w, "Oops, we couldn't validate the state token after the round trip :(", http.StatusBadRequest)
+		utils.PanicOnErr(c, err)
 		return
 	}
 
