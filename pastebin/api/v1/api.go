@@ -45,7 +45,7 @@ func create(w http.ResponseWriter, r *http.Request) {
 
 	paste_id, err := models.NewPaste(c, r)
 	if err != nil {
-		if _, ok := err.(models.ValidationError); !ok {
+		if _, ok := err.(*models.ValidationError); ok {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		} else {

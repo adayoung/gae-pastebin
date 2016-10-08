@@ -3,8 +3,8 @@ package models
 import (
 	// Go Builtin Packages
 	"bytes"
+	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 
 	// Google Appengine Packages
@@ -21,6 +21,15 @@ import (
 	// Local Packages
 	"pastebin/utils"
 )
+
+type GDriveAPIError struct {
+	Code     int    // The response code we received
+	Message  string // The response text we received
+}
+
+func (e *GDriveAPIError) Error() string {
+	return fmt.Sprintf("%s - %s", e.Code, e.Message)
+}
 
 type OAuthToken struct {
 	UserID string       `datastore:"user_id"`
@@ -74,7 +83,7 @@ func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, content *bytes
 	client := GetOAuthClient(c, r, p.UserID)
 
 	if service, err := drive.New(client); err != nil {
-		log.Panic(c, err)
+		utils.PanicOnErr(c, err)
 	} else {
 		p_content := new(drive.File)
 		p_content.Name = paste_id
@@ -121,7 +130,7 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 			fg_call := service.Files.Get(p.GDriveID)
 			response, err := fg_call.Download()
 			if err != nil {
-				log.Panic(c, err)
+				return err
 			} else {
 				if response.StatusCode == 200 {
 					if p_content, err := ioutil.ReadAll(response.Body); err == nil {
@@ -137,6 +146,7 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 						memcache.Add(ctx, mc_item)
 
 					} else {
+						c.Errorf(err.Error())
 						return err
 					}
 

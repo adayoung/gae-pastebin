@@ -89,13 +89,16 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 	} else if r.Method == "POST" {
 		paste_id, err := models.NewPaste(c, r)
 		if err != nil {
-			if _, ok := err.(models.ValidationError); !ok {
+			if _, ok := err.(*models.ValidationError); ok {
 				http.Error(w, err.Error(), 400)
 				return
-			} else {
-				http.Error(w, "BARF!@ Something's broken!@%", 500)
+			}
+			if err, ok := err.(*models.GDriveAPIError); ok {
+				http.Error(w, err.Error(), err.Code)
 				return
 			}
+			http.Error(w, "BARF!@ Something's broken!@%", 500)
+			return
 		}
 
 		if r.Header.Get("X-Requested-With") == "XMLHttpRequest" { // AJAX

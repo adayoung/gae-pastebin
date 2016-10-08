@@ -8,7 +8,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -39,9 +38,11 @@ type Paste struct {
 }
 
 func (p *Paste) Load(ds <-chan datastore.Property) error {
-	// TODO: Do something with ErrFieldMismatch here
-	if err := datastore.LoadStruct(p, ds); err != nil {
-		return nil // Do nothing D:
+	err := datastore.LoadStruct(p, ds)
+	if _, ok := err.(*datastore.ErrFieldMismatch); ok {
+		return nil
+	} else if err != nil {
+		return err
 	}
 	return nil
 }
@@ -71,7 +72,7 @@ type ValidationError struct {
 	Why  string // Why is it invalid
 }
 
-func (e ValidationError) Error() string {
+func (e *ValidationError) Error() string {
 	return fmt.Sprintf("%s - %s", e.What, e.Why)
 }
 
@@ -140,8 +141,7 @@ func (p *Paste) save(c appengine.Context, r *http.Request) (string, error) {
 			// TODO: This should should probably happen in a goroutine
 			err = p.saveToDrive(c, r, &content, paste_id)
 			if err != nil {
-				// totally abusing ValidationError here, ima bad person :<
-				return "", &ValidationError{"Google Drive Error", err.Error()}
+				return "", err
 			}
 		} else {
 			p.Content = content.Bytes()
@@ -185,9 +185,8 @@ func (p *Paste) ZContent(c appengine.Context, r *http.Request, pc pasteContent) 
 func (p *Paste) Delete(c appengine.Context, paste_id string) {
 	key := datastore.NewKey(c, PasteDSKind, paste_id, 0, nil)
 	c.Infof("Delete paste with paste_id [%s]", paste_id)
-	if err := datastore.Delete(c, key); err != nil {
-		log.Panic(c, err)
-	}
+	err := datastore.Delete(c, key)
+	utils.PanicOnErr(c, err)
 }
 
 func NewPaste(c appengine.Context, r *http.Request) (string, error) {
