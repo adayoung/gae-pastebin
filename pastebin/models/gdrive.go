@@ -3,7 +3,6 @@ package models
 import (
 	// Go Builtin Packages
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -21,15 +20,6 @@ import (
 	// Local Packages
 	"pastebin/utils"
 )
-
-type GDriveAPIError struct {
-	Code     int    // The response code we received
-	Message  string // The response text we received
-}
-
-func (e *GDriveAPIError) Error() string {
-	return fmt.Sprintf("%s - %s", e.Code, e.Message)
-}
 
 type OAuthToken struct {
 	UserID string       `datastore:"user_id"`
@@ -66,20 +56,17 @@ func GetOAuthClient(c appengine.Context, r *http.Request, user_id string) (*http
 		ctx := go_ae.NewContext(r)
 		config, cerr := utils.OAuthConfigDance(c)
 		if cerr != nil {
-			c.Errorf(cerr.Error())
 			return nil, cerr
 		}
 
 		client := config.Client(ctx, &token.Token) // How come this doesn't return an error? O_o
 
 		if _, derr := datastore.Put(c, key, token); derr != nil {
-			c.Errorf(derr.Error())
 			return nil, derr
 		}
 
 		return client, nil
 	} else {
-		c.Errorf(err.Error())
 		return nil, err
 	}
 
@@ -90,12 +77,10 @@ func GetOAuthClient(c appengine.Context, r *http.Request, user_id string) (*http
 func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, content *bytes.Buffer, paste_id string) error {
 	client, cerr := GetOAuthClient(c, r, p.UserID)
 	if cerr != nil {
-		c.Errorf(cerr.Error())
 		return cerr
 	}
 
 	if service, err := drive.New(client); err != nil {
-		c.Errorf(err.Error())
 		return err
 	} else {
 		p_content := new(drive.File)
@@ -109,7 +94,7 @@ func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, content *bytes
 
 		if err != nil {
 			c.Errorf(err.Error())
-			return err
+			return parseAPIError(c, err, p.UserID)
 		} else {
 			c.Infof("Received Google Drive File ID -> " + response.Id)
 			p.GDriveID = response.Id
@@ -137,7 +122,6 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 		// TODO: https://godoc.org/google.golang.org/api/drive/v3#FilesService.Get .. !@#
 		client, cerr := GetOAuthClient(c, r, p.UserID)
 		if cerr != nil {
-			c.Errorf(cerr.Error())
 			return cerr
 		}
 
@@ -147,7 +131,8 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 			fg_call := service.Files.Get(p.GDriveID)
 			response, err := fg_call.Download()
 			if err != nil {
-				return err
+				c.Errorf(err.Error())
+				return parseAPIError(c, err, p.UserID)
 			} else {
 				if response.StatusCode == 200 {
 					if p_content, err := ioutil.ReadAll(response.Body); err == nil {
@@ -163,7 +148,6 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 						memcache.Add(ctx, mc_item)
 
 					} else {
-						c.Errorf(err.Error())
 						return err
 					}
 

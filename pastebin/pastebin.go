@@ -105,7 +105,7 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			if err, ok := err.(*models.GDriveAPIError); ok {
-				http.Error(w, err.Error(), err.Code)
+				http.Error(w, err.Response, err.Code)
 				return
 			}
 			http.Error(w, "BARF!@ Something's broken!@%", http.StatusInternalServerError)
@@ -152,11 +152,19 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			err := paste.ZContent(c, r, _p_content)
 			if err != nil {
 				c.Errorf(err.Error())
-				http.Error(w, "Meep! We were trying to retrieve this paste's plain content but something went wrong.", http.StatusInternalServerError)
-				return
+				if gerr, ok := err.(*models.GDriveAPIError); ok {
+					if gerr.Code == 404 {
+						Http404(w, r)
+						return
+					}
+					p_content = gerr.Response
+				} else {
+					http.Error(w, "Meep! We were trying to retrieve this paste's plain content but something went wrong.", http.StatusInternalServerError)
+					return
+				}
+			} else {
+				p_content = _b_content.String()
 			}
-
-			p_content = _b_content.String()
 		} else {
 			p_content = string(paste.Content)
 		}
@@ -236,9 +244,17 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 
 		err := paste.ZContent(c, r, w)
 		if err != nil {
-			c.Errorf(err.Error())
-			http.Error(w, "Meep! We were trying to retrieve this paste's content but something went wrong.", http.StatusInternalServerError)
-			return
+			if gerr, ok := err.(*models.GDriveAPIError); ok {
+				if gerr.Code == 404 {
+					Http404(w, r)
+					return
+				}
+				w.Write([]byte(gerr.Response))
+			} else {
+				c.Errorf(err.Error())
+				http.Error(w, "Meep! We were trying to retrieve this paste's content but something went wrong.", http.StatusInternalServerError)
+				return
+			}
 		}
 	}
 }

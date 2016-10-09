@@ -37,6 +37,7 @@ $(document).ready(function(){
       location.replace(e);
     }).fail(function(e){
       alert("Oops, we couldn't post your paste :( The following was encountered:\n\n" + e.status + " - " + e.statusText + '\n' + e.responseText);
+      HandlePasteError(e);
       $('#searchbox').attr('disabled', false);
       $('#content').attr('disabled', false);
       $('#title').attr('disabled', false);
@@ -136,5 +137,28 @@ var HandleGAuthComplete = function(auth_result) {
   } else {
     $('#paste_gdrv').addClass("btn-danger");
     $('#paste_gdrv_txt').text(auth_result);
+  }
+};
+
+var HandlePasteError = function(e) {
+  var token_revoked = false;
+
+  if (e.status == 401) {
+    token_revoked = true
+  }
+
+  if (e.responseText.indexOf("Token has been revoked.") > 0) {
+    token_revoked = true
+  }
+
+  if (token_revoked === true) { // Oops, we're unauthorized
+    $('input[name="destination"]').val('datastore');
+    $('#paste_gdrv_txt').text(e.statusText);
+    $('#paste_gdrv').addClass("btn-danger");
+    $('#paste_gdrv').tooltip('destroy');
+    $('#paste_gdrv').tooltip({
+      placement: 'auto',
+      title: 'Click to connect again!'
+    });
   }
 };

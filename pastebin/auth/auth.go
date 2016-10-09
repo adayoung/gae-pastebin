@@ -50,6 +50,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Meep! We were trying to make the 'login' page but something went wrong.", http.StatusInternalServerError)
 				return
 			}
+			return
 		}
 
 		if strings.HasSuffix(dest, "/pastebin/auth/login") {

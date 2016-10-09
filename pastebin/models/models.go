@@ -185,6 +185,7 @@ func (p *Paste) ZContent(c appengine.Context, r *http.Request, pc pasteContent) 
 }
 
 func (p *Paste) Delete(c appengine.Context, paste_id string) error {
+	// FIXME: An entity should be able to tell its own key (paste_id)
 	key := datastore.NewKey(c, PasteDSKind, paste_id, 0, nil)
 	c.Infof("Delete paste with paste_id [%s]", paste_id)
 	err := datastore.Delete(c, key)
