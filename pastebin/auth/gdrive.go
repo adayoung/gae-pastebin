@@ -51,22 +51,20 @@ func auth_gdrive_start(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Attempt retrieving the auth token from cookie first. Yay cookies!
-	havetoken, verr := models.CheckOAuthToken(c)
-	utils.PanicOnErr(c, verr)
-
-	if havetoken == true {
-		err := responseTemplate.Execute(w, "success")
-		utils.PanicOnErr(c, err)
+	state_token, err := utils.SC().Encode("state-token", time.Now().Format(time.StampNano))
+	if err != nil {
+		c.Errorf(err.Error())
+		http.Error(w, "Meep! We were trying to encode a 'state-token' but something went wrong.", http.StatusInternalServerError)
 		return
 	}
 
-	state_token, err := utils.SC().Encode("state-token", time.Now().Format(time.StampNano))
-	utils.PanicOnErr(c, err)
-
-	config := utils.OAuthConfigDance(c)
-	authURL := config.AuthCodeURL(state_token, oauth2.AccessTypeOffline)
-	http.Redirect(w, r, authURL, http.StatusFound)
+	if config, err := utils.OAuthConfigDance(c); err == nil {
+		authURL := config.AuthCodeURL(state_token, oauth2.AccessTypeOffline)
+		http.Redirect(w, r, authURL, http.StatusFound)
+	} else {
+		c.Errorf(err.Error())
+		http.Error(w, "Meep! We were trying to do the OAuthConfigDance but something went wrong.", http.StatusInternalServerError)
+	}
 }
 
 func auth_gdrive_finish(w http.ResponseWriter, r *http.Request) {
@@ -80,40 +78,65 @@ func auth_gdrive_finish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.ProcessForm(c, r)
+	if err := utils.ProcessForm(c, r); err != nil {
+		c.Errorf(err.Error())
+		http.Error(w, "Meep! We were trying to process an input but something went wrong.", http.StatusInternalServerError)
+		return
+	}
+
 	// Parse and validate state-token here
 	var state_token string
 	received_token := strings.TrimSpace(r.Form.Get("state"))
 	if err := utils.SC().Decode("state-token", received_token, &state_token); err != nil {
+		c.Errorf(err.Error())
 		http.Error(w, "Oops, we couldn't validate the state token after the round trip :(", http.StatusBadRequest)
-		utils.PanicOnErr(c, err)
 		return
 	}
 
 	// Check for errors, it's usually access_denied
 	if r.Form.Get("error") == "access_denied" {
 		// Make a sad face here or something -flails-
-		err := responseTemplate.Execute(w, "Access denied")
-		utils.PanicOnErr(c, err)
+		if err := responseTemplate.Execute(w, "Meep! Access Denied!"); err != nil {
+			c.Errorf(err.Error())
+			http.Error(w, "Meep! We were trying to say 'Access Denied' but something went wrong.", http.StatusInternalServerError)
+			return
+		}
 		return
 
 	} else if r.Form.Get("error") != "" {
-		err := responseTemplate.Execute(w, r.Form.Get("error"))
-		utils.PanicOnErr(c, err)
+		if err := responseTemplate.Execute(w, r.Form.Get("error")); err != nil {
+			c.Errorf(err.Error())
+			http.Error(w, "Meep! We were trying to say 'Access Denied' but something went wrong.", http.StatusInternalServerError)
+			return
+		}
 		return
 	}
 
-	config := utils.OAuthConfigDance(c)
+	config, cerr := utils.OAuthConfigDance(c)
+	if cerr != nil {
+		c.Errorf(cerr.Error())
+		http.Error(w, "Meep! We were trying to do the OAuthConfigDance but something went wrong.", http.StatusInternalServerError)
+		return
+	}
 
 	ctx := go_ae.NewContext(r)
 	code := r.Form.Get("code")
 	token, err := config.Exchange(ctx, code)
-	utils.PanicOnErr(c, err)
+	if err != nil {
+		c.Errorf(err.Error())
+		http.Error(w, "Meep! We were trying to exchange the auth code for a token but something went wrong.", http.StatusInternalServerError)
+		return
+	}
 
 	err = models.SaveOAuthToken(c, token)
-	utils.PanicOnErr(c, err)
+	if err != nil {
+		c.Errorf(err.Error())
+		http.Error(w, "Meep! We were trying to save the OAuth Token but something went wrong.", http.StatusInternalServerError)
+		return
+	}
 
-	err = responseTemplate.Execute(w, "success")
-	utils.PanicOnErr(c, err)
-	return
+	if err = responseTemplate.Execute(w, "success"); err != nil {
+		c.Errorf(err.Error())
+		http.Error(w, "Meep! We were trying to say 'We dunnit!' but something went wrong.", http.StatusInternalServerError)
+	}
 }

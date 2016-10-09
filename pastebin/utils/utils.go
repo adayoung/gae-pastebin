@@ -2,7 +2,6 @@ package utils
 
 import (
 	// Go Builtin Packages
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -38,21 +37,14 @@ func ExtraSugar(f http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func PanicOnErr(c appengine.Context, err error) {
-	if err != nil {
-		c.Errorf(err.Error())
-		log.Panic(err)
-	}
-}
-
-func ProcessForm(c appengine.Context, r *http.Request) {
+func ProcessForm(c appengine.Context, r *http.Request) error {
 	var err error
 	if strings.Contains(strings.ToLower(r.Header.Get("content-type")), "multipart") {
 		err = r.ParseMultipartForm(32 << 20) // 32 MB - http.defaultMaxMemory
 	} else {
 		err = r.ParseForm()
 	}
-	PanicOnErr(c, err)
+	return err
 }
 
 func SC() *securecookie.SecureCookie {
@@ -62,9 +54,11 @@ func SC() *securecookie.SecureCookie {
 	return sc
 }
 
-func OAuthConfigDance(c appengine.Context) *oauth2.Config {
+func OAuthConfigDance(c appengine.Context) (*oauth2.Config, error) {
 	GCPOAuthCID := []byte(os.Getenv("GCPOAuthCID"))
-	config, err := google.ConfigFromJSON([]byte(GCPOAuthCID), drive.DriveAppdataScope)
-	PanicOnErr(c, err)
-	return config
+	if config, err := google.ConfigFromJSON([]byte(GCPOAuthCID), drive.DriveAppdataScope); err == nil {
+		return config, nil
+	} else {
+		return config, err
+	}
 }

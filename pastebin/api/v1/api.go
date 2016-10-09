@@ -33,7 +33,12 @@ func echo(w http.ResponseWriter, r *http.Request) {
 func create(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 
-	utils.ProcessForm(c, r)
+	if err := utils.ProcessForm(c, r); err != nil {
+		c.Errorf(err.Error())
+		http.Error(w, "Meep! We were trying to process your input but something went wrong.", http.StatusInternalServerError)
+		return
+	}
+
 	var auth_token string
 	received_token := strings.TrimSpace(r.Form.Get("auth"))
 	if err := utils.SC().Decode("auth-token", received_token, &auth_token); err != nil {

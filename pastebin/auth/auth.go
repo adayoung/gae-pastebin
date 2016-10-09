@@ -41,12 +41,15 @@ func login(w http.ResponseWriter, r *http.Request) {
 	if usr := user.Current(c); usr != nil { // already logged in
 		if r.Method == "GET" {
 			var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/auth.tmpl"))
-			err := tmpl.Execute(w, map[string]interface{}{
+			if err := tmpl.Execute(w, map[string]interface{}{
 				csrf.TemplateTag: csrf.TemplateField(r),
 				"dest":           dest,
 				"user":           user.Current(c),
-			})
-			utils.PanicOnErr(c, err)
+			}); err != nil {
+				c.Errorf(err.Error())
+				http.Error(w, "Meep! We were trying to make the 'login' page but something went wrong.", http.StatusInternalServerError)
+				return
+			}
 		}
 
 		if strings.HasSuffix(dest, "/pastebin/auth/login") {
@@ -61,7 +64,8 @@ func login(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, url, http.StatusFound)
 			return
 		} else {
-			utils.PanicOnErr(c, err)
+			c.Errorf(err.Error())
+			http.Error(w, "Meep! We were trying to make the 'login' url but something went wrong.", http.StatusInternalServerError)
 		}
 	}
 }
@@ -87,7 +91,8 @@ func logout(w http.ResponseWriter, r *http.Request) {
 		if url, err := user.LogoutURL(c, dest); err == nil {
 			http.Redirect(w, r, url, http.StatusFound)
 		} else {
-			utils.PanicOnErr(c, err)
+			c.Errorf(err.Error())
+			http.Error(w, "Meep! We were trying to make the 'logout' url but something went wrong.", http.StatusInternalServerError)
 		}
 	}
 }

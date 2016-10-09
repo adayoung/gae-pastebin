@@ -59,31 +59,44 @@ func CheckOAuthToken(c appengine.Context) (bool, error) {
 	return false, nil
 }
 
-func GetOAuthClient(c appengine.Context, r *http.Request, user_id string) *http.Client {
+func GetOAuthClient(c appengine.Context, r *http.Request, user_id string) (*http.Client, error) {
 	key := datastore.NewKey(c, "OAuthToken", user_id, 0, nil)
 	token := new(OAuthToken)
 	if err := datastore.Get(c, key, token); err == nil {
 		ctx := go_ae.NewContext(r)
-		config := utils.OAuthConfigDance(c)
-		client := config.Client(ctx, &token.Token)
-
-		if _, derr := datastore.Put(c, key, token); derr != nil {
-			utils.PanicOnErr(c, derr)
+		config, cerr := utils.OAuthConfigDance(c)
+		if cerr != nil {
+			c.Errorf(cerr.Error())
+			return nil, cerr
 		}
 
-		return client
+		client := config.Client(ctx, &token.Token) // How come this doesn't return an error? O_o
+
+		if _, derr := datastore.Put(c, key, token); derr != nil {
+			c.Errorf(derr.Error())
+			return nil, derr
+		}
+
+		return client, nil
 	} else {
-		utils.PanicOnErr(c, err)
+		c.Errorf(err.Error())
+		return nil, err
 	}
 
-	return nil
+	c.Errorf("Oops, it's an error to arrive here just to return a nil client O_o")
+	return nil, nil
 }
 
 func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, content *bytes.Buffer, paste_id string) error {
-	client := GetOAuthClient(c, r, p.UserID)
+	client, cerr := GetOAuthClient(c, r, p.UserID)
+	if cerr != nil {
+		c.Errorf(cerr.Error())
+		return cerr
+	}
 
 	if service, err := drive.New(client); err != nil {
-		utils.PanicOnErr(c, err)
+		c.Errorf(err.Error())
+		return err
 	} else {
 		p_content := new(drive.File)
 		p_content.Name = paste_id
@@ -122,7 +135,11 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 		return nil
 	} else if err == memcache.ErrCacheMiss {
 		// TODO: https://godoc.org/google.golang.org/api/drive/v3#FilesService.Get .. !@#
-		client := GetOAuthClient(c, r, p.UserID)
+		client, cerr := GetOAuthClient(c, r, p.UserID)
+		if cerr != nil {
+			c.Errorf(cerr.Error())
+			return cerr
+		}
 
 		if service, err := drive.New(client); err != nil {
 			return err

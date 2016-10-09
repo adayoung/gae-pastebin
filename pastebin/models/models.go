@@ -135,7 +135,9 @@ func (p *Paste) save(c appengine.Context, r *http.Request) (string, error) {
 		c.Infof("Creating new paste with paste_id [%s]", paste_id)
 
 		havetoken, verr := CheckOAuthToken(c)
-		utils.PanicOnErr(c, verr)
+		if verr != nil {
+			return "", verr
+		}
 
 		if havetoken == true {
 			// TODO: This should should probably happen in a goroutine
@@ -182,11 +184,11 @@ func (p *Paste) ZContent(c appengine.Context, r *http.Request, pc pasteContent) 
 	return nil
 }
 
-func (p *Paste) Delete(c appengine.Context, paste_id string) {
+func (p *Paste) Delete(c appengine.Context, paste_id string) error {
 	key := datastore.NewKey(c, PasteDSKind, paste_id, 0, nil)
 	c.Infof("Delete paste with paste_id [%s]", paste_id)
 	err := datastore.Delete(c, key)
-	utils.PanicOnErr(c, err)
+	return err
 }
 
 func NewPaste(c appengine.Context, r *http.Request) (string, error) {
@@ -196,7 +198,9 @@ func NewPaste(c appengine.Context, r *http.Request) (string, error) {
 		paste.UserID = usr.ID
 	}
 
-	utils.ProcessForm(c, r)
+	if err := utils.ProcessForm(c, r); err != nil {
+		return "", err
+	}
 
 	paste.Title = r.Form.Get("title")
 	paste.uContent = r.Form.Get("content")
