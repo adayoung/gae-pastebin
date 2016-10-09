@@ -108,7 +108,7 @@ func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, content *bytes
 
 		if err != nil {
 			c.Errorf(err.Error())
-			return parseAPIError(c, err, p)
+			return parseAPIError(c, r, err, p, false)
 		} else {
 			c.Infof("Received Google Drive File ID -> " + response.Id)
 			p.GDriveID = response.Id
@@ -133,7 +133,6 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 		p.Content = item.Value
 		return nil
 	} else if err == memcache.ErrCacheMiss {
-		// TODO: https://godoc.org/google.golang.org/api/drive/v3#FilesService.Get .. !@#
 		client, cerr := GetOAuthClient(c, r, p.UserID)
 		if cerr != nil {
 			return cerr
@@ -146,7 +145,7 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 			response, err := fg_call.Download()
 			if err != nil {
 				c.Errorf(err.Error())
-				return parseAPIError(c, err, p)
+				return parseAPIError(c, r, err, p, false)
 			} else {
 				if response.StatusCode == 200 {
 					if p_content, err := ioutil.ReadAll(response.Body); err == nil {
@@ -165,11 +164,31 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 						return err
 					}
 
-				} // else {} TODO: Delete paste metadata if StatusCode == 404
+				}
 			}
 		}
 	} else {
 		return err
+	}
+
+	return nil
+}
+
+func (p *Paste) deleteFromDrive(c appengine.Context, r *http.Request) error {
+	client, cerr := GetOAuthClient(c, r, p.UserID)
+	if cerr != nil {
+		return cerr
+	}
+
+	if service, err := drive.New(client); err != nil {
+		return err
+	} else {
+		fd_call := service.Files.Delete(p.GDriveID)
+		err := fd_call.Do()
+		if err != nil {
+			c.Errorf(err.Error())
+			return parseAPIError(c, r, err, p, true)
+		}
 	}
 
 	return nil

@@ -226,8 +226,12 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 		if dl := strings.Split(r.URL.Path, "/"); dl[len(dl)-1] == "delete" {
 			if usr := user.Current(c); usr != nil {
 				if paste.UserID == usr.ID || user.IsAdmin(c) {
-					err := paste.Delete(c)
+					err := paste.Delete(c, r)
 					if err != nil {
+						if derr, ok := err.(*models.GDriveAPIError); ok {
+							http.Error(w, derr.Response, derr.Code)
+							return
+						}
 						c.Errorf(err.Error())
 						http.Error(w, "Meep! We were trying to delete this paste but something went wrong.", http.StatusInternalServerError)
 					}

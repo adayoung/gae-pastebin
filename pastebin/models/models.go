@@ -186,8 +186,9 @@ func (p *Paste) ZContent(c appengine.Context, r *http.Request, pc pasteContent) 
 	return nil
 }
 
-func (p *Paste) Delete(c appengine.Context) error {
+func (p *Paste) Delete(c appengine.Context, r *http.Request) error {
 	paste_id := p.PasteID
+	gdriv_id := p.GDriveID
 	key := datastore.NewKey(c, PasteDSKind, paste_id, 0, nil)
 	c.Infof("Delete paste with paste_id [%s]", paste_id)
 	err := datastore.Delete(c, key)
@@ -215,7 +216,13 @@ func (p *Paste) Delete(c appengine.Context) error {
 	if err != nil {
 		return err
 	}
-	// TODO: if p.GDriveID != "", delete Drive Hosted content as well!
+
+	if len(gdriv_id) > 0 {
+		err := p.deleteFromDrive(c, r)
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }

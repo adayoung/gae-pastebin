@@ -37,6 +37,7 @@ $(document).ready(function(){
       location.replace(data);
     }).fail(function(e){
       alert("Oops, we couldn't delete this paste :( The following was encountered:\n\n" + e.status + " - " + e.statusText);
+      location.reload();
     }).always(function(e){
       $('#deletebtn').removeClass('disabled');
     });

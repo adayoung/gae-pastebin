@@ -3,6 +3,7 @@ package models
 import (
 	// Go Builtin Packages
 	"fmt"
+	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
@@ -21,7 +22,7 @@ func (e *GDriveAPIError) Error() string {
 	return fmt.Sprintf("%d - %s", e.Code, e.Response)
 }
 
-func parseAPIError(c appengine.Context, rerr error, p *Paste) error {
+func parseAPIError(c appengine.Context, r *http.Request, rerr error, p *Paste, delete_c bool) error {
 	// THIS! Because the upstream API won't give structured errors!@
 	serr := rerr.Error()
 	perr := &GDriveAPIError{}
@@ -44,7 +45,7 @@ func parseAPIError(c appengine.Context, rerr error, p *Paste) error {
 
 	if strings.HasPrefix(serr, "googleapi: Error ") {
 		// https://github.com/google/google-api-go-client/blob/3cf64a039723963488f603d140d0aec154fdcd20/googleapi/googleapi.go#L90
-		code_regex := regexp.MustCompile("^Error ([0-9]{3}): (.+)")
+		code_regex := regexp.MustCompile("Error ([0-9]{3}): (.+)")
 		code_found := code_regex.FindStringSubmatch(serr)[1:]
 		lcode, cerr := strconv.Atoi(code_found[0])
 		if cerr != nil { // BARF!@
@@ -80,7 +81,9 @@ func parseAPIError(c appengine.Context, rerr error, p *Paste) error {
 	perr.Response = message
 
 	if perr.Code == 404 { // Oops, the paste's contents have disappeared from upstream
-		p.Delete(c) // No err here, we just want to get rid of it xD
+		if delete_c == false { // This flag keeps us from going into a recursive loop
+			p.Delete(c, r) // No err here, we just want to get rid of it xD
+		}
 	}
 
 	if token_revoked == true { // Oops, our access has been revoked
