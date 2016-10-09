@@ -3,8 +3,11 @@ package models
 import (
 	// Go Builtin Packages
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
+	"time"
 
 	// Google Appengine Packages
 	"appengine"
@@ -85,6 +88,17 @@ func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, content *bytes
 	} else {
 		p_content := new(drive.File)
 		p_content.Name = paste_id
+
+		// Here be metadata
+		appProperties := make(map[string]string)
+		appProperties["PasteID"] = paste_id
+		appProperties["Title"] = p.Title
+		appProperties["Tags"] = strings.Join(p.Tags, ",")
+		appProperties["Format"] = p.Format
+		appProperties["Date"] = p.Date.Format(time.RFC3339Nano)
+		appProperties["Zlib"] = fmt.Sprintf("%v", p.Zlib)
+
+		p_content.AppProperties = appProperties
 		p_content.Parents = []string{"appDataFolder"}
 
 		buffer := bytes.NewReader(content.Bytes())
@@ -94,7 +108,7 @@ func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, content *bytes
 
 		if err != nil {
 			c.Errorf(err.Error())
-			return parseAPIError(c, err, p.UserID)
+			return parseAPIError(c, err, p)
 		} else {
 			c.Infof("Received Google Drive File ID -> " + response.Id)
 			p.GDriveID = response.Id
@@ -132,7 +146,7 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 			response, err := fg_call.Download()
 			if err != nil {
 				c.Errorf(err.Error())
-				return parseAPIError(c, err, p.UserID)
+				return parseAPIError(c, err, p)
 			} else {
 				if response.StatusCode == 200 {
 					if p_content, err := ioutil.ReadAll(response.Body); err == nil {

@@ -21,7 +21,7 @@ func (e *GDriveAPIError) Error() string {
 	return fmt.Sprintf("%d - %s", e.Code, e.Response)
 }
 
-func parseAPIError(c appengine.Context, rerr error, user_id string) error {
+func parseAPIError(c appengine.Context, rerr error, p *Paste) error {
 	// THIS! Because the upstream API won't give structured errors!@
 	serr := rerr.Error()
 	perr := &GDriveAPIError{}
@@ -79,11 +79,12 @@ func parseAPIError(c appengine.Context, rerr error, user_id string) error {
 	perr.Code = code
 	perr.Response = message
 
-	// TODO:
-	//   - Delete all pastes where UserID == user_id && GDriveID != "" on token_revoked
-	//   - Delete all pastes where UserID == user_id && GDriveID != "" on code = 404
+	if perr.Code == 404 { // Oops, the paste's contents have disappeared from upstream
+		p.Delete(c) // No err here, we just want to get rid of it xD
+	}
+
 	if token_revoked == true { // Oops, our access has been revoked
-		key := datastore.NewKey(c, "OAuthToken", user_id, 0, nil)
+		key := datastore.NewKey(c, "OAuthToken", p.UserID, 0, nil)
 		datastore.Delete(c, key) // No err here, we just want to get rid of it xD
 	}
 

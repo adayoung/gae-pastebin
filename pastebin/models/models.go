@@ -24,6 +24,7 @@ import (
 
 type Tags []string
 type Paste struct {
+	PasteID string    `datastore:"paste_id,noindex"`
 	UserID  string    `datastore:"user_id"`
 	Title   string    `datastore:"title"`
 	Content []byte    `datastore:"content,noindex"`
@@ -133,6 +134,7 @@ func (p *Paste) save(c appengine.Context, r *http.Request) (string, error) {
 
 		key, paste_id := genpasteKey(c, p)
 		c.Infof("Creating new paste with paste_id [%s]", paste_id)
+		p.PasteID = paste_id
 
 		havetoken, verr := CheckOAuthToken(c)
 		if verr != nil {
@@ -184,12 +186,38 @@ func (p *Paste) ZContent(c appengine.Context, r *http.Request, pc pasteContent) 
 	return nil
 }
 
-func (p *Paste) Delete(c appengine.Context, paste_id string) error {
-	// FIXME: An entity should be able to tell its own key (paste_id)
+func (p *Paste) Delete(c appengine.Context) error {
+	paste_id := p.PasteID
 	key := datastore.NewKey(c, PasteDSKind, paste_id, 0, nil)
 	c.Infof("Delete paste with paste_id [%s]", paste_id)
 	err := datastore.Delete(c, key)
-	return err
+	if err != nil {
+		return err
+	}
+
+	// FIXME: This is duplicated from pastebin.clean
+	// Clear counter shards here
+	var shardc_dkeys []*datastore.Key
+	c_key := datastore.NewKey(c, "GeneralCounterShardConfig", paste_id, 0, nil)
+	shardc_dkeys = append(shardc_dkeys, c_key)
+
+	shard_keys := datastore.NewQuery("GeneralCounterShard").Filter("Name =", paste_id).KeysOnly()
+	if shard_dkeys, cerr := shard_keys.GetAll(c, nil); cerr == nil {
+		derr := datastore.DeleteMulti(c, shard_dkeys)
+		if derr != nil {
+			return derr
+		}
+	} else {
+		return cerr
+	}
+
+	err = datastore.DeleteMulti(c, shardc_dkeys)
+	if err != nil {
+		return err
+	}
+	// TODO: if p.GDriveID != "", delete Drive Hosted content as well!
+
+	return nil
 }
 
 func NewPaste(c appengine.Context, r *http.Request) (string, error) {
