@@ -9,7 +9,7 @@
   <div style="text-align: center">
     <form method="POST">
       {{ .csrfField }}
-      <p class="lead">You're logged in the application as {{ .user.Email }}<br>
+      <p class="lead">You're signed in to the application as {{ .user.Email }}<br>
       Is that the correct account? <button class="btn btn-primary btn-sm" type="submit">Yes</button> / <a href="/pastebin/auth/logout?next={{ .dest }}">No</a></p>
     </form>
   </div>

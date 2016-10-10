@@ -64,7 +64,13 @@ func GetOAuthClient(c appengine.Context, r *http.Request, user_id string) (*http
 			return nil, "", cerr
 		}
 
-		client := config.Client(ctx, &token.Token) // How come this doesn't return an error? O_o
+		t_source := config.TokenSource(ctx, &token.Token)
+		client := oauth2.NewClient(ctx, t_source)
+		n_token, terr := t_source.Token()
+		if terr != nil { // terrrr!!
+			return nil, "", terr
+		}
+		token.Token = *n_token
 
 		if _, derr := datastore.Put(c, key, token); derr != nil {
 			return nil, "", derr
