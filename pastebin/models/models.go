@@ -24,18 +24,17 @@ import (
 
 type Tags []string
 type Paste struct {
-	PasteID string    `datastore:"paste_id,noindex"`
-	UserID  string    `datastore:"user_id"`
-	Title   string    `datastore:"title"`
-	Content []byte    `datastore:"content,noindex"`
-	Tags    Tags      `datastore:"tags"`
-	Format  string    `datastore:"format,noindex"`
-	Date    time.Time `datastore:"date_published"`
-	// We need the Zlib flag to correctly process old, uncompressed content
-	Zlib bool `datastore:"zlib,noindex"`
-	// Private content, for validation and processing
-	uContent string `datastore:"-"`
-	GDriveID string `datastore:"gdrive_id,noindex"`
+	PasteID  string    `datastore:"paste_id,noindex"`
+	UserID   string    `datastore:"user_id"`
+	Title    string    `datastore:"title"`
+	Content  []byte    `datastore:"content,noindex"`
+	Tags     Tags      `datastore:"tags"`
+	Format   string    `datastore:"format,noindex"`
+	Date     time.Time `datastore:"date_published"`
+	Zlib     bool      `datastore:"zlib,noindex"` // We need the Zlib flag to correctly process old, uncompressed content
+	uContent string    `datastore:"-"`            // Private content, for validation and processing
+	GDriveID string    `datastore:"gdrive_id,noindex"`
+	BatchID  string    `datastore:"batch_id"`
 }
 
 func (p *Paste) Load(ds <-chan datastore.Property) error {

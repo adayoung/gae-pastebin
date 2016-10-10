@@ -25,8 +25,9 @@ import (
 )
 
 type OAuthToken struct {
-	UserID string       `datastore:"user_id"`
-	Token  oauth2.Token `datastore:"token,noindex"`
+	UserID  string       `datastore:"user_id"`
+	Token   oauth2.Token `datastore:"token,noindex"`
+	BatchID string       `datastore:"batch_id,noindex"`
 }
 
 func SaveOAuthToken(c appengine.Context, t *oauth2.Token) error {
@@ -34,6 +35,7 @@ func SaveOAuthToken(c appengine.Context, t *oauth2.Token) error {
 	token := new(OAuthToken)
 	token.UserID = user_id
 	token.Token = *t
+	token.BatchID = fmt.Sprintf("%s_%s", user_id, time.Now().Format(time.RFC3339Nano))
 	key := datastore.NewKey(c, "OAuthToken", user_id, 0, nil)
 	if _, err := datastore.Put(c, key, token); err != nil {
 		return err
@@ -43,7 +45,7 @@ func SaveOAuthToken(c appengine.Context, t *oauth2.Token) error {
 
 func CheckOAuthToken(c appengine.Context) (bool, error) {
 	if usr := user.Current(c); usr != nil {
-		if count, err := datastore.NewQuery("OAuthToken").Filter("user_id =", usr.ID).Limit(1).Count(c); err != nil {
+		if count, err := datastore.NewQuery("OAuthToken").Filter("user_id =", usr.ID).KeysOnly().Limit(1).Count(c); err != nil {
 			return false, err
 		} else if count > 0 {
 			return true, nil
@@ -52,37 +54,38 @@ func CheckOAuthToken(c appengine.Context) (bool, error) {
 	return false, nil
 }
 
-func GetOAuthClient(c appengine.Context, r *http.Request, user_id string) (*http.Client, error) {
+func GetOAuthClient(c appengine.Context, r *http.Request, user_id string) (*http.Client, string, error) {
 	key := datastore.NewKey(c, "OAuthToken", user_id, 0, nil)
 	token := new(OAuthToken)
 	if err := datastore.Get(c, key, token); err == nil {
 		ctx := go_ae.NewContext(r)
 		config, cerr := utils.OAuthConfigDance(c)
 		if cerr != nil {
-			return nil, cerr
+			return nil, "", cerr
 		}
 
 		client := config.Client(ctx, &token.Token) // How come this doesn't return an error? O_o
 
 		if _, derr := datastore.Put(c, key, token); derr != nil {
-			return nil, derr
+			return nil, "", derr
 		}
 
-		return client, nil
+		return client, token.BatchID, nil
 	} else {
-		return nil, err
+		return nil, "", err
 	}
 
 	c.Errorf("Oops, it's an error to arrive here just to return a nil client O_o")
-	return nil, nil
+	return nil, "", nil
 }
 
 func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, content *bytes.Buffer, paste_id string) error {
-	client, cerr := GetOAuthClient(c, r, p.UserID)
+	client, batch_id, cerr := GetOAuthClient(c, r, p.UserID)
 	if cerr != nil {
 		return cerr
 	}
 
+	p.BatchID = batch_id
 	if service, err := drive.New(client); err != nil {
 		return err
 	} else {
@@ -133,7 +136,7 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 		p.Content = item.Value
 		return nil
 	} else if err == memcache.ErrCacheMiss {
-		client, cerr := GetOAuthClient(c, r, p.UserID)
+		client, _, cerr := GetOAuthClient(c, r, p.UserID)
 		if cerr != nil {
 			return cerr
 		}
@@ -175,7 +178,7 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 }
 
 func (p *Paste) deleteFromDrive(c appengine.Context, r *http.Request) error {
-	client, cerr := GetOAuthClient(c, r, p.UserID)
+	client, _, cerr := GetOAuthClient(c, r, p.UserID)
 	if cerr != nil {
 		return cerr
 	}
