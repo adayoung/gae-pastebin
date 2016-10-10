@@ -153,15 +153,11 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				c.Errorf(err.Error())
 				if gerr, ok := err.(*models.GDriveAPIError); ok {
-					if gerr.Code == 404 {
-						Http404(w, r)
-						return
-					}
-					p_content = gerr.Response
+					http.Error(w, gerr.Response, gerr.Code)
 				} else {
 					http.Error(w, "Meep! We were trying to retrieve this paste's plain content but something went wrong.", http.StatusInternalServerError)
-					return
 				}
+				return
 			} else {
 				p_content = _b_content.String()
 			}
@@ -248,17 +244,13 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 
 		err := paste.ZContent(c, r, w)
 		if err != nil {
+			c.Errorf(err.Error())
 			if gerr, ok := err.(*models.GDriveAPIError); ok {
-				if gerr.Code == 404 {
-					Http404(w, r)
-					return
-				}
-				w.Write([]byte(gerr.Response))
+				http.Error(w, gerr.Response, gerr.Code)
 			} else {
-				c.Errorf(err.Error())
 				http.Error(w, "Meep! We were trying to retrieve this paste's content but something went wrong.", http.StatusInternalServerError)
-				return
 			}
+			return
 		}
 	}
 }
