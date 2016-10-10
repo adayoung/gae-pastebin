@@ -317,6 +317,12 @@ func clean(w http.ResponseWriter, r *http.Request) {
 		c.Errorf(err.Error())
 		http.Error(w, "Meep! We were trying to delete old shard keys but something went wrong.", http.StatusInternalServerError)
 	}
+
+	err = models.BatchCleaner(c)
+	if err != nil {
+		c.Errorf(err.Error())
+		http.Error(w, "Meep! We were trying to delete inaccessible pastes hosted on Google Drive but something went wrong.", http.StatusInternalServerError)
+	}
 }
 
 func search(w http.ResponseWriter, r *http.Request) {
