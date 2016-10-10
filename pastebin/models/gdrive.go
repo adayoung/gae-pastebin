@@ -43,6 +43,12 @@ func SaveOAuthToken(c appengine.Context, t *oauth2.Token) error {
 	return nil
 }
 
+func DeleteOAuthToken(c appengine.Context, user_id string) error {
+	key := datastore.NewKey(c, "OAuthToken", user_id, 0, nil)
+	err := datastore.Delete(c, key)
+	return err
+}
+
 func CheckOAuthToken(c appengine.Context) (bool, error) {
 	if usr := user.Current(c); usr != nil {
 		if count, err := datastore.NewQuery("OAuthToken").Filter("user_id =", usr.ID).KeysOnly().Limit(1).Count(c); err != nil {
@@ -54,10 +60,26 @@ func CheckOAuthToken(c appengine.Context) (bool, error) {
 	return false, nil
 }
 
-func GetOAuthClient(c appengine.Context, r *http.Request, user_id string) (*http.Client, string, error) {
+func GetOAuthToken(c appengine.Context, user_id string) (*OAuthToken, *datastore.Key, error) {
 	key := datastore.NewKey(c, "OAuthToken", user_id, 0, nil)
 	token := new(OAuthToken)
-	if err := datastore.Get(c, key, token); err == nil {
+	err := datastore.Get(c, key, token)
+	return token, key, err
+}
+
+func UpdateOAuthBatchID(c appengine.Context, user_id string) error {
+	token, key, err := GetOAuthToken(c, user_id)
+	if err == nil {
+		token.BatchID = fmt.Sprintf("%s_%s", user_id, time.Now().Format(time.RFC3339Nano))
+		if _, derr := datastore.Put(c, key, token); err != nil {
+			return derr
+		}
+	}
+	return err
+}
+
+func GetOAuthClient(c appengine.Context, r *http.Request, user_id string) (*http.Client, string, error) {
+	if token, key, err := GetOAuthToken(c, user_id); err == nil {
 		ctx := go_ae.NewContext(r)
 		config, cerr := utils.OAuthConfigDance(c)
 		if cerr != nil {
