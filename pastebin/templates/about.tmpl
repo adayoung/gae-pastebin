@@ -112,7 +112,7 @@ body {
             <li><img src="/pastebin/static/img/drive_rfp1.png"></li>
             <li><img src="/pastebin/static/img/drive_rfp2.png"></li>
           </ul>
-          <p>These permissions grant the application access to files and folders it created <em>itself</em> only. Offline access is required to let us retrieve those files with an authorization token. You can read more about Google Drive API permissions <a href="https://developers.google.com/drive/v3/web/about-auth">here</a> and offline access <a href="https://developers.google.com/identity/protocols/OAuth2WebServer#offline">here</a>!</p>
+          <p>These permissions grant the application access to files and folders it created <em>itself</em> only. Offline access is required to let us retrieve those files with an authorization token. You can read more about Google Drive API permissions <a href="https://developers.google.com/drive/v3/web/about-auth" title="About Authorization &nbsp;|&nbsp; Drive REST API &nbsp;|&nbsp; Google Developers">here</a> and offline access <a href="https://developers.google.com/identity/protocols/OAuth2WebServer#offline" title="Using OAuth 2.0 for Web Server Applications &nbsp;|&nbsp; Google Identity Platform &nbsp;|&nbsp; Google Developers">here</a>!</p>
         </li>
         <li>
           Once you have granted access, you should start seeing a folder called <strong>Pastebin!!</strong> in your Google Drive!
@@ -139,7 +139,16 @@ body {
 
     <h3>Why should I connect my Google Drive at all?</h3>
     <p>
-      I can think of TWO really good reasons! One being, you get to manage your content yourself. The other being, you use up your own space quota and free up storage available to the application!
+      I can think of TWO really good reasons!
+      <ul>
+        <li>
+          One, you get to manage your content yourself. Lookit it, change it, download it, even delete it!
+        </li>
+        <li>
+          Two! You use up your own storage quota and free up space available to the application!
+        </li>
+      </ul>
+
     </p>
     <br>
 
@@ -150,6 +159,12 @@ body {
     <h3>I disconnected my Google Drive and reconnected again, now I'm seeing TWO Pastebin!! folders?!</h3>
     <p>
       When an application connects to Google Drive, all the files it creates are marked as its property and made available to it. However, when you disconnect, all those files no longer carry that mark and are consequently no longer available to the application. When you reconnect, the application tries to look for its folder, can't find it (it's no longer its property, remember?) and proceeds to make a new folder. And that's how you have two Pastebin!! folders now!
+    </p>
+    <br>
+
+    <h3>I deleted something from my Google Drive but it's still appearing in the application?!</h3>
+    <p>
+      Oops, it's probably still in the <a href="https://cloud.google.com/appengine/docs/go/memcache/" title="Memcache Overview">cache</a>! Give it a few hours and it'll poof from there as well on its own.
     </p>
     <br>
 
