@@ -56,7 +56,7 @@ func SC() *securecookie.SecureCookie {
 
 func OAuthConfigDance(c appengine.Context) (*oauth2.Config, error) {
 	GCPOAuthCID := []byte(os.Getenv("GCPOAuthCID"))
-	if config, err := google.ConfigFromJSON([]byte(GCPOAuthCID), drive.DriveAppdataScope); err == nil {
+	if config, err := google.ConfigFromJSON([]byte(GCPOAuthCID), drive.DriveFileScope); err == nil {
 		return config, nil
 	} else {
 		return config, err

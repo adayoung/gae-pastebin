@@ -28,14 +28,22 @@ type OAuthToken struct {
 	UserID  string       `datastore:"user_id"`
 	Token   oauth2.Token `datastore:"token,noindex"`
 	BatchID string       `datastore:"batch_id,noindex"`
+	PBDirID string       `datastore:"pbdir_id,noindex"`
 }
 
-func SaveOAuthToken(c appengine.Context, t *oauth2.Token) error {
+func SaveOAuthToken(c appengine.Context, client *http.Client, t *oauth2.Token) error {
 	user_id := user.Current(c).ID
 	token := new(OAuthToken)
 	token.UserID = user_id
 	token.Token = *t
 	token.BatchID = fmt.Sprintf("%s_%s", user_id, time.Now().Format(time.RFC3339Nano))
+
+	pbdir_id, aerr := makePastebinFolder(c, client)
+	if aerr != nil {
+		return aerr
+	}
+	token.PBDirID = pbdir_id
+
 	key := datastore.NewKey(c, "OAuthToken", user_id, 0, nil)
 	if _, err := datastore.Put(c, key, token); err != nil {
 		return err
@@ -78,37 +86,72 @@ func UpdateOAuthBatchID(c appengine.Context, user_id string) error {
 	return err
 }
 
-func GetOAuthClient(c appengine.Context, r *http.Request, user_id string) (*http.Client, string, error) {
+func GetOAuthClient(c appengine.Context, r *http.Request, user_id string) (*http.Client, string, string, error) {
 	if token, key, err := GetOAuthToken(c, user_id); err == nil {
 		ctx := go_ae.NewContext(r)
 		config, cerr := utils.OAuthConfigDance(c)
 		if cerr != nil {
-			return nil, "", cerr
+			return nil, "", "", cerr
 		}
 
 		t_source := config.TokenSource(ctx, &token.Token)
 		client := oauth2.NewClient(ctx, t_source)
 		n_token, terr := t_source.Token()
 		if terr != nil { // terrrr!!
-			return nil, "", terr
+			return nil, "", "", terr
 		}
 		token.Token = *n_token
 
 		if _, derr := datastore.Put(c, key, token); derr != nil {
-			return nil, "", derr
+			return nil, "", "", derr
 		}
 
-		return client, token.BatchID, nil
+		return client, token.BatchID, token.PBDirID, nil
 	} else {
-		return nil, "", err
+		return nil, "", "", err
 	}
 
 	c.Errorf("Oops, it's an error to arrive here just to return a nil client O_o")
-	return nil, "", nil
+	return nil, "", "", nil
+}
+
+func makePastebinFolder(c appengine.Context, client *http.Client) (string, error) {
+	if service, aerr := drive.New(client); aerr != nil {
+		return "", aerr
+	} else {
+		fl_call := service.Files.List().Fields("files(id)").PageSize(1).Spaces("drive")
+		fl_call = fl_call.Q("name='Pastebin!!' and trashed=false")
+		response, err := fl_call.Do()
+
+		if err != nil {
+			c.Errorf("Meep! We had an error when trying to do the FilesListCall call!")
+			c.Errorf(err.Error())
+			return "", err
+
+		} else {
+			if len(response.Files) > 0 { // teh Pastebin!! folder is there!
+				pbdir_id := response.Files[0].Id
+				return pbdir_id, nil
+			} else { // teh Pastebin!! folder is NOT there!
+				pbdir := new(drive.File)
+				pbdir.Name = "Pastebin!!"
+				pbdir.MimeType = "application/vnd.google-apps.folder"
+				fc_call := service.Files.Create(pbdir).Fields("id")
+				d_response, berr := fc_call.Do()
+				if berr != nil {
+					return "", berr
+				} else {
+					pbdir_id := d_response.Id
+					return pbdir_id, nil
+				}
+			}
+		}
+	}
+	return "", nil
 }
 
 func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, content *bytes.Buffer, paste_id string) error {
-	client, batch_id, cerr := GetOAuthClient(c, r, p.UserID)
+	client, batch_id, pbdir_id, cerr := GetOAuthClient(c, r, p.UserID)
 	if cerr != nil {
 		return cerr
 	}
@@ -118,7 +161,20 @@ func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, content *bytes
 		return err
 	} else {
 		p_content := new(drive.File)
-		p_content.Name = paste_id
+
+		if len(p.Title) > 0 {
+			p_content.Name = p.Title
+		} else {
+			p_content.Name = paste_id
+		}
+
+		if p.Format == "html" {
+			p_content.Name = p_content.Name + ".html"
+		} else {
+			p_content.Name = p_content.Name + ".txt"
+		}
+
+		p_content.Name = p_content.Name + ".zl"
 
 		// Here be metadata
 		appProperties := make(map[string]string)
@@ -128,9 +184,10 @@ func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, content *bytes
 		appProperties["Format"] = p.Format
 		appProperties["Date"] = p.Date.Format(time.RFC3339Nano)
 		appProperties["Zlib"] = fmt.Sprintf("%v", p.Zlib)
+		appProperties["BatchID"] = p.BatchID
 
 		p_content.AppProperties = appProperties
-		p_content.Parents = []string{"appDataFolder"}
+		p_content.Parents = []string{pbdir_id}
 
 		buffer := bytes.NewReader(content.Bytes())
 		fc_call := service.Files.Create(p_content).Fields("id")
@@ -164,7 +221,7 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 		p.Content = item.Value
 		return nil
 	} else if err == memcache.ErrCacheMiss {
-		client, _, cerr := GetOAuthClient(c, r, p.UserID)
+		client, _, _, cerr := GetOAuthClient(c, r, p.UserID)
 		if cerr != nil {
 			return cerr
 		}
@@ -206,7 +263,7 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 }
 
 func (p *Paste) deleteFromDrive(c appengine.Context, r *http.Request) error {
-	client, _, cerr := GetOAuthClient(c, r, p.UserID)
+	client, _, _, cerr := GetOAuthClient(c, r, p.UserID)
 	if cerr != nil {
 		return cerr
 	}
