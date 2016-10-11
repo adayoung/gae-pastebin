@@ -47,9 +47,9 @@ body {
       </div>
     </div>
 
-    <h3>Frequently Asked Questions</h3>
+    <h2>Frequently Asked Questions</h2>
     <br>
-    <p class="lead">What is the Acceptable Use Policy?</p>
+    <h3>What is the Acceptable Use Policy?</h3>
     <p>This site is mostly meant for game logs but it can serve as a general purpose pastebin as well. For that, I'll just reiterate <a href="http://pastebin.com/faq#5" target="_blank">pastebin.com's policy</a> here.</p>
     <p class="text-danger">Please do NOT post:</p>
     <ul class="text-danger">
@@ -63,33 +63,96 @@ body {
     </ul>
     <br>
 
-    <p class="lead">When does stuff expire?</p>
+    <h3>When does stuff expire?</h3>
     <p>Pastes are deleted after 180 days have passed since they were last viewed.</p>
     <br>
 
-    <p class="lead">What happens if I sign in?</p>
+    <h3>What happens if I sign in?</h3>
     <p>Signing in allows you to manage your pastes. Specifically, it lets you delete your pastes regardless of the expiry schedule.</p>
     <br>
 
-    <p class="lead">I pasted in html but I'm seeing the html source?</p>
+    <h3>I pasted in html but I'm seeing the html source?</h3>
     <p>You need to click on the 'Colourful HTML' button to flag your paste as html content before pasting.</p>
     <br>
 
-    <p class="lead">How do I make private pastes?</p>
+    <h3>How do I make private pastes?</h3>
     <p>Just don't add any tags to your paste and it won't appear in the search results.</p>
     <br>
 
-    <p class="lead">What is the max paste size?</p>
+    <h3>What is the max paste size?</h3>
     <p>The maximum size a paste can be is 950 kilobytes (~1 megabyte). You can try to paste more too, but anything beyond that is compressed. The paste is rejected if it's still over 950 kilobytes after compression.</p>
     <br>
 
-    <p class="lead">How do I contact you?</p>
+    <h3>How do I contact you?</h3>
     <p>Umm.. I'm <a href="https://www.achaea.com/user/2354/honors" target="_blank">Ada</a> on <a href="http://www.achaea.com/" target="_blank">Achaea</a>. I'm on <a href="https://github.com/adayoung" target="_blank">GitHub</a> too! I don't want to give out my email here, sorry!</p>
+    <br>
 
-    <hr>
-    <h1><a name="PasteToGoogleDrive"></a>Paste to Google Drive!</h1>
+    <hr><a name="PasteToGoogleDrive"></a>
+    <h1>Paste to Google Drive!</h1>
+    <br>
+    <p>Hi again! It's possible to paste your things straight to your Google Drive now! Here's a rundown of how it works:</p>
 
-    <p>Hi again! Nothing to see here yet, come back later!@</p>
+    <p>
+      <ol>
+        <li>
+          Paste/Write something in the big box!
+        </li>
+        <li>
+          Select from Plain Text / Colourful HTML.
+        </li>
+        <li>
+          Click on the <strong>Paste to Google Drive</strong> button!
+        </li>
+        <li>
+          This will open a window asking for your consent, you need a Google Account to sign in.
+        </li>
+        <li>
+          <p>The consent screen would have the following permissions scopes listed in there:</p>
+          <ul>
+            <li><img src="/pastebin/static/img/drive_rfp1.png"></li>
+            <li><img src="/pastebin/static/img/drive_rfp2.png"></li>
+          </ul>
+          <p>These permissions grant the application access to files and folders it created <em>itself</em> only. Offline access is required to let us retrieve those files with an authorization token. You can read more about Google Drive API permissions <a href="https://developers.google.com/drive/v3/web/about-auth">here</a> and offline access <a href="https://developers.google.com/identity/protocols/OAuth2WebServer#offline">here</a>!</p>
+        </li>
+        <li>
+          Once you have granted access, you should start seeing a folder called <strong>Pastebin!!</strong> in your Google Drive!
+        </li>
+        <li>
+          From this point on, everything you paste should land in your Google Drive as long as you're signed in to the application. You can check in your <strong>Pastebin!!</strong> folder and even delete things you no longer want and they'll disappear from the application as well.
+        </li>
+        <li>
+          You can disconnect your Google Drive any time by going to Settings &gt; Manage Apps or from your <a href="https://myaccount.google.com/intro/security#connectedapps">My Account page</a>.
+          <ul>
+            <li>
+              Disconnecting will make <em>all</em> of your Google Drive hosted pastes unavailable on the application.
+            </li>
+            <li>
+              Disconnecting does not remove content from you Google Drive unless you delete it yourself.
+            </li>
+          </ul>
+        </li>
+      </ol>
+    </p>
+
+    <h2>Frequently Asked Questions</h2>
+    <br>
+
+    <h3>Why should I connect my Google Drive at all?</h3>
+    <p>
+      I can think of TWO really good reasons! One being, you get to manage your content yourself. The other being, you use up your own space quota and free up storage available to the application!
+    </p>
+    <br>
+
+    <h3>Clicking on the <strong>Paste to Google Drive!</strong> button does nothing?</h3>
+    <p>You need to have some content in the big box before attempting to paste.</p>
+    <br>
+
+    <h3>I disconnected my Google Drive and reconnected again, now I'm seeing TWO Pastebin!! folders?!</h3>
+    <p>
+      When an application connects to Google Drive, all the files it creates are marked as its property and made available to it. However, when you disconnect, all those files no longer carry that mark and are consequently no longer available to the application. When you reconnect, the application tries to look for its folder, can't find it (it's no longer its property, remember?) and proceeds to make a new folder. And that's how you have two Pastebin!! folders now!
+    </p>
+    <br>
+
   </article>
 </div>
 {{ end }}
