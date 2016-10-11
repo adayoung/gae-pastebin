@@ -27,7 +27,6 @@ import (
 type OAuthToken struct {
 	UserID  string       `datastore:"user_id"`
 	Token   oauth2.Token `datastore:"token,noindex"`
-	BatchID string       `datastore:"batch_id,noindex"`
 	PBDirID string       `datastore:"pbdir_id,noindex"`
 }
 
@@ -36,7 +35,6 @@ func SaveOAuthToken(c appengine.Context, client *http.Client, t *oauth2.Token) e
 	token := new(OAuthToken)
 	token.UserID = user_id
 	token.Token = *t
-	token.BatchID = fmt.Sprintf("%s_%s", user_id, time.Now().Format(time.RFC3339Nano))
 
 	pbdir_id, aerr := makePastebinFolder(c, client)
 	if aerr != nil {
@@ -75,44 +73,33 @@ func GetOAuthToken(c appengine.Context, user_id string) (*OAuthToken, *datastore
 	return token, key, err
 }
 
-func UpdateOAuthBatchID(c appengine.Context, user_id string) error {
-	token, key, err := GetOAuthToken(c, user_id)
-	if err == nil {
-		token.BatchID = fmt.Sprintf("%s_%s", user_id, time.Now().Format(time.RFC3339Nano))
-		if _, derr := datastore.Put(c, key, token); err != nil {
-			return derr
-		}
-	}
-	return err
-}
-
-func GetOAuthClient(c appengine.Context, r *http.Request, user_id string) (*http.Client, string, string, error) {
+func GetOAuthClient(c appengine.Context, r *http.Request, user_id string) (*http.Client, string, error) {
 	if token, key, err := GetOAuthToken(c, user_id); err == nil {
 		ctx := go_ae.NewContext(r)
 		config, cerr := utils.OAuthConfigDance(c)
 		if cerr != nil {
-			return nil, "", "", cerr
+			return nil, "", cerr
 		}
 
 		t_source := config.TokenSource(ctx, &token.Token)
 		client := oauth2.NewClient(ctx, t_source)
 		n_token, terr := t_source.Token()
 		if terr != nil { // terrrr!!
-			return nil, "", "", terr
+			return nil, "", terr
 		}
 		token.Token = *n_token
 
 		if _, derr := datastore.Put(c, key, token); derr != nil {
-			return nil, "", "", derr
+			return nil, "", derr
 		}
 
-		return client, token.BatchID, token.PBDirID, nil
+		return client, token.PBDirID, nil
 	} else {
-		return nil, "", "", err
+		return nil, "", err
 	}
 
 	c.Errorf("Oops, it's an error to arrive here just to return a nil client O_o")
-	return nil, "", "", nil
+	return nil, "", nil
 }
 
 func makePastebinFolder(c appengine.Context, client *http.Client) (string, error) {
@@ -151,12 +138,11 @@ func makePastebinFolder(c appengine.Context, client *http.Client) (string, error
 }
 
 func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, content *bytes.Buffer, paste_id string) error {
-	client, batch_id, pbdir_id, cerr := GetOAuthClient(c, r, p.UserID)
+	client, pbdir_id, cerr := GetOAuthClient(c, r, p.UserID)
 	if cerr != nil {
 		return cerr
 	}
 
-	p.BatchID = batch_id
 	if service, err := drive.New(client); err != nil {
 		return err
 	} else {
@@ -184,7 +170,6 @@ func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, content *bytes
 		appProperties["Format"] = p.Format
 		appProperties["Date"] = p.Date.Format(time.RFC3339Nano)
 		appProperties["Zlib"] = fmt.Sprintf("%v", p.Zlib)
-		appProperties["BatchID"] = p.BatchID
 
 		p_content.AppProperties = appProperties
 		p_content.Parents = []string{pbdir_id}
@@ -221,7 +206,7 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 		p.Content = item.Value
 		return nil
 	} else if err == memcache.ErrCacheMiss {
-		client, _, _, cerr := GetOAuthClient(c, r, p.UserID)
+		client, _, cerr := GetOAuthClient(c, r, p.UserID)
 		if cerr != nil {
 			return cerr
 		}
@@ -230,6 +215,8 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 			return err
 		} else {
 			fg_call := service.Files.Get(p.GDriveID)
+			// We should probably issue a Do() call first to find out whether the file was trashed before
+			// downloading it. Oorrrr... we could just tell the users to delete it from trash as well! xD
 			response, err := fg_call.Download()
 			if err != nil {
 				c.Errorf(err.Error())
@@ -263,7 +250,7 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 }
 
 func (p *Paste) deleteFromDrive(c appengine.Context, r *http.Request) error {
-	client, _, _, cerr := GetOAuthClient(c, r, p.UserID)
+	client, _, cerr := GetOAuthClient(c, r, p.UserID)
 	if cerr != nil {
 		return cerr
 	}

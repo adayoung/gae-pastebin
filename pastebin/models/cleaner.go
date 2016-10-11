@@ -6,6 +6,7 @@ import (
 	"appengine/datastore"
 )
 
+// FIXME: This has to be repurposed for cleaning pastes by user_id instead! See: errors.go#L97
 type BatchCleanQ struct {
 	BatchID string `datastore:"batch_id"`
 }

@@ -90,20 +90,13 @@ func parseAPIError(c appengine.Context, r *http.Request, rerr error, p *Paste, d
 		if delete_c == false { // This flag keeps us from going into a recursive loop
 			p.Delete(c, r) // No err here, we just want to get rid of it xD
 		}
-
-		if len(p.BatchID) > 0 {
-			if berr := NewBatchCleanQ(c, p.BatchID); berr != nil {
-				return berr
-			}
-		}
-
-		if berr := UpdateOAuthBatchID(c, p.UserID); berr != nil {
-			return berr
-		}
 	}
 
 	if token_revoked == true { // Oops, our access has been revoked
 		DeleteOAuthToken(c, p.UserID) // No err here, we just want to get rid of it xD
+		// if berr := NewBatchCleanQ(c, p.UserID); berr != nil {
+		// 	return berr
+		// }
 	}
 
 	if len(perr.Response) > 0 {
