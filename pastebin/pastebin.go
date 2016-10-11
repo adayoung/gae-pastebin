@@ -149,7 +149,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 		p_count, _ := counter.Count(c, paste_id)
 
 		var p_content string
-		if paste.Format == "plain" && paste.Zlib == true {
+		if paste.Format == "plain" {
 			var _b_content bytes.Buffer
 			_p_content := bufio.NewWriter(&_b_content)
 			err := paste.ZContent(c, r, _p_content)
@@ -162,10 +162,9 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 				}
 				return
 			} else {
+				_p_content.Flush()
 				p_content = _b_content.String()
 			}
-		} else {
-			p_content = string(paste.Content)
 		}
 
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl", "pastebin/templates/paste.tmpl"))

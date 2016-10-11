@@ -136,7 +136,7 @@ func makePastebinFolder(c appengine.Context, client *http.Client) (string, error
 	return "", nil
 }
 
-func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, content *bytes.Buffer, paste_id string) error {
+func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, paste_id string) error {
 	client, batch_id, cerr := GetOAuthClient(c, r, p.UserID)
 	if cerr != nil {
 		return cerr
@@ -160,8 +160,6 @@ func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, content *bytes
 			p_content.Name = p_content.Name + ".txt"
 		}
 
-		p_content.Name = p_content.Name + ".zl"
-
 		// Here be metadata
 		appProperties := make(map[string]string)
 		appProperties["PasteID"] = paste_id
@@ -179,7 +177,7 @@ func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, content *bytes
 			return parseAPIError(c, r, aerr, p, false)
 		}
 
-		buffer := bytes.NewReader(content.Bytes())
+		buffer := bytes.NewReader([]byte(p.uContent))
 		fc_call := service.Files.Create(p_content).Fields("id")
 		fc_call = fc_call.Media(buffer)
 		response, err := fc_call.Do()
@@ -194,7 +192,7 @@ func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, content *bytes
 			// Set the thing in memcache for immediate retrieval
 			mc_item := &memcache.Item{
 				Key:   response.Id,
-				Value: content.Bytes(),
+				Value: []byte(p.uContent),
 			}
 
 			ctx := go_ae.NewContext(r)
