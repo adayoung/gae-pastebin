@@ -257,16 +257,12 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 
 func clean(w http.ResponseWriter, r *http.Request) {
 	// https://cloud.google.com/appengine/docs/go/config/cron#securing_urls_for_cron
-	if r.Header.Get("X-Appengine-Cron") != "true" {
-		http.Error(w, "The /clean route is avaiable to cron job only.", http.StatusForbidden)
-		return
-	}
-
 	c := appengine.NewContext(r)
 	sixmonthsago := time.Now().AddDate(0, 0, -180) // 180 days ago!
 
 	old_stuff := datastore.NewQuery(models.PasteDSKind).
 		Filter("date_published <", sixmonthsago).
+		Filter("gdrive_id =", "").
 		KeysOnly().Limit(150) // Find up to 150 old pastes
 	old_keys, err := old_stuff.GetAll(c, nil)
 	if err != nil {

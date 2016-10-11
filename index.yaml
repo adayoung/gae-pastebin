@@ -12,6 +12,11 @@ indexes:
 
 - kind: Paste
   properties:
+  - name: gdrive_id
+  - name: date_published
+
+- kind: Paste
+  properties:
   - name: tags
   - name: date_published
     direction: desc
