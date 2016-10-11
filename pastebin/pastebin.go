@@ -167,6 +167,11 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		driveHosted := false
+		if len(paste.GDriveID) > 0 {
+			driveHosted = true
+		}
+
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl", "pastebin/templates/paste.tmpl"))
 		if err := tmpl.Execute(w, map[string]interface{}{
 			csrf.TemplateTag: csrf.TemplateField(r),
@@ -176,6 +181,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			"p_count":        p_count,
 			"user":           usr,
 			"deleteBtn":      showDeleteBtn,
+			"driveHosted":    driveHosted,
 		}); err != nil {
 			c.Errorf(err.Error())
 			http.Error(w, "Meep! We were trying to assemble this paste but something went wrong.", http.StatusInternalServerError)
@@ -365,11 +371,11 @@ func search(w http.ResponseWriter, r *http.Request) {
 			}
 
 			results = append(results, map[string]interface{}{
-				"paste_id": key.StringID(),
-				"title":    template.HTMLEscapeString(q.Title),
-				"tags":     q.Tags,
-				"i_date":   q.Date.Format(time.ANSIC),
-				"date":     humanize.Time(q.Date),
+				"paste_id":    key.StringID(),
+				"title":       template.HTMLEscapeString(q.Title),
+				"tags":        q.Tags,
+				"i_date":      q.Date.Format(time.ANSIC),
+				"date":        humanize.Time(q.Date),
 			})
 		}
 

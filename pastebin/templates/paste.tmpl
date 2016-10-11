@@ -44,6 +44,13 @@
         </button>
       {{ end }}
 
+      {{ if .driveHosted }}
+      <a href="/pastebin/about#PasteToGoogleDrive" class="btn btn-default btn-xs" title="Google Drive Hosted Content!" target="_blank">
+        <img src="/pastebin/static/img/drive.png" alt="">
+        <span class="sr-only">Google Drive Hosted Content!</span>
+      </a>
+      {{ end }}
+
     </span>
   </form>
 </div>
