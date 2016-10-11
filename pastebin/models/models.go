@@ -34,6 +34,7 @@ type Paste struct {
 	Zlib     bool      `datastore:"zlib,noindex"` // We need the Zlib flag to correctly process old, uncompressed content
 	uContent string    `datastore:"-"`            // Private content, for validation and processing
 	GDriveID string    `datastore:"gdrive_id,noindex"`
+	BatchID  string    `datastore:"batch_id"`
 }
 
 func (p *Paste) Load(ds <-chan datastore.Property) error {

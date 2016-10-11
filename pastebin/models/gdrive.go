@@ -27,20 +27,15 @@ import (
 type OAuthToken struct {
 	UserID  string       `datastore:"user_id"`
 	Token   oauth2.Token `datastore:"token,noindex"`
-	PBDirID string       `datastore:"pbdir_id,noindex"`
+	BatchID string       `datastore:"batch_id,noindex"`
 }
 
-func SaveOAuthToken(c appengine.Context, client *http.Client, t *oauth2.Token) error {
+func SaveOAuthToken(c appengine.Context, t *oauth2.Token) error {
 	user_id := user.Current(c).ID
 	token := new(OAuthToken)
 	token.UserID = user_id
 	token.Token = *t
-
-	pbdir_id, aerr := makePastebinFolder(c, client)
-	if aerr != nil {
-		return aerr
-	}
-	token.PBDirID = pbdir_id
+	token.BatchID = fmt.Sprintf("%s_%s", user_id, time.Now().Format(time.RFC3339Nano))
 
 	key := datastore.NewKey(c, "OAuthToken", user_id, 0, nil)
 	if _, err := datastore.Put(c, key, token); err != nil {
@@ -49,7 +44,11 @@ func SaveOAuthToken(c appengine.Context, client *http.Client, t *oauth2.Token) e
 	return nil
 }
 
-func DeleteOAuthToken(c appengine.Context, user_id string) error {
+func DeleteOAuthToken(c appengine.Context, batch_id string, user_id string) error {
+	if berr := NewBatchCleanQ(c, batch_id); berr != nil {
+		return berr
+	}
+
 	key := datastore.NewKey(c, "OAuthToken", user_id, 0, nil)
 	err := datastore.Delete(c, key)
 	return err
@@ -93,7 +92,7 @@ func GetOAuthClient(c appengine.Context, r *http.Request, user_id string) (*http
 			return nil, "", derr
 		}
 
-		return client, token.PBDirID, nil
+		return client, token.BatchID, nil
 	} else {
 		return nil, "", err
 	}
@@ -138,11 +137,12 @@ func makePastebinFolder(c appengine.Context, client *http.Client) (string, error
 }
 
 func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, content *bytes.Buffer, paste_id string) error {
-	client, pbdir_id, cerr := GetOAuthClient(c, r, p.UserID)
+	client, batch_id, cerr := GetOAuthClient(c, r, p.UserID)
 	if cerr != nil {
 		return cerr
 	}
 
+	p.BatchID = batch_id
 	if service, err := drive.New(client); err != nil {
 		return err
 	} else {
@@ -170,9 +170,14 @@ func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, content *bytes
 		appProperties["Format"] = p.Format
 		appProperties["Date"] = p.Date.Format(time.RFC3339Nano)
 		appProperties["Zlib"] = fmt.Sprintf("%v", p.Zlib)
+		appProperties["BatchID"] = p.BatchID
 
 		p_content.AppProperties = appProperties
-		p_content.Parents = []string{pbdir_id}
+		if pbdir_id, aerr := makePastebinFolder(c, client); aerr == nil {
+			p_content.Parents = []string{pbdir_id}
+		} else {
+			return parseAPIError(c, r, aerr, p, false)
+		}
 
 		buffer := bytes.NewReader(content.Bytes())
 		fc_call := service.Files.Create(p_content).Fields("id")

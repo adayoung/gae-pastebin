@@ -128,8 +128,7 @@ func auth_gdrive_finish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := config.Client(ctx, token)
-	err = models.SaveOAuthToken(c, client, token)
+	err = models.SaveOAuthToken(c, token)
 	if err != nil {
 		c.Errorf(err.Error())
 		http.Error(w, "Meep! We were trying to save the OAuth Token but something went wrong.", http.StatusInternalServerError)

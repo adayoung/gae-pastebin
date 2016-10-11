@@ -40,6 +40,10 @@ func parseAPIError(c appengine.Context, r *http.Request, rerr error, p *Paste, d
 
 		code = lcode
 		message = code_found[1]
+
+		if code == 401 {
+			token_revoked = true
+		}
 	}
 
 	if strings.HasPrefix(serr, "googleapi: Error ") {
@@ -81,6 +85,7 @@ func parseAPIError(c appengine.Context, r *http.Request, rerr error, p *Paste, d
 		c.Errorf("-flails- We've lost the recovery token for account, %s", p.UserID)
 		code = 500
 		message = "Oops, we've lost the recovery token! Please disconnect the app from Google Drive > Settings > Manage App and try connecting again!"
+		token_revoked = true
 	}
 
 	perr.Code = code
@@ -93,10 +98,9 @@ func parseAPIError(c appengine.Context, r *http.Request, rerr error, p *Paste, d
 	}
 
 	if token_revoked == true { // Oops, our access has been revoked
-		DeleteOAuthToken(c, p.UserID) // No err here, we just want to get rid of it xD
-		// if berr := NewBatchCleanQ(c, p.UserID); berr != nil {
-		// 	return berr
-		// }
+		if derr := DeleteOAuthToken(c, p.BatchID, p.UserID); derr != nil {
+			return derr
+		}
 	}
 
 	if len(perr.Response) > 0 {
