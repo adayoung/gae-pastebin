@@ -21,6 +21,9 @@ import (
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 
+	// Go Humanize by Dustin Sallings
+	"github.com/dustin/go-humanize"
+
 	// Local Packages
 	api_v1 "pastebin/api/v1"
 	"pastebin/auth"
@@ -366,7 +369,8 @@ func search(w http.ResponseWriter, r *http.Request) {
 				"paste_id": key.StringID(),
 				"title":    template.HTMLEscapeString(q.Title),
 				"tags":     q.Tags,
-				"date":     q.Date.Format(time.ANSIC),
+				"i_date":   q.Date.Format(time.ANSIC),
+				"date":     humanize.Time(q.Date),
 			})
 		}
 
