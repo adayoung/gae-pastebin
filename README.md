@@ -9,6 +9,7 @@ Hi! Here's a pastebin that runs on Google App Engine!
  * [github.com/gorilla/csrf](http://www.gorillatoolkit.org/pkg/csrf)
  * [google.golang.org/api/drive/v3](https://godoc.org/google.golang.org/api/drive/v3)
  * [github.com/gorilla/securecookie](http://www.gorillatoolkit.org/pkg/securecookie)
+ * [github.com/dustin/go-humanize](https://godoc.org/github.com/dustin/go-humanize)
 
 ## How to use
 
@@ -24,5 +25,5 @@ Hi! Here's a pastebin that runs on Google App Engine!
  * Deploy to your own Google account with:
    * `<sdk path>/goapp deploy -application [YOUR_PROJECT_ID] -version [YOUR_VERSION_ID]`
 
-_Oh, make sure to update static/js/base.js with your own GA user id!_
+_Oh, make sure to update static/js/base.js with your own GA user id!_  
 _And keys.yaml to change the CSRFAuthKey, EncryptionK and GCPOAuthCID as well!_

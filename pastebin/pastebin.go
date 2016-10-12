@@ -107,10 +107,13 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
+
+			c.Errorf(err.Error())
 			if err, ok := err.(*models.GDriveAPIError); ok {
 				http.Error(w, err.Response, err.Code)
 				return
 			}
+
 			http.Error(w, "BARF!@ Something's broken!@%", http.StatusInternalServerError)
 			return
 		}

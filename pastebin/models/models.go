@@ -112,7 +112,9 @@ func (p *Paste) Validate() error {
 	u_tag_map := make(map[string]string)
 	for _, tag := range p.Tags {
 		if u_tag_map[tag] == "" {
-			u_tags = append(u_tags, tag)
+			if len(tag) > 0 {
+				u_tags = append(u_tags, tag)
+			}
 		}
 		u_tag_map[tag] = tag
 	}

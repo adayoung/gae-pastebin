@@ -1,0 +1,110 @@
+{{ block "meta" . }}
+<meta name="API" content="API Key">
+{{ end }}
+
+{{ block "title" . }}
+  API Access
+{{ end }}
+
+{{ block "evenmorehead" . }}
+<style type="text/css">
+#api-article, #api-article > table > caption {
+  color: #fff;
+}
+
+.copybtn {
+  cursor: pointer;
+}
+</style>
+{{ end }}
+
+{{ block "content" . }}
+<div class="row">
+
+  <article class="text-muted" role="main" id="api-article">
+    <h1>API Access</h1>
+
+    <p>
+      Hi! We have an API for pasting too! You just need a client that's capable of making POST requests with multipart/form-data encoding.
+    </p>
+
+    <table class="table">
+      <caption>The following parameters are available:</caption>
+      <thead>
+        <tr><th>Parameter</th><th>Value</th><th>Description</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>auth</td><td>string</td>
+          <td>
+            This is a token that you need to supply with each request, you can get a token from the little box below.
+            {{/* This dun work yet D:
+            If you're signed in, the token will contain your user ID as well, which in turn lets you paste straight to your Google Drive if you've connected it to the application.
+            */}}
+          </td>
+          <td>Required</td>
+        </tr>
+        <tr>
+          <td>content</td><td>string</td>
+          <td>
+            This is the actual content of your paste. It's the same thing you'd paste in big white box on the site.
+          </td>
+          <td>Required</td>
+        </tr>
+        <tr>
+          <td>format</td><td>string</td>
+          <td>
+            This is the format of your paste. Supported values are 'plain' and 'html'.
+          </td>
+          <td>Required</td>
+        </tr>
+        <tr>
+          <td>title</td><td>string</td>
+          <td>
+            This is the title of your paste. A title above 50 characters is silently truncated.
+          </td>
+          <td>Optional</td>
+        </tr>
+        <tr>
+          <td>tags</td><td>string</td>
+          <td>
+            Tags help classify your paste and allow people to search for them. You can supply multiple tags separated by space here. Tags longer than 15 characters are silently truncated. Non-alphanumeric characters are silently stripped. Duplicate tags are dropped. A maximum of 15 tags are accepted.
+          </td>
+          <td>Optional</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="input-group">
+      <span class="input-group-addon">API Key</span>
+      <input class="form-control" id="apikey" readonly type="text" value="{{ .token }}">
+      <span class="input-group-addon copybtn" data-title="Click to Copy!" data-clipboard-target="#apikey"><i class="glyphicon glyphicon-copy"></i></span>
+    </div>
+    <br>
+
+    <p>
+      The POST request should be made to this URL:
+    </p>
+
+    <div class="input-group">
+      <span class="input-group-addon">POST URL</span>
+      <input class="form-control" id="posturl" readonly type="text" value="https://ada-young.appspot.com/pastebin/api/v1/create">
+      <span class="input-group-addon copybtn" data-title="Click to Copy!" data-clipboard-target="#posturl"><i class="glyphicon glyphicon-copy"></i></span>
+    </div>
+    <br>
+
+    <p>
+      We support pasting from <a href="https://getsharex.com/">ShareX</a> too! Clickey for importable <a href="https://github.com/ShareX/CustomUploaders/blob/master/ada-young.appspot.com%20(HTML).json">HTML</a> and <a href="https://github.com/ShareX/CustomUploaders/blob/master/ada-young.appspot.com%20(Plain).json">Plain</a> paste settings!
+    </p>
+
+  </article>
+
+</div>
+{{ end }}
+{{ block "footer" . }}
+&nbsp;
+{{ end }}
+{{ block "evenmoretail" . }}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.12/clipboard.min.js"></script>
+<script src="/pastebin/static/js/api_v1.js"></script>
+{{ end }}
