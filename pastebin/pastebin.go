@@ -136,7 +136,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 	usr := user.Current(c)
 	v := mux.Vars(r)
-	paste_id := v["paste_id"]
+	paste_id := v["paste_id"][:8]
 
 	if paste, err := models.GetPaste(c, paste_id); err == datastore.ErrNoSuchEntity {
 		Http404(w, r)
@@ -211,7 +211,7 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 
 	c := appengine.NewContext(r)
 	v := mux.Vars(r)
-	paste_id := v["paste_id"]
+	paste_id := v["paste_id"][:8]
 
 	if paste, err := models.GetPaste(c, paste_id); err == datastore.ErrNoSuchEntity {
 		Http404(w, r)
