@@ -118,6 +118,11 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		if err := utils.UpdateSession(w, r, paste_id); err != nil {
+			c.Errorf(err.Error())
+			http.Error(w, "Meep! We were trying to get or set a session but something went wrong.", http.StatusInternalServerError)
+		}
+
 		if r.Header.Get("X-Requested-With") == "XMLHttpRequest" { // AJAX
 			w.Write([]byte("/pastebin/" + paste_id))
 		} else {
@@ -146,6 +151,13 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			if paste.UserID == usr.ID || user.IsAdmin(c) {
 				showDeleteBtn = true
 			}
+		}
+
+		if checkDelete, err := utils.CheckSession(r, paste_id); err != nil {
+			c.Errorf(err.Error())
+			http.Error(w, "Meep! We were trying to get a session but something went wrong.", http.StatusInternalServerError)
+		} else {
+			showDeleteBtn = checkDelete
 		}
 
 		defer counter.Increment(c, paste_id)
@@ -229,28 +241,47 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Disposition", dl_disposition)
 		}
 
-		// Check ownership and expire paste on the /delete route
+		// Check ownership and expire paste on the /delete route, POST is enforced here by the mux
 		if dl := strings.Split(r.URL.Path, "/"); dl[len(dl)-1] == "delete" {
+			canDelete := false
 			if usr := user.Current(c); usr != nil {
 				if paste.UserID == usr.ID || user.IsAdmin(c) {
-					err := paste.Delete(c, r)
-					if err != nil {
-						if derr, ok := err.(*models.GDriveAPIError); ok {
-							http.Error(w, derr.Response, derr.Code)
-							return
-						}
-						c.Errorf(err.Error())
-						http.Error(w, "Meep! We were trying to delete this paste but something went wrong.", http.StatusInternalServerError)
-					}
-					if r.Header.Get("X-Requested-With") == "XMLHttpRequest" { // AJAX
-						w.Write([]byte("/pastebin/"))
-					} else {
-						// http://tools.ietf.org/html/rfc2616#section-10.3.4 / Http 303
-						http.Redirect(w, r, "/pastebin/", http.StatusSeeOther)
-					}
-					return
+					canDelete = true
 				}
 			}
+
+			if checkDelete, err := utils.CheckSession(r, paste_id); err != nil {
+				c.Errorf(err.Error())
+				http.Error(w, "Meep! We were trying to get a session but something went wrong.", http.StatusInternalServerError)
+			} else {
+				canDelete = checkDelete
+			}
+
+			if canDelete {
+				err := paste.Delete(c, r)
+				if err != nil {
+					if derr, ok := err.(*models.GDriveAPIError); ok {
+						http.Error(w, derr.Response, derr.Code)
+						return
+					}
+					c.Errorf(err.Error())
+					http.Error(w, "Meep! We were trying to delete this paste but something went wrong.", http.StatusInternalServerError)
+				}
+
+				if err := utils.UpdateSession(w, r, "-"+paste_id); err != nil {
+					c.Errorf(err.Error())
+					http.Error(w, "Meep! We were trying to get or set a session but something went wrong. Your paste has been deleted, however!", http.StatusInternalServerError)
+				}
+
+				if r.Header.Get("X-Requested-With") == "XMLHttpRequest" { // AJAX
+					w.Write([]byte("/pastebin/"))
+				} else {
+					// http://tools.ietf.org/html/rfc2616#section-10.3.4 / Http 303
+					http.Redirect(w, r, "/pastebin/", http.StatusSeeOther)
+				}
+				return
+			}
+			return
 		}
 
 		err := paste.ZContent(c, r, w)

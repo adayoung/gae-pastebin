@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	// Google Appengine Packages
 	"appengine"
@@ -16,6 +17,7 @@ import (
 
 	// The Gorilla Web Toolkit
 	"github.com/gorilla/securecookie"
+	"github.com/gorilla/sessions"
 )
 
 // http://andyrees.github.io/2015/your-code-a-mess-maybe-its-time-to-bring-in-the-decorators/
@@ -35,6 +37,56 @@ func ExtraSugar(f http.HandlerFunc) http.HandlerFunc {
 
 		f(w, r)
 	}
+}
+
+var sessionStore = sessions.NewCookieStore([]byte(os.Getenv("EncryptionK")))
+
+func UpdateSession(w http.ResponseWriter, r *http.Request, paste_id string) error {
+	if session, err := sessionStore.Get(r, "pb_session"); err != nil {
+		return err
+	} else {
+		session.Options = &sessions.Options{
+			Path:     "/pastebin/",
+			MaxAge:   0,
+			HttpOnly: true,
+			Secure:   !appengine.IsDevAppServer(),
+		}
+
+		if strings.HasPrefix(paste_id, "-") {
+			_paste_id := paste_id[1:len(paste_id)]
+			delete(session.Values, _paste_id)
+		} else {
+			session.Values[paste_id] = time.Now().Format(time.RFC3339)
+			if len(session.Values) > 100 { // remember up to 100 pastes only
+				var popindex string
+				_time := time.Now().Format(time.RFC3339)
+				for key, value := range session.Values {
+					if value.(string) < _time {
+						_time = value.(string)
+						popindex = key.(string)
+					}
+				}
+				delete(session.Values, popindex)
+			}
+		}
+
+		err = session.Save(r, w)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func CheckSession(r *http.Request, paste_id string) (bool, error) {
+	if session, err := sessionStore.Get(r, "pb_session"); err != nil {
+		return false, err
+	} else {
+		if session.Values[paste_id] != nil {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 func ProcessForm(c appengine.Context, r *http.Request) error {

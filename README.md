@@ -7,9 +7,10 @@ Hi! Here's a pastebin that runs on Google App Engine!
  * [github.com/gorilla/mux](http://www.gorillatoolkit.org/pkg/mux)
  * [golang.org/x/oauth2/...](https://godoc.org/golang.org/x/oauth2)
  * [github.com/gorilla/csrf](http://www.gorillatoolkit.org/pkg/csrf)
+ * [github.com/gorilla/sessions](http://www.gorillatoolkit.org/pkg/sessions)
+ * [github.com/dustin/go-humanize](https://godoc.org/github.com/dustin/go-humanize)
  * [google.golang.org/api/drive/v3](https://godoc.org/google.golang.org/api/drive/v3)
  * [github.com/gorilla/securecookie](http://www.gorillatoolkit.org/pkg/securecookie)
- * [github.com/dustin/go-humanize](https://godoc.org/github.com/dustin/go-humanize)
 
 ## How to use
 
