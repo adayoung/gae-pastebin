@@ -86,7 +86,8 @@ func GetOAuthClient(c appengine.Context, r *http.Request, user_id string) (*http
 		if terr != nil { // terrrr!!
 			return nil, "", terr
 		}
-		token.Token = *n_token
+		token.Token.AccessToken = n_token.AccessToken
+		token.Token.Expiry = n_token.Expiry
 
 		if _, derr := datastore.Put(c, key, token); derr != nil {
 			return nil, "", derr
