@@ -11,6 +11,13 @@ handlers:
   http_headers:
     X-Content-Type-Options: nosniff
 
+- url: /robots\.txt
+  static_files: static/robots.txt
+  upload: static/robots\.txt
+  secure: always
+  http_headers:
+    X-Content-Type-Options: nosniff
+
 - url: /static
   static_dir: static
   secure: always
