@@ -12,6 +12,7 @@ import (
 	// Google Appengine Packages
 	"appengine"
 	"appengine/datastore"
+	"appengine/urlfetch"
 	"appengine/user"
 
 	// Google OAuth2/Drive Packages
@@ -179,7 +180,7 @@ func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, paste_id strin
 		}
 
 		buffer := bytes.NewReader([]byte(p.uContent))
-		fc_call := service.Files.Create(p_content).Fields("id")
+		fc_call := service.Files.Create(p_content).Fields("id", "webContentLink")
 		fc_call = fc_call.Media(buffer)
 		response, err := fc_call.Do()
 
@@ -198,6 +199,16 @@ func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, paste_id strin
 
 			ctx := go_ae.NewContext(r)
 			memcache.Add(ctx, mc_item)
+
+			// Add a permission to allow downloading content
+			fp_call := service.Permissions.Create(response.Id, &drive.Permission{
+				Role: "reader", Type: "anyone",
+			}).Fields("id")
+			if _, p_err := fp_call.Do(); p_err != nil {
+				c.Errorf(p_err.Error())
+			} else {
+				p.GDriveDL = response.WebContentLink
+			}
 		}
 	}
 
@@ -218,10 +229,17 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 		if service, err := drive.New(client); err != nil {
 			return err
 		} else {
-			fg_call := service.Files.Get(p.GDriveID)
+			var err error
+			var response *http.Response
+			if len(p.GDriveDL) > 0 { // We have a download link available!
+				fg_call := urlfetch.Client(c)
+				response, err = fg_call.Get(p.GDriveDL)
+			} else {
+				fg_call := service.Files.Get(p.GDriveID)
+				response, err = fg_call.Download()
+			}
 			// We should probably issue a Do() call first to find out whether the file was trashed before
 			// downloading it. Oorrrr... we could just tell the users to delete it from trash as well! xD
-			response, err := fg_call.Download()
 			if err != nil {
 				c.Errorf(err.Error())
 				return parseAPIError(c, r, err, p, false)
