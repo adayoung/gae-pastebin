@@ -25,9 +25,8 @@ func init() {
 	Router.HandleFunc("/pastebin/auth/login", utils.ExtraSugar(login)).Methods("GET", "POST").Name("login")
 	Router.HandleFunc("/pastebin/auth/logout", utils.ExtraSugar(logout)).Methods("GET").Name("logout")
 
-	// FIXME: We're broken again :(
-	// Router.HandleFunc("/pastebin/auth/gdrive/start", utils.ExtraSugar(auth_gdrive_start)).Methods("GET").Name("auth_gdrive_start")
-	// Router.HandleFunc("/pastebin/auth/gdrive/finish", utils.ExtraSugar(auth_gdrive_finish)).Methods("GET").Name("auth_gdrive_finish")
+	Router.HandleFunc("/pastebin/auth/gdrive/start", utils.ExtraSugar(auth_gdrive_start)).Methods("GET").Name("auth_gdrive_start")
+	Router.HandleFunc("/pastebin/auth/gdrive/finish", utils.ExtraSugar(auth_gdrive_finish)).Methods("GET").Name("auth_gdrive_finish")
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
