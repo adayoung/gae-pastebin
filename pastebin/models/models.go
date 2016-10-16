@@ -34,6 +34,7 @@ type Paste struct {
 	Zlib     bool      `datastore:"zlib,noindex"`
 	uContent string    `datastore:"-"` // Private content, for validation and processing
 	GDriveID string    `datastore:"gdrive_id"`
+	GDriveDL string    `datastore:"gdrive_dl,noindex"`
 	BatchID  string    `datastore:"batch_id"`
 }
 

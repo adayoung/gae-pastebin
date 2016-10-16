@@ -80,7 +80,7 @@ func parseAPIError(c appengine.Context, r *http.Request, rerr error, p *Paste, d
 		}
 	}
 
-	if strings.HasSuffix(serr, ": oauth2: token expired and refresh token is not set") {
+	if strings.Contains(serr, "oauth2: token expired and refresh token is not set") {
 		// https://github.com/golang/oauth2/blob/1e695b1c8febf17aad3bfa7bf0a819ef94b98ad5/oauth2.go#L227
 		c.Errorf("-flails- We've lost the recovery token for account, %s", p.UserID)
 		code = 500
