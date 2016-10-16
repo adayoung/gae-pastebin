@@ -30,7 +30,13 @@
       </a>
       {{ end }}
 
-      <a href="/pastebin/{{ .paste_id }}/download" class="btn btn-default btn-xs" title="Download">
+      <a href="
+        {{ if .paste.GDriveDL }}
+          {{ .paste.GDriveDL }}
+        {{ else }}
+          /pastebin/{{ .paste_id }}/download
+        {{ end }}
+      " class="btn btn-default btn-xs" title="Download">
         <span class="glyphicon glyphicon-save"></span>
         <span class="sr-only">Download</span>
       </a>
