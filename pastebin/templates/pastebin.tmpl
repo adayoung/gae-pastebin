@@ -107,7 +107,7 @@
               <div class="btn-group" role="group">
                 <button class="btn btn-primary" data-title="Ctrl-Enter to paste in plain, Alt-Enter to paste in HTML!" id="paste_btn" type="submit">Paste it!</button>
                 <span title="I'm hiding from teh tooltip thingie!!"></span>
-                <button class="btn btn-default" disabled data-title="Click to connect!" id="paste_gdrv" type="submit"><img src="/pastebin/static/img/drive.png" alt="Paste to Google Drive!"> <span id="paste_gdrv_txt">Paste to Google Drive!</span></button>
+                <button class="btn btn-default disabled" disabled data-title="Oops, it's broken at the moment :(" id="paste_gdrv" type="submit"><img src="/pastebin/static/img/drive.png" alt="Paste to Google Drive!"> <span id="paste_gdrv_txt">Paste to Google Drive!</span></button>
                 <span title="I'm hiding from teh tooltip thingie!!"></span>
                 <a class="btn btn-default" href="/pastebin/about#PasteToGoogleDrive" data-title="About" target="_blank"><i class="glyphicon glyphicon-question-sign"></i><span class="sr-only">About</span></a>
               </div>
@@ -144,6 +144,6 @@
 {{ block "moretail" . }}
   <script src="/pastebin/static/js/common.js"></script>
   {{ block "evenmoretail" . }}
-    <script src="/pastebin/static/js/v2/pastebin.js"></script>
+    <script src="/pastebin/static/js/pastebin.js?d=2016-10-16"></script>
   {{ end }}
 {{ end }}

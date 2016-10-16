@@ -99,6 +99,10 @@ $(document).ready(function(){
   $('#paste_gdrv').on('click', function(event){
     event.preventDefault();
 
+    if ($('#paste_gdrv').hasClass("disabled")) {
+      return false; // we're disabled
+    }
+
     if (!$('#content').val().length > 0) {
       $('#content').parent().addClass('has-error');
       $('#content').focus();
