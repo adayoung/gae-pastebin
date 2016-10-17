@@ -14,7 +14,9 @@ $(document).ready(function(){
     });
     $($(e.trigger).siblings()[1]).tooltip('show');
     setTimeout(function() {
-      $($(e.trigger).siblings()[1]).tooltip('destroy');
+      try {
+        $($(e.trigger).siblings()[1]).tooltip('destroy');
+      } catch(e) {};
     }, 1000);
   });
 
@@ -26,7 +28,9 @@ $(document).ready(function(){
     });
     $($(e.trigger).siblings()[1]).tooltip('show');
     setTimeout(function() {
-      $($(e.trigger).siblings()[1]).tooltip('destroy');
+      try {
+        $($(e.trigger).siblings()[1]).tooltip('destroy');
+      } catch(e) {};
     }, 1000);
   });
 });
