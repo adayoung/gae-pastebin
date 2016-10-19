@@ -50,6 +50,10 @@ textarea#content {
   display: none;
 }
 
+.tehcontrols {
+  display: none;
+}
+
 #spinner {
   display: none;
 }

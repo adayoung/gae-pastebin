@@ -2,12 +2,18 @@ var auth_window;
 $(document).ready(function(){
   $('.nojs').hide();
   $('.havejs').show();
+  $('.tehcontrols').css('display', 'inline-block')
   $('#paste_gdrv').attr('disabled', false);
 
-  $('#label_plain').addClass('active');
-  $('#plain').attr('checked', true);
+  $('#plain').prop('checked', true);
+  $('input[type=radio]:checked').parent().addClass('active');
   $('#spinner').attr('src', $('#spinner').data('src'));
   $('#appengine').attr('src', $('#appengine').data('src'));
+
+  $('#about_btn').on('click', function(event){
+    event.preventDefault();
+    window.open($(this).attr('href'));
+  });
 
   $('#paste_btn').on('click', function(event){
     event.preventDefault();
@@ -32,6 +38,7 @@ $(document).ready(function(){
       title: $('#title').val(),
       tags: $('#tags').val(),
       format: $('input[name=format]:checked').val(),
+      destination: $('input[name=destination]:checked').val(),
       "gorilla.csrf.Token": $('input[name="gorilla.csrf.Token"]').val()
     }).done(function(e){
       location.replace(e);
@@ -124,7 +131,8 @@ $(document).ready(function(){
 
   $('.btn').tooltip({
     placement: 'auto',
-    title: $(this).data('title')
+    title: $(this).data('title'),
+    container: 'body'
   });
 
   $('#content').focus();

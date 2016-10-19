@@ -39,10 +39,10 @@ func ExtraSugar(f http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-var sessionStore = sessions.NewCookieStore([]byte(os.Getenv("EncryptionK")))
+var sessionStore = sessions.NewCookieStore([]byte(os.Getenv("CSRFAuthKey")))
 
 func UpdateSession(w http.ResponseWriter, r *http.Request, paste_id string) error {
-	if session, err := sessionStore.Get(r, "pb_session"); err != nil {
+	if session, err := sessionStore.Get(r, "_pb_session"); err != nil {
 		return err
 	} else {
 		session.Options = &sessions.Options{
@@ -57,7 +57,7 @@ func UpdateSession(w http.ResponseWriter, r *http.Request, paste_id string) erro
 			delete(session.Values, _paste_id)
 		} else {
 			session.Values[paste_id] = time.Now().Format(time.RFC3339)
-			if len(session.Values) > 100 { // remember up to 100 pastes only
+			if len(session.Values) > 10 { // remember up to 10 pastes only
 				var popindex string
 				_time := time.Now().Format(time.RFC3339)
 				for key, value := range session.Values {
@@ -79,7 +79,7 @@ func UpdateSession(w http.ResponseWriter, r *http.Request, paste_id string) erro
 }
 
 func CheckSession(r *http.Request, paste_id string) (bool, error) {
-	if session, err := sessionStore.Get(r, "pb_session"); err != nil {
+	if session, err := sessionStore.Get(r, "_pb_session"); err != nil {
 		return false, err
 	} else {
 		if session.Values[paste_id] != nil {

@@ -90,30 +90,42 @@
               <label class="radio-inline text-muted nojs" for="html_nojs">
                 <input id="html_nojs" name="format" type="radio" value="html"> Colourful HTML
               </label>
-              <div class="btn-group havejs" data-toggle="buttons">
-                <label class="btn btn-primary" for="plain" id="label_plain">
-                  <input id="plain" name="format" type="radio" value="plain"> Plain Text
-                </label>
-                <label class="btn btn-primary" for="html" id="label_html">
-                  <input id="html" name="format" type="radio" value="html"> Colourful HTML
-                </label>
+
+              <div class="tehcontrols">
+
+                <div class="btn-group" data-toggle="buttons">
+                  <label class="btn btn-primary" for="plain" id="label_plain">
+                    <input id="plain" name="format" type="radio" value="plain"> Plain Text
+                  </label>
+                  <label class="btn btn-primary" for="html" id="label_html">
+                    <input id="html" name="format" type="radio" value="html"> Colourful HTML
+                  </label>
+                </div>
+
+                <div class="btn-group" data-toggle="buttons">
+                  <label class="btn btn-default" for="datastore" id="label_datastore" title="Paste to App Engine Datastore!">
+                    <input
+                    {{ if eq .dest "datastore" }}
+                    checked=""
+                    {{ end }}
+                    id="datastore" name="destination" type="radio" value="datastore">
+                    <img src="/pastebin/static/img/datastore-symbol.png" alt="Paste to Google Drive!">
+                  </label>
+                  <label class="btn btn-default" for="gdrive" id="label_gdrive" title="Paste to Google Drive!">
+                    <input
+                    {{ if eq .dest "gdrive" }}
+                      checked=""
+                      {{ end }}
+                    id="gdrive" name="destination" type="radio" value="gdrive">
+                    <img src="/pastebin/static/img/drive.png" alt="Paste to Google Drive!">
+                  </label>
+                  <a class="btn btn-default" href="/pastebin/about#PasteToGoogleDrive" id="about_btn" data-title="About" target="_blank"><i class="glyphicon glyphicon-question-sign"></i><span class="sr-only">About</span></a>
+                </div>
+
               </div>
-              <input type="hidden" name="destination"
-                {{ if .gdrive_auth }}
-                  value="gdrive"
-                {{ else }}
-                  value="datastore"
-                {{ end }}
-              >
               {{ .csrfField }}
               &nbsp;
-              <div class="btn-group" role="group">
-                <button class="btn btn-primary" data-title="Ctrl-Enter to paste in plain, Alt-Enter to paste in HTML!" id="paste_btn" type="submit">Paste it!</button>
-                <span title="I'm hiding from teh tooltip thingie!!"></span>
-                <button class="btn btn-default" disabled data-title="Click to connect!" id="paste_gdrv" type="submit"><img src="/pastebin/static/img/drive.png" alt="Paste to Google Drive!"> <span id="paste_gdrv_txt">Paste to Google Drive!</span></button>
-                <span title="I'm hiding from teh tooltip thingie!!"></span>
-                <a class="btn btn-default" href="/pastebin/about#PasteToGoogleDrive" data-title="About" target="_blank"><i class="glyphicon glyphicon-question-sign"></i><span class="sr-only">About</span></a>
-              </div>
+              <button class="btn btn-primary" data-title="Ctrl-Enter to paste in plain, Alt-Enter to paste in HTML!" id="paste_btn" type="submit">Paste it!</button>
               <img alt="pretty spinner" id="spinner" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" height="24" width="24" data-src="/pastebin/static/img/spinner.gif">
               <em><span class="pull-right text-muted havejs" id="noc_wrap"><span id="noc">0</span> characters.</span></em>
             </div>

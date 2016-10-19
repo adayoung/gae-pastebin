@@ -134,10 +134,12 @@ func (p *Paste) save(c appengine.Context, r *http.Request) (string, error) {
 		c.Infof("Creating new paste with paste_id [%s]", paste_id)
 		p.PasteID = paste_id
 
+		// FIXME: replace below with destination check instead
 		havetoken, verr := CheckOAuthToken(c)
 		if verr != nil {
 			return "", verr
 		}
+		// FIXME: replace above with destination check instead
 
 		p.Zlib = false
 		if havetoken == true {

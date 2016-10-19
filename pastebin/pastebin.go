@@ -83,18 +83,18 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl"))
 
-		gdrive_auth, verr := models.CheckOAuthToken(c)
-		if verr != nil {
-			c.Errorf(verr.Error())
-			http.Error(w, "Meep! We were trying to retrieve an OAuth Token but something went wrong.", http.StatusInternalServerError)
-			return
+		destination := "datastore" // default destination
+		if d_cookie, err := r.Cookie("dest"); err == nil {
+			if d_cookie.Value == "datastore" || d_cookie.Value == "gdrive" {
+				destination = d_cookie.Value
+			}
 		}
 
 		// http://www.gorillatoolkit.org/pkg/csrf
 		if err := tmpl.Execute(w, map[string]interface{}{
 			csrf.TemplateTag: csrf.TemplateField(r),
 			"user":           user.Current(c),
-			"gdrive_auth":    gdrive_auth,
+			"dest":           destination,
 		}); err != nil {
 			c.Errorf(err.Error())
 			http.Error(w, "Meep! We were trying to make the 'home' page but something went wrong.", http.StatusInternalServerError)
@@ -120,8 +120,22 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 
 		if err := utils.UpdateSession(w, r, paste_id); err != nil {
 			c.Errorf(err.Error())
-			http.Error(w, "Meep! We were trying to get or set a session but something went wrong.", http.StatusInternalServerError)
+			http.SetCookie(w, &http.Cookie{
+				Name: "_pb_session",
+				Value: "",
+				MaxAge: -1,
+				Secure:   !appengine.IsDevAppServer(),
+				HttpOnly: true,
+			})
 		}
+
+		http.SetCookie(w, &http.Cookie{
+			Name:     "dest",
+			Value:    r.Form.Get("destination"),
+			MaxAge:   0,
+			Secure:   !appengine.IsDevAppServer(),
+			HttpOnly: true,
+		})
 
 		if r.Header.Get("X-Requested-With") == "XMLHttpRequest" { // AJAX
 			w.Write([]byte("/pastebin/" + paste_id))
