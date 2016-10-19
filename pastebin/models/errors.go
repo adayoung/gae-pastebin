@@ -25,7 +25,6 @@ func parseAPIError(c appengine.Context, r *http.Request, rerr error, p *Paste, d
 	// THIS! Because the upstream API won't give structured errors!@
 	serr := rerr.Error()
 	perr := &GDriveAPIError{}
-	token_revoked := false
 	var message string
 	var code int
 
@@ -40,10 +39,6 @@ func parseAPIError(c appengine.Context, r *http.Request, rerr error, p *Paste, d
 
 		code = lcode
 		message = code_found[1]
-
-		if code == 401 {
-			token_revoked = true
-		}
 	}
 
 	if strings.HasPrefix(serr, "googleapi: Error ") {
@@ -57,10 +52,6 @@ func parseAPIError(c appengine.Context, r *http.Request, rerr error, p *Paste, d
 
 		code = lcode
 		message = code_found[1]
-
-		if code == 401 {
-			token_revoked = true
-		}
 	}
 
 	if strings.Contains(serr, ": oauth2: cannot fetch token: ") {
@@ -74,10 +65,6 @@ func parseAPIError(c appengine.Context, r *http.Request, rerr error, p *Paste, d
 
 		code = lcode
 		message = code_found[1]
-
-		if strings.Contains(message, "Token has been revoked.") {
-			token_revoked = true
-		}
 	}
 
 	if strings.Contains(serr, "oauth2: token expired and refresh token is not set") {
@@ -85,7 +72,6 @@ func parseAPIError(c appengine.Context, r *http.Request, rerr error, p *Paste, d
 		c.Errorf("-flails- We've lost the recovery token for account, %s", p.UserID)
 		code = 500
 		message = "Oops, we've lost the recovery token! Please disconnect the app from Google Drive > Settings > Manage App and try connecting again!"
-		token_revoked = true
 	}
 
 	perr.Code = code
@@ -94,12 +80,6 @@ func parseAPIError(c appengine.Context, r *http.Request, rerr error, p *Paste, d
 	if perr.Code == 404 { // Oops, the paste's contents have disappeared from upstream
 		if delete_c == false { // This flag keeps us from going into a recursive loop
 			p.Delete(c, r) // No err here, we just want to get rid of it xD
-		}
-	}
-
-	if token_revoked == true { // Oops, our access has been revoked
-		if derr := DeleteOAuthToken(c, p.BatchID, p.UserID); derr != nil {
-			return derr
 		}
 	}
 

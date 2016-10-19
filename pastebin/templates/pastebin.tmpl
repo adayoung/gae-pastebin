@@ -59,6 +59,7 @@
       {{ block "content" . }}
       <div class="row">
         <h1 class="sr-only">Welcome to Ada's HTML Pastebin!</h1>
+        <div id="eepnokb" class="alert alert-danger" role="alert">Oops, umm ... the keyboard accelerators don't work well with opening popup windows yet. You'll need to click on the Paste it! below. Sorry!</div>
         <form  enctype="multipart/form-data" method="post">
           <fieldset>
           <legend class="sr-only">Pastebin</legend>
@@ -104,15 +105,15 @@
 
                 <div class="btn-group" data-toggle="buttons">
                   <label class="btn btn-default" for="datastore" id="label_datastore" title="Paste to App Engine Datastore!">
-                    <input
+                    <input disabled
                     {{ if eq .dest "datastore" }}
                     checked=""
                     {{ end }}
                     id="datastore" name="destination" type="radio" value="datastore">
-                    <img src="/pastebin/static/img/datastore-symbol.png" alt="Paste to Google Drive!">
+                    <img src="/pastebin/static/img/datastore-symbol.png" alt="Paste to Google Drive!" style="height:16px">
                   </label>
                   <label class="btn btn-default" for="gdrive" id="label_gdrive" title="Paste to Google Drive!">
-                    <input
+                    <input disabled
                     {{ if eq .dest "gdrive" }}
                       checked=""
                       {{ end }}

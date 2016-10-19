@@ -35,7 +35,6 @@ type Paste struct {
 	uContent string    `datastore:"-"` // Private content, for validation and processing
 	GDriveID string    `datastore:"gdrive_id"`
 	GDriveDL string    `datastore:"gdrive_dl,noindex"`
-	BatchID  string    `datastore:"batch_id"`
 }
 
 func (p *Paste) Load(ds <-chan datastore.Property) error {
@@ -134,12 +133,10 @@ func (p *Paste) save(c appengine.Context, r *http.Request) (string, error) {
 		c.Infof("Creating new paste with paste_id [%s]", paste_id)
 		p.PasteID = paste_id
 
-		// FIXME: replace below with destination check instead
-		havetoken, verr := CheckOAuthToken(c)
-		if verr != nil {
-			return "", verr
+		havetoken := false
+		if r.Form.Get("destination") == "gdrive" {
+			havetoken = true
 		}
-		// FIXME: replace above with destination check instead
 
 		p.Zlib = false
 		if havetoken == true {
@@ -194,7 +191,6 @@ func (p *Paste) ZContent(c appengine.Context, r *http.Request, pc pasteContent) 
 
 func (p *Paste) Delete(c appengine.Context, r *http.Request) error {
 	paste_id := p.PasteID
-	gdriv_id := p.GDriveID
 	key := datastore.NewKey(c, PasteDSKind, paste_id, 0, nil)
 	c.Infof("Delete paste with paste_id [%s]", paste_id)
 	err := datastore.Delete(c, key)
@@ -221,13 +217,6 @@ func (p *Paste) Delete(c appengine.Context, r *http.Request) error {
 	err = datastore.DeleteMulti(c, shardc_dkeys)
 	if err != nil {
 		return err
-	}
-
-	if len(gdriv_id) > 0 {
-		err := p.deleteFromDrive(c, r)
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil

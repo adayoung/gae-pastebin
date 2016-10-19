@@ -3,17 +3,17 @@ package models
 import (
 	// Go Builtin Packages
 	"bytes"
+	"encoding/gob"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
 	// Google Appengine Packages
 	"appengine"
-	"appengine/datastore"
 	"appengine/urlfetch"
-	"appengine/user"
 
 	// Google OAuth2/Drive Packages
 	"golang.org/x/oauth2"
@@ -21,86 +21,69 @@ import (
 	go_ae "google.golang.org/appengine"
 	"google.golang.org/appengine/memcache"
 
+	// The Gorilla Web Toolkit
+	"github.com/gorilla/sessions"
+
 	// Local Packages
 	"pastebin/utils"
 )
 
-type OAuthToken struct {
-	UserID  string       `datastore:"user_id"`
-	Token   oauth2.Token `datastore:"token,noindex"`
-	BatchID string       `datastore:"batch_id,noindex"`
+func init() {
+	gob.Register(&oauth2.Token{})
 }
 
-func SaveOAuthToken(c appengine.Context, t *oauth2.Token) error {
-	user_id := user.Current(c).ID
-	token := new(OAuthToken)
-	token.UserID = user_id
-	token.Token = *t
-	token.BatchID = fmt.Sprintf("%s_%s", user_id, time.Now().Format(time.RFC3339Nano))
+var sessionStore = sessions.NewCookieStore([]byte(os.Getenv("CSRFAuthKey")), []byte(os.Getenv("EncryptionK")))
 
-	key := datastore.NewKey(c, "OAuthToken", user_id, 0, nil)
-	if _, err := datastore.Put(c, key, token); err != nil {
+func SaveOAuthToken(w http.ResponseWriter, r *http.Request, token *oauth2.Token) error {
+	if session, err := sessionStore.Get(r, "_oauth2_gdrive"); err != nil {
 		return err
+	} else {
+		session.Options = &sessions.Options{
+			Path:     "/pastebin/",
+			MaxAge:   0,
+			HttpOnly: true,
+			Secure:   !appengine.IsDevAppServer(),
+		}
+
+		session.Values["gdrive"] = token
+
+		err = session.Save(r, w)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
-func DeleteOAuthToken(c appengine.Context, batch_id string, user_id string) error {
-	if berr := NewBatchCleanQ(c, batch_id); berr != nil {
-		return berr
-	}
-
-	key := datastore.NewKey(c, "OAuthToken", user_id, 0, nil)
-	err := datastore.Delete(c, key)
-	return err
-}
-
-func CheckOAuthToken(c appengine.Context) (bool, error) {
-	if usr := user.Current(c); usr != nil {
-		if count, err := datastore.NewQuery("OAuthToken").Filter("user_id =", usr.ID).KeysOnly().Limit(1).Count(c); err != nil {
-			return false, err
-		} else if count > 0 {
-			return true, nil
+func GetOAuthToken(r *http.Request, user_id string) (*oauth2.Token, error) {
+	if session, err := sessionStore.Get(r, "_oauth2_gdrive"); err != nil {
+		return nil, err
+	} else {
+		if token, ok := session.Values["gdrive"].(*oauth2.Token); ok {
+			return token, nil
+		} else {
+			return nil, fmt.Errorf("Invalid type for oauth2.Token.")
 		}
 	}
-	return false, nil
+	return nil, nil
 }
 
-func GetOAuthToken(c appengine.Context, user_id string) (*OAuthToken, *datastore.Key, error) {
-	key := datastore.NewKey(c, "OAuthToken", user_id, 0, nil)
-	token := new(OAuthToken)
-	err := datastore.Get(c, key, token)
-	return token, key, err
-}
-
-func GetOAuthClient(c appengine.Context, r *http.Request, user_id string) (*http.Client, string, error) {
-	if token, key, err := GetOAuthToken(c, user_id); err == nil {
+func GetOAuthClient(c appengine.Context, r *http.Request, user_id string) (*http.Client, error) {
+	if token, err := GetOAuthToken(r, user_id); err == nil {
 		ctx := go_ae.NewContext(r)
 		config, cerr := utils.OAuthConfigDance(c)
 		if cerr != nil {
-			return nil, "", cerr
+			return nil, cerr
 		}
 
-		t_source := config.TokenSource(ctx, &token.Token)
-		client := oauth2.NewClient(ctx, t_source)
-		n_token, terr := t_source.Token()
-		if terr != nil { // terrrr!!
-			return nil, "", terr
-		}
-		token.Token.AccessToken = n_token.AccessToken
-		token.Token.Expiry = n_token.Expiry
-
-		if _, derr := datastore.Put(c, key, token); derr != nil {
-			return nil, "", derr
-		}
-
-		return client, token.BatchID, nil
+		client := config.Client(ctx, token)
+		return client, nil
 	} else {
-		return nil, "", err
+		return nil, err
 	}
 
 	c.Errorf("Oops, it's an error to arrive here just to return a nil client O_o")
-	return nil, "", nil
+	return nil, nil
 }
 
 func makePastebinFolder(c appengine.Context, client *http.Client) (string, error) {
@@ -139,12 +122,11 @@ func makePastebinFolder(c appengine.Context, client *http.Client) (string, error
 }
 
 func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, paste_id string) error {
-	client, batch_id, cerr := GetOAuthClient(c, r, p.UserID)
+	client, cerr := GetOAuthClient(c, r, p.UserID)
 	if cerr != nil {
 		return cerr
 	}
 
-	p.BatchID = batch_id
 	if service, err := drive.New(client); err != nil {
 		return err
 	} else {
@@ -170,7 +152,6 @@ func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, paste_id strin
 		appProperties["Format"] = p.Format
 		appProperties["Date"] = p.Date.Format(time.RFC3339Nano)
 		appProperties["Zlib"] = fmt.Sprintf("%v", p.Zlib)
-		appProperties["BatchID"] = p.BatchID
 
 		p_content.AppProperties = appProperties
 		if pbdir_id, aerr := makePastebinFolder(c, client); aerr == nil {
@@ -221,71 +202,33 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 		p.Content = item.Value
 		return nil
 	} else if err == memcache.ErrCacheMiss {
-		client, _, cerr := GetOAuthClient(c, r, p.UserID)
-		if cerr != nil {
-			return cerr
-		}
+		fg_call := urlfetch.Client(c)
+		if response, err := fg_call.Get(p.GDriveDL); err != nil {
+			c.Errorf(err.Error())
+			return parseAPIError(c, r, err, p, false)
 
-		if service, err := drive.New(client); err != nil {
-			return err
 		} else {
-			var err error
-			var response *http.Response
-			if len(p.GDriveDL) > 0 { // We have a download link available!
-				fg_call := urlfetch.Client(c)
-				response, err = fg_call.Get(p.GDriveDL)
-			} else {
-				fg_call := service.Files.Get(p.GDriveID)
-				response, err = fg_call.Download()
-			}
-			// We should probably issue a Do() call first to find out whether the file was trashed before
-			// downloading it. Oorrrr... we could just tell the users to delete it from trash as well! xD
-			if err != nil {
-				c.Errorf(err.Error())
-				return parseAPIError(c, r, err, p, false)
-			} else {
-				if response.StatusCode == 200 {
-					if p_content, err := ioutil.ReadAll(response.Body); err == nil {
-						p.Content = p_content
+			if response.StatusCode == 200 {
+				if p_content, err := ioutil.ReadAll(response.Body); err == nil {
+					p.Content = p_content
 
-						// Set the thing in memcache for immediate retrieval
-						mc_item := &memcache.Item{
-							Key:   p.GDriveID,
-							Value: p_content,
-						}
-
-						ctx := go_ae.NewContext(r)
-						memcache.Add(ctx, mc_item)
-
-					} else {
-						return err
+					// Set the thing in memcache for immediate retrieval
+					mc_item := &memcache.Item{
+						Key:   p.GDriveID,
+						Value: p_content,
 					}
 
+					ctx := go_ae.NewContext(r)
+					memcache.Add(ctx, mc_item)
+
+				} else {
+					return err
 				}
+
 			}
 		}
 	} else {
 		return err
-	}
-
-	return nil
-}
-
-func (p *Paste) deleteFromDrive(c appengine.Context, r *http.Request) error {
-	client, _, cerr := GetOAuthClient(c, r, p.UserID)
-	if cerr != nil {
-		return cerr
-	}
-
-	if service, err := drive.New(client); err != nil {
-		return err
-	} else {
-		fd_call := service.Files.Delete(p.GDriveID)
-		err := fd_call.Do()
-		if err != nil {
-			c.Errorf(err.Error())
-			return parseAPIError(c, r, err, p, true)
-		}
 	}
 
 	return nil

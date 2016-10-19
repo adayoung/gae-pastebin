@@ -9,7 +9,6 @@ import (
 
 	// Google Appengine Packages
 	"appengine"
-	"appengine/user"
 
 	// Google OAuth2/Drive Packages
 	"golang.org/x/oauth2"
@@ -26,12 +25,11 @@ const response_template = `
 	<title>OAuth2 Response Handler</title>
 </head>
 <body>
+	<p>This window should close on its own! Close it if it doesn't :o</p>
 	<script>
 		try {
 			window.opener.HandleGAuthComplete("{{ . }}");
-		} catch(e) {
-			location.href = "/pastebin/";
-		}
+		} catch(e) {}
 		window.close();
 	</script>
 </body>
@@ -45,12 +43,6 @@ func auth_gdrive_start(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Security-Policy", "default-src 'none'; script-src 'unsafe-inline'")
 
 	c := appengine.NewContext(r)
-	usr := user.Current(c)
-	if usr == nil { // Oops, we need a logged in user for this ^_^
-		http.Redirect(w, r, "/pastebin/auth/login?next=/pastebin/auth/gdrive/start", http.StatusFound)
-		return
-	}
-
 	state_token, err := utils.SC().Encode("state-token", time.Now().Format(time.StampNano))
 	if err != nil {
 		c.Errorf(err.Error())
@@ -59,7 +51,7 @@ func auth_gdrive_start(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if config, err := utils.OAuthConfigDance(c); err == nil {
-		authURL := config.AuthCodeURL(state_token, oauth2.AccessTypeOffline)
+		authURL := config.AuthCodeURL(state_token, oauth2.AccessTypeOnline)
 		http.Redirect(w, r, authURL, http.StatusFound)
 	} else {
 		c.Errorf(err.Error())
@@ -72,12 +64,6 @@ func auth_gdrive_finish(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Security-Policy", "default-src 'none'; script-src 'unsafe-inline'")
 
 	c := appengine.NewContext(r)
-	usr := user.Current(c)
-	if usr == nil { // Oops, we need a logged in user for this ^_^
-		http.Redirect(w, r, "/pastebin/auth/login?next=/pastebin/auth/gdrive/start", http.StatusFound)
-		return
-	}
-
 	if err := utils.ProcessForm(c, r); err != nil {
 		c.Errorf(err.Error())
 		http.Error(w, "Meep! We were trying to process an input but something went wrong.", http.StatusInternalServerError)
@@ -128,7 +114,7 @@ func auth_gdrive_finish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = models.SaveOAuthToken(c, token)
+	err = models.SaveOAuthToken(w, r, token)
 	if err != nil {
 		c.Errorf(err.Error())
 		http.Error(w, "Meep! We were trying to save the OAuth Token but something went wrong.", http.StatusInternalServerError)

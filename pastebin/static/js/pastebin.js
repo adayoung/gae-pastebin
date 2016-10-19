@@ -1,11 +1,11 @@
-var auth_window;
+var auth_window = null;
 $(document).ready(function(){
   $('.nojs').hide();
   $('.havejs').show();
   $('.tehcontrols').css('display', 'inline-block')
-  $('#paste_gdrv').attr('disabled', false);
+  $('input[name=destination]').attr('disabled', false);
 
-  $('#plain').prop('checked', true);
+  $('#plain').attr('checked', true);
   $('input[type=radio]:checked').parent().addClass('active');
   $('#spinner').attr('src', $('#spinner').data('src'));
   $('#appengine').attr('src', $('#appengine').data('src'));
@@ -24,40 +24,20 @@ $(document).ready(function(){
       return false;
     }
 
-    $('#paste_btn').text('Please wait...');
-    $('#paste_btn').addClass('disabled');
-
-    $('#searchbox').attr('disabled', true);
-    $('#content').attr('disabled', true);
-    $('#title').attr('disabled', true);
-    $('#tags').attr('disabled', true);
-
-    $('#spinner').toggle(true);
-    $.post(location.href, {
-      content: $('#content').val(),
-      title: $('#title').val(),
-      tags: $('#tags').val(),
-      format: $('input[name=format]:checked').val(),
-      destination: $('input[name=destination]:checked').val(),
-      "gorilla.csrf.Token": $('input[name="gorilla.csrf.Token"]').val()
-    }).done(function(e){
-      location.replace(e);
-    }).fail(function(e){
-      alert("Oops, we couldn't post your paste :( The following was encountered:\n\n" + e.status + " - " + e.statusText + '\n' + e.responseText);
-      HandlePasteError(e);
-      $('#searchbox').attr('disabled', false);
-      $('#content').attr('disabled', false);
-      $('#title').attr('disabled', false);
-      $('#tags').attr('disabled', false);
-      $('#spinner').toggle(false);
-
-      $('#paste_btn').text('Paste it!');
-      $('#paste_btn').removeClass('disabled');
-      $('#paste_gdrv').removeClass('disabled');
-      $('#content').focus();
-      $('#content').select();
-    });
-
+    if ($('input[name=destination]:checked').val() == "gdrive") {
+      if (auth_window != null && !auth_window.closed) {
+        auth_window.close();
+      }
+      var gauth_url = "/pastebin/auth/gdrive/start"
+      auth_window = window.open(gauth_url, 'gauth_frame');
+      if (auth_window == null) {
+        alert("Oops, our little popup couldn't popup! Mebbe you need to allow the popup?")
+      } else {
+        auth_window.focus();
+      }
+    } else {
+      DoPaste();
+    }
   });
 
   $('#content').bind('input propertychange', function(){
@@ -87,13 +67,21 @@ $(document).ready(function(){
 
   $(document).on('keydown', function(e){
     if (e.ctrlKey && e.keyCode == 13) {
-      $('#plain').click();
-      $('#paste_btn').click();
+      if ($('input[name=destination]:checked').val() == "gdrive") {
+        $('#eepnokb').slideDown(500);
+      } else {
+        $('#plain').click();
+        $('#paste_btn').click();
+      }
     }
 
     if (e.altKey && e.keyCode == 13) {
-      $('#html').click();
-      $('#paste_btn').click();
+      if ($('input[name=destination]:checked').val() == "gdrive") {
+        $('#eepnokb').slideDown(500);
+      } else {
+        $('#html').click();
+        $('#paste_btn').click();
+      }
     }
   });
 
@@ -102,32 +90,6 @@ $(document).ready(function(){
       return false;
     }
   });
-
-  $('#paste_gdrv').on('click', function(event){
-    event.preventDefault();
-
-    if (!$('#content').val().length > 0) {
-      $('#content').parent().addClass('has-error');
-      $('#content').focus();
-      return false;
-    }
-
-    if ($('input[name="destination"]').val() !== "gdrive") {
-      if (auth_window != undefined) {
-        auth_window.close();
-      }
-      var gauth_url = "/pastebin/auth/login?next=/pastebin/auth/gdrive/start"
-      auth_window = window.open(gauth_url, 'gauth_frame');
-    } else {
-      $('#paste_gdrv').addClass('disabled');
-      $('#paste_btn').click();
-    }
-  });
-
-  if ($('input[name="destination"]').val() === "gdrive") {
-    $('#paste_gdrv_txt').text('Pasting to Google Drive!');
-    $('#paste_gdrv').data('title', 'We ken do it!!');
-  };
 
   $('.btn').tooltip({
     placement: 'auto',
@@ -138,13 +100,49 @@ $(document).ready(function(){
   $('#content').focus();
 });
 
+var DoPaste = function() {
+  $('#paste_btn').text('Please wait...');
+  $('#paste_btn').addClass('disabled');
+
+  $('#searchbox').attr('disabled', true);
+  $('#content').attr('disabled', true);
+  $('#title').attr('disabled', true);
+  $('#tags').attr('disabled', true);
+
+  $('#spinner').toggle(true);
+  $.post(location.href, {
+    content: $('#content').val(),
+    title: $('#title').val(),
+    tags: $('#tags').val(),
+    format: $('input[name=format]:checked').val(),
+    destination: $('input[name=destination]:checked').val(),
+    "gorilla.csrf.Token": $('input[name="gorilla.csrf.Token"]').val()
+  }).done(function(e){
+    location.replace(e);
+  }).fail(function(e){
+    alert("Oops, we couldn't post your paste :( The following was encountered:\n\n" + e.status + " - " + e.statusText + '\n' + e.responseText);
+
+    $('#searchbox').attr('disabled', false);
+    $('#content').attr('disabled', false);
+    $('#title').attr('disabled', false);
+    $('#tags').attr('disabled', false);
+    $('#spinner').toggle(false);
+
+    $('#paste_btn').text('Paste it!');
+    $('#paste_btn').removeClass('disabled');
+
+    $('#content').focus();
+    $('#content').select();
+  });
+};
+
 var HandleGAuthComplete = function(auth_result) {
   if (auth_result === "success") {
-    $('input[name="destination"]').val("gdrive");
-    $('#paste_gdrv').click();
+    DoPaste();
   } else {
-    $('#paste_gdrv').addClass("btn-danger");
-    $('#paste_gdrv_txt').text(auth_result);
+    console.log(auth_result);
+    $('#paste_btn').addClass("btn-danger");
+    $('#paste_btn').text(auth_result);
   }
 };
 
@@ -160,13 +158,7 @@ var HandlePasteError = function(e) {
   }
 
   if (token_revoked === true) { // Oops, we're unauthorized
-    $('input[name="destination"]').val('datastore');
-    $('#paste_gdrv_txt').text(e.statusText);
-    $('#paste_gdrv').addClass("btn-danger");
-    $('#paste_gdrv').tooltip('destroy');
-    $('#paste_gdrv').tooltip({
-      placement: 'auto',
-      title: 'Click to connect again!'
-    });
+    $('#paste_btn').addClass("btn-danger");
+    $('#paste_btn').text(e.statusText);
   }
 };
