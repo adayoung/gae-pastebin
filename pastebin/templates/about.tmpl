@@ -102,24 +102,25 @@ body {
           Select from Plain Text / Colourful HTML.
         </li>
         <li>
-          Click on the <strong>Paste to Google Drive</strong> button!
+          Select the Google Drive datastore option (<img src="/pastebin/static/img/drive.png" alt="Google Drive">) and click Paste it!
         </li>
         <li>
           This will open a window asking for your consent, you need a Google Account to sign in.
         </li>
         <li>
-          <div>The consent screen would have the following permissions scopes listed in there:</div>
+          <div>The consent screen would have the following permission listed in there:</div>
           <ul>
-            <li><img alt="Google Drive permissions" src="/pastebin/static/img/drive_rfp1.png"></li>
-            <li><img alt="OAuth2 offline permission" src="/pastebin/static/img/drive_rfp2.png"></li>
+            <li><img alt="Google Drive permissions" src="/pastebin/static/img/drive_rfp.png"></li>
           </ul>
-          <div>These permissions grant the application access to files and folders it created <em>itself</em> only. Offline access is required to let us retrieve those files with an authorization token. You can read more about Google Drive API permissions <a href="https://developers.google.com/drive/v3/web/about-auth" title="About Authorization &nbsp;|&nbsp; Drive REST API &nbsp;|&nbsp; Google Developers">here</a> and offline access <a href="https://developers.google.com/identity/protocols/OAuth2WebServer#offline" title="Using OAuth 2.0 for Web Server Applications &nbsp;|&nbsp; Google Identity Platform &nbsp;|&nbsp; Google Developers">here</a>!</div>
+          <div>
+            This permission grant the application access to files and folders it created <em>itself</em> only. You can read more about it <a href="https://developers.google.com/drive/v3/web/about-auth" title="About Authorization &nbsp;|&nbsp; Drive REST API &nbsp;|&nbsp; Google Developers">here</a>!
+          </div>
+          <div>
+            Sometimes you may see an permission called 'Have Offline Access', that's a thing with Google APIs when you request a permission which was already granted before. Offline access is not required nor used by the application.
+          </div>
         </li>
         <li>
           Once you have granted access, you should start seeing a folder called <strong>Pastebin!!</strong> in your Google Drive!
-        </li>
-        <li>
-          From this point on, everything you paste should land in your Google Drive as long as you're signed in to the application. You can check in your <strong>Pastebin!!</strong> folder and even delete things you no longer want and they'll disappear from the application as well.
         </li>
         <li>
           You can disconnect your Google Drive any time by going to Settings &gt; Manage Apps or from your <a href="https://myaccount.google.com/intro/security#connectedapps">My Account page</a>.
