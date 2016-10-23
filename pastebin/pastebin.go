@@ -5,9 +5,11 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
+
 	"os"
 	"strings"
 	"time"
@@ -15,7 +17,12 @@ import (
 	// Google Appengine Packages
 	"appengine"
 	"appengine/datastore"
+	"appengine/urlfetch"
 	"appengine/user"
+
+	// Golang Google Packages
+	go_ae "google.golang.org/appengine"
+	"google.golang.org/appengine/memcache"
 
 	// The Gorilla Web Toolkit
 	"github.com/gorilla/csrf"
@@ -41,6 +48,7 @@ func init() {
 	r.HandleFunc("/pastebin/search/", utils.ExtraSugar(search)).Methods("GET").Name("pastesearch")
 	r.HandleFunc("/pastebin/{paste_id}", utils.ExtraSugar(pasteframe)).Methods("GET").Name("pasteframe")
 	r.HandleFunc("/pastebin/{paste_id}/content", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastecontent")
+	r.HandleFunc("/pastebin/{paste_id}/content/link", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastecontentlink")
 	r.HandleFunc("/pastebin/{paste_id}/download", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastedownload")
 	r.HandleFunc("/pastebin/{paste_id}/delete", utils.ExtraSugar(pastecontent)).Methods("POST").Name("pastedelete")
 
@@ -241,6 +249,36 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Meep! We were trying to retrieve this paste but something went wrong.", http.StatusInternalServerError)
 		return
 	} else {
+		// Return content link alone on the /link route
+		if cl := strings.Split(r.URL.Path, "/"); cl[len(cl)-1] == "link" {
+			if len(paste.GDriveDL) > 0 {
+				fl_link := "" // yay empty string
+				ctx := go_ae.NewContext(r)
+				if item, err := memcache.Get(ctx, fmt.Sprintf("fl_%s", paste_id)); err == nil {
+					fl_link = string(item.Value)
+				} else if err == memcache.ErrCacheMiss {
+					fl_call := urlfetch.Client(c)
+					fl_call.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+						// return http.ErrUseLastResponse // <-- FIXME: Huh? Undefined? O_o
+						return errors.New("net/http: use last response")
+					}
+					fl_response, _ := fl_call.Head(paste.GDriveDL)
+					fl_link = fl_response.Header.Get("Location")
+
+					mc_item := &memcache.Item{
+						Key:   fmt.Sprintf("fl_%s", paste_id),
+						Value: []byte(fl_link),
+					}
+					memcache.Add(ctx, mc_item)
+				}
+				w.Write([]byte(fl_link))
+				return
+			} else {
+				w.Write([]byte(strings.Join(strings.Split(r.URL.Path, "/")[:len(cl)-1], "/")))
+				return
+			}
+		}
+
 		// Add a Content-Disposition header on the /download route
 		if dl := strings.Split(r.URL.Path, "/"); dl[len(dl)-1] == "download" {
 			var p_title, p_extn, dl_disposition string
