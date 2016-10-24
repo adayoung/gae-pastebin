@@ -115,7 +115,7 @@ pre {
   white-space: pre-wrap;
 }
 
-iframe#content {
+iframe {
   border: 0px;
 
   -moz-border-radius: 5px;

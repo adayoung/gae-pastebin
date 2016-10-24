@@ -1,23 +1,19 @@
-function scale_iframe(){
-  $('iframe#content').css('overflow', 'hidden');
+var scale_iframe = function(tehframe){
+  $(tehframe).css('overflow', 'hidden');
 
   // Because Firefox still shows scrollbars
-  $('iframe#content').attr('scrolling', 'no');
+  $(tehframe).attr('scrolling', 'no');
 
-  // the two lines below need to be jQuery'd :o
-  var i_r_iframe = document.getElementById('content');
-  try { // lol
-    if (i_r_iframe.contentDocument.body) {
-      i_r_iframe.height = i_r_iframe.contentDocument.body.scrollHeight + 30 + 'px';
+  // the lines below need to be jQuery'd :o
+  try {
+    if (tehframe.contentDocument.body) {
+      $(tehframe).css('height', tehframe.contentDocument.body.scrollHeight + 30);
     }
-  } catch (e) {
-    console.log(e);
-    return false;
-  }
-}
+  } catch (e) {}
+};
 
-$('iframe#content').on('load', function(){
-  scale_iframe();
+$('iframe').on('load', function(){
+  scale_iframe(this);
 });
 
 $(document).ready(function(){
@@ -42,4 +38,27 @@ $(document).ready(function(){
       $('#deletebtn').removeClass('disabled');
     });
   });
+
+  if ($('input[name=format]').val() === "html") {
+    var content = document.createElement('iframe');
+    content.sandbox="allow-same-origin";
+    $('article').append(content);
+    $(content).on('load', function(){
+      scale_iframe(content);
+    });
+
+    if ($('#driveHosted').length > 0) {
+      $.get(location.href+'/content/link', function(src){
+        $.get(src, function(data){
+          var blob = new Blob([data], {type: 'text/html'});
+          var url = URL.createObjectURL(blob);
+          content.src = url;
+        });
+      })
+    } else {
+      var paste_id = location.href.split('/pastebin/')[1];
+      content.src="/pastebin/"+paste_id+"/content";
+    }
+  }
+
 });

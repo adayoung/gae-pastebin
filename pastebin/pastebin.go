@@ -250,6 +250,7 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 		return
 	} else {
 		// Return content link alone on the /link route
+		// TODO: detect 404s and remove metadata here as well
 		if cl := strings.Split(r.URL.Path, "/"); cl[len(cl)-1] == "link" {
 			if len(paste.GDriveDL) > 0 {
 				fl_link := "" // yay empty string

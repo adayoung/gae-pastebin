@@ -29,6 +29,7 @@
         <span class="sr-only">Fullscreen</span>
       </a>
       {{ end }}
+      <input name="format" type="hidden" value="{{ .paste.Format }}">
 
       <a href="
         {{ if .paste.GDriveDL }}
@@ -43,7 +44,6 @@
 
       {{ if .deleteBtn }}
         {{ .csrfField }}
-        <input name="delete" type="hidden" value="yes">
         <button class="btn btn-default btn-xs" title="Delete" id="deletebtn" type="submit">
           <span class="glyphicon glyphicon-trash"></span>
           {{ .csrfField }}
@@ -53,7 +53,7 @@
       {{ if .driveHosted }}
       <a href="/pastebin/about#PasteToGoogleDrive" class="btn btn-default btn-xs" title="Google Drive Hosted Content!" target="_blank">
         <img src="/pastebin/static/img/drive.png" alt="Google Drive!">
-        <span class="sr-only">Google Drive Hosted Content!</span>
+        <span id="driveHosted" class="sr-only">Google Drive Hosted Content!</span>
       </a>
       {{ end }}
 
@@ -74,8 +74,9 @@
   <article class="text-muted" role="main">
 
   {{ if eq .paste.Format "html" }}
-    <iframe id="content"
-      src="/pastebin/{{ .paste_id }}/content" sandbox="allow-same-origin"></iframe>
+  <noscript>
+    <iframe id="content" src="/pastebin/{{ .paste_id }}/content" sandbox="allow-same-origin"></iframe>
+  </noscript>
   {{ else }}
     <pre id="content">{{ .p_content }}</pre>
   {{ end }}
