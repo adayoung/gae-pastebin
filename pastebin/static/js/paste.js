@@ -40,6 +40,7 @@ $(document).ready(function(){
   });
 
   if ($('input[name=format]').val() === "html") {
+
     var content = document.createElement('iframe');
     content.sandbox="allow-same-origin";
     $('article').append(content);
@@ -48,11 +49,17 @@ $(document).ready(function(){
     });
 
     if ($('#driveHosted').length > 0) {
+      var loader = document.createElement('p');
+      $(loader).text('Loading content.. Please wait.');
+      $('article').append(loader);
       $.get(location.href+'/content/link', function(src){
+        $(loader).append("<span>.</span>");
         $.get(src, function(data){
           var blob = new Blob([data], {type: 'text/html'});
           var url = URL.createObjectURL(blob);
           content.src = url;
+          $(loader).append("<span>.done!</span>");
+          $(loader).slideUp();
         });
       })
     } else {
