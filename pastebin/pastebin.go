@@ -126,7 +126,7 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if err := utils.UpdateSession(w, r, paste_id); err != nil {
+		if err := utils.UpdateSession(w, r, paste_id, false); err != nil {
 			c.Errorf(err.Error())
 			http.SetCookie(w, &http.Cookie{
 				Name: "_pb_session",
@@ -327,7 +327,7 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 					http.Error(w, "Meep! We were trying to delete this paste but something went wrong.", http.StatusInternalServerError)
 				}
 
-				if err := utils.UpdateSession(w, r, "-"+paste_id); err != nil {
+				if err := utils.UpdateSession(w, r, paste_id, true); err != nil {
 					c.Errorf(err.Error())
 					http.Error(w, "Meep! We were trying to get or set a session but something went wrong. Your paste has been deleted, however!", http.StatusInternalServerError)
 				}

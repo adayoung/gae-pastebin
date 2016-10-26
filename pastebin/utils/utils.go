@@ -41,7 +41,7 @@ func ExtraSugar(f http.HandlerFunc) http.HandlerFunc {
 
 var sessionStore = sessions.NewCookieStore([]byte(os.Getenv("CSRFAuthKey")))
 
-func UpdateSession(w http.ResponseWriter, r *http.Request, paste_id string) error {
+func UpdateSession(w http.ResponseWriter, r *http.Request, paste_id string, remove bool) error {
 	if session, err := sessionStore.Get(r, "_pb_session"); err != nil {
 		return err
 	} else {
@@ -52,7 +52,7 @@ func UpdateSession(w http.ResponseWriter, r *http.Request, paste_id string) erro
 			Secure:   !appengine.IsDevAppServer(),
 		}
 
-		if strings.HasPrefix(paste_id, "-") {
+		if remove == true {
 			_paste_id := paste_id[1:len(paste_id)]
 			delete(session.Values, _paste_id)
 		} else {
