@@ -23,12 +23,6 @@
     <span class="text-muted pull-right">
       <small>HITS - {{ .p_count }}</small>&nbsp;&nbsp;
 
-      {{ if eq .paste.Format "html" }}
-      <a href="/pastebin/{{ .paste_id }}/content" class="btn btn-default btn-xs" title="Fullscreen">
-        <span class="glyphicon glyphicon-fullscreen"></span>
-        <span class="sr-only">Fullscreen</span>
-      </a>
-      {{ end }}
       <input name="format" type="hidden" value="{{ .paste.Format }}">
 
       <a href="
