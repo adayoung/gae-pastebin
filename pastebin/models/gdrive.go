@@ -237,13 +237,17 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 		p.Content = item.Value
 		return nil
 	} else if err == memcache.ErrCacheMiss {
+		fl_link, ferr := p.LinkFromDrive(c, r);
+		if ferr != nil {
+			return ferr
+		}
+
 		fg_call := urlfetch.Client(c)
-		if response, err := fg_call.Get(p.GDriveDL); err != nil {
+		if response, err := fg_call.Get(fl_link); err != nil {
 			c.Errorf(err.Error())
 			return parseAPIError(c, r, err, p, false)
 
 		} else {
-			// TODO: check for redirects to accounts.google.com here as well
 			if response.StatusCode == 200 {
 				if p_content, err := ioutil.ReadAll(response.Body); err == nil {
 					p.Content = p_content
