@@ -16,6 +16,11 @@ $('iframe').on('load', function(){
   scale_iframe(this);
 });
 
+var meep = function(l, f){
+  $(l).append("<span>.Meep! I couldn't get the content -flails-</span>");
+  console.log(f);
+}
+
 $(document).ready(function(){
   $.each($('.btn'), function(){
     $(this).tooltip();
@@ -60,8 +65,12 @@ $(document).ready(function(){
           content.src = url;
           $(loader).append("<span>.done!</span>");
           $(loader).slideUp();
+        }).fail(function(f){
+          meep(loader, f);
         });
-      })
+      }).fail(function(f){
+          meep(loader, f);
+      });
     } else {
       var paste_id = location.href.split('/pastebin/')[1];
       content.src="/pastebin/"+paste_id+"/content";

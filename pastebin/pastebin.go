@@ -5,7 +5,6 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -17,12 +16,7 @@ import (
 	// Google Appengine Packages
 	"appengine"
 	"appengine/datastore"
-	"appengine/urlfetch"
 	"appengine/user"
-
-	// Golang Google Packages
-	go_ae "google.golang.org/appengine"
-	"google.golang.org/appengine/memcache"
 
 	// The Gorilla Web Toolkit
 	"github.com/gorilla/csrf"
@@ -129,9 +123,9 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 		if err := utils.UpdateSession(w, r, paste_id, false); err != nil {
 			c.Errorf(err.Error())
 			http.SetCookie(w, &http.Cookie{
-				Name: "_pb_session",
-				Value: "",
-				MaxAge: -1,
+				Name:     "_pb_session",
+				Value:    "",
+				MaxAge:   -1,
 				Secure:   !appengine.IsDevAppServer(),
 				HttpOnly: true,
 			})
@@ -143,6 +137,12 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			MaxAge:   0,
 			Secure:   !appengine.IsDevAppServer(),
 			HttpOnly: true,
+		})
+
+		http.SetCookie(w, &http.Cookie{ // That was a HALF A KILO cookie!! :O
+			Name:     "_oauth2_gdrive",
+			Value:    "",
+			MaxAge:   -1,
 		})
 
 		if r.Header.Get("X-Requested-With") == "XMLHttpRequest" { // AJAX
@@ -253,24 +253,10 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 		// TODO: detect 404s and remove metadata here as well
 		if cl := strings.Split(r.URL.Path, "/"); cl[len(cl)-1] == "link" {
 			if len(paste.GDriveDL) > 0 {
-				fl_link := "" // yay empty string
-				ctx := go_ae.NewContext(r)
-				if item, err := memcache.Get(ctx, fmt.Sprintf("fl_%s", paste_id)); err == nil {
-					fl_link = string(item.Value)
-				} else if err == memcache.ErrCacheMiss {
-					fl_call := urlfetch.Client(c)
-					fl_call.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-						// return http.ErrUseLastResponse // <-- FIXME: Huh? Undefined? O_o
-						return errors.New("net/http: use last response")
-					}
-					fl_response, _ := fl_call.Head(paste.GDriveDL)
-					fl_link = fl_response.Header.Get("Location")
-
-					mc_item := &memcache.Item{
-						Key:   fmt.Sprintf("fl_%s", paste_id),
-						Value: []byte(fl_link),
-					}
-					memcache.Add(ctx, mc_item)
+				fl_link, ferr := paste.LinkFromDrive(c, r)
+				if ferr != nil {
+					fl_link = ferr.Error()
+					w.WriteHeader(500) // Umm.. it just needs to go to .fail() O_o
 				}
 				w.Write([]byte(fl_link))
 				return
@@ -458,11 +444,11 @@ func search(w http.ResponseWriter, r *http.Request) {
 			}
 
 			results = append(results, map[string]interface{}{
-				"paste_id":    key.StringID(),
-				"title":       template.HTMLEscapeString(q.Title),
-				"tags":        q.Tags,
-				"i_date":      q.Date.Format(time.ANSIC),
-				"date":        humanize.Time(q.Date),
+				"paste_id": key.StringID(),
+				"title":    template.HTMLEscapeString(q.Title),
+				"tags":     q.Tags,
+				"i_date":   q.Date.Format(time.ANSIC),
+				"date":     humanize.Time(q.Date),
 			})
 		}
 
