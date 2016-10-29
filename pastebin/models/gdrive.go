@@ -243,6 +243,7 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 			return parseAPIError(c, r, err, p, false)
 
 		} else {
+			// TODO: check for redirects to accounts.google.com here as well
 			if response.StatusCode == 200 {
 				if p_content, err := ioutil.ReadAll(response.Body); err == nil {
 					p.Content = p_content
@@ -259,7 +260,12 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 				} else {
 					return err
 				}
-
+			} else if response.StatusCode == 404 {
+				p.Delete(c, r) // No err here, we just want to get rid of it xD
+				return &GDriveAPIError{
+					Code: 404,
+					Response: "404 - content not found",
+				}
 			}
 		}
 	} else {

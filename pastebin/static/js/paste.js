@@ -17,7 +17,7 @@ $('iframe').on('load', function(){
 });
 
 var meep = function(l, f){
-  $(l).append("<span>.Meep! I couldn't get the content -flails-</span>");
+  $(l).append("<span>.Meep! I couldn't get the content -flails- ("+f.responseText+")</span>");
   console.log(f);
 }
 

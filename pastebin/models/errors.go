@@ -77,12 +77,6 @@ func parseAPIError(c appengine.Context, r *http.Request, rerr error, p *Paste, d
 	perr.Code = code
 	perr.Response = message
 
-	if perr.Code == 404 { // Oops, the paste's contents have disappeared from upstream
-		if delete_c == false { // This flag keeps us from going into a recursive loop
-			p.Delete(c, r) // No err here, we just want to get rid of it xD
-		}
-	}
-
 	if len(perr.Response) > 0 {
 		return perr
 	} else {
