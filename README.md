@@ -25,7 +25,7 @@ Hi! Here's a pastebin that runs on Google App Engine!
  * Now launch the App Engine Development Server and you're good to go!
    * `<sdk path>/goapp serve gae-pastebin`
  * Deploy to your own Google account with:
-   * `<sdk path>/goapp deploy -application [YOUR_PROJECT_ID] -version [YOUR_VERSION_ID]`
+   * `<sdk path>/goapp deploy -application [YOUR_PROJECT_ID] -version [YOUR_VERSION_ID] gae-pastebin`
 
 _Oh, make sure to update static/js/base.js with your own GA user id!_  
 _And keys.yaml to change the CSRFAuthKey, EncryptionK and GCPOAuthCID as well!_

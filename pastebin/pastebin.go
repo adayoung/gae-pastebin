@@ -123,6 +123,7 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 		if err := utils.UpdateSession(w, r, paste_id, false); err != nil {
 			c.Errorf(err.Error())
 			http.SetCookie(w, &http.Cookie{
+				Path:     "/pastebin/",
 				Name:     "_pb_session",
 				Value:    "",
 				MaxAge:   -1,
@@ -140,9 +141,12 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 		})
 
 		http.SetCookie(w, &http.Cookie{ // That was a HALF A KILO cookie!! :O
+			Path:     "/pastebin/",
 			Name:     "_oauth2_gdrive",
 			Value:    "",
 			MaxAge:   -1,
+			HttpOnly: true,
+			Secure:   !appengine.IsDevAppServer(),
 		})
 
 		if r.Header.Get("X-Requested-With") == "XMLHttpRequest" { // AJAX
