@@ -184,7 +184,14 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 
 		if checkDelete, err := utils.CheckSession(r, paste_id); err != nil {
 			c.Errorf(err.Error())
-			http.Error(w, "Meep! We were trying to get a session but something went wrong.", http.StatusInternalServerError)
+			http.SetCookie(w, &http.Cookie{
+				Path:     "/pastebin/",
+				Name:     "_pb_session",
+				Value:    "",
+				MaxAge:   -1,
+				Secure:   !appengine.IsDevAppServer(),
+				HttpOnly: true,
+			})
 		} else {
 			showDeleteBtn = checkDelete
 		}
