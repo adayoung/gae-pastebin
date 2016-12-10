@@ -26,8 +26,8 @@ $(document).ready(function(){
           var label_class = data.paste.tags.indexOf(tags[j]) > -1 ? 'primary' : 'default';
           htags.push('<a class="label label-' + label_class + '" href="/pastebin/search/?tags=' + tags[j] + '">' + tags[j] + '</a>');
         }
-
-        $('#results tbody').append('<tr class="ajaxload"><td>' + parseInt(lastindex + i)  +  '</td><td><a href="/pastebin/' + data.paste.results[i].paste_id  + '">' + data.paste.results[i].title  + '</a></td><td title="' + data.paste.results[i].i_date + '">' + data.paste.results[i].date + '</td><td>' + htags.join(' ') +  '</td></tr>');
+        var title = data.paste.results[i].title || data.paste.results[i].paste_id;
+        $('#results tbody').append('<tr class="ajaxload"><td>' + parseInt(lastindex + i)  +  '</td><td><a href="/pastebin/' + data.paste.results[i].paste_id  + '">' + title + '</a></td><td title="' + data.paste.results[i].i_date + '">' + data.paste.results[i].date + '</td><td>' + htags.join(' ') +  '</td></tr>');
       }
 
       if (data.paste.results.length < 10) {
