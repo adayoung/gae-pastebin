@@ -75,6 +75,9 @@ $(document).ready(function(){
       var paste_id = location.href.split('/pastebin/')[1];
       content.src="/pastebin/"+paste_id+"/content";
     }
+  } else {
+    $("pre").html(function (index, html) {
+      return html.replace(/^(.*)$/mg, "<span class=\"line\">$1</span>")
+    });
   }
-
 });

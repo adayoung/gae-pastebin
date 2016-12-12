@@ -110,9 +110,21 @@ body {
 
 /* paste.html */
 pre {
-  background-color: rgb(255, 255, 255) !important;
-  border: 0px !important;
+  border: 0px;
   white-space: pre-wrap;
+  counter-reset: line-numbering 0;
+}
+
+pre .line::before {
+    content: counter(line-numbering);
+    counter-increment: line-numbering;
+    display: inline-block;
+    border-right: 1px solid #2e6ca2;
+    margin-right: 5px;
+    /* space after numbers */
+    width: 2.6em;
+    text-align: right;
+    opacity: 0.5;
 }
 
 iframe {
