@@ -233,6 +233,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			"user":           usr,
 			"deleteBtn":      showDeleteBtn,
 			"driveHosted":    driveHosted,
+			"sixMonthsAway":  time.Now().AddDate(0, 0, 180).Format("Monday, Jan _2, 2006"),
 		}); err != nil {
 			c.Errorf(err.Error())
 			http.Error(w, "Meep! We were trying to assemble this paste but something went wrong.", http.StatusInternalServerError)
