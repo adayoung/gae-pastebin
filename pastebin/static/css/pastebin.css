@@ -125,6 +125,7 @@ pre .line::before {
     width: 2.6em;
     text-align: right;
     opacity: 0.5;
+    user-select: none;
 }
 
 iframe {
