@@ -278,6 +278,11 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		// Add a Content-Type header for plain text pastes
+		if paste.Format == "plain" {
+			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		}
+
 		// Add a Content-Disposition header on the /download route
 		if dl := strings.Split(r.URL.Path, "/"); dl[len(dl)-1] == "download" {
 			var p_title, p_extn, dl_disposition string
