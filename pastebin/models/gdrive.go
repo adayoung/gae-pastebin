@@ -199,35 +199,26 @@ func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, paste_id strin
 
 func (p *Paste) LinkFromDrive(c appengine.Context, r *http.Request) (string, error) {
 	fl_link := "" // yay empty string
-	ctx := go_ae.NewContext(r)
-	if item, err := memcache.Get(ctx, fmt.Sprintf("fl_%s", p.PasteID)); err == nil {
-		fl_link = string(item.Value)
-	} else if err == memcache.ErrCacheMiss {
-		fl_call := urlfetch.Client(c)
-		fl_call.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-			// return http.ErrUseLastResponse // <-- FIXME: Huh? Undefined? O_o
-			return errors.New("net/http: use last response")
-		}
-		fl_response, _ := fl_call.Head(p.GDriveDL)
 
-		if fl_response.StatusCode == 404 {
-			p.Delete(c, r)
-			return "", errors.New("404 - content not found")
-		}
-
-		fl_link = fl_response.Header.Get("Location")
-
-		if strings.Contains(fl_link, "accounts.google.com") {
-			p.Delete(c, r) // Well they refuse to share it!@
-			return "", errors.New("403 - content no longer shared")
-		}
-
-		mc_item := &memcache.Item{
-			Key:   fmt.Sprintf("fl_%s", p.PasteID),
-			Value: []byte(fl_link),
-		}
-		memcache.Add(ctx, mc_item)
+	fl_call := urlfetch.Client(c)
+	fl_call.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		// return http.ErrUseLastResponse // <-- FIXME: Huh? Undefined? O_o
+		return errors.New("net/http: use last response")
 	}
+	fl_response, _ := fl_call.Head(p.GDriveDL)
+
+	if fl_response.StatusCode == 404 {
+		p.Delete(c, r)
+		return "", errors.New("404 - content not found")
+	}
+
+	fl_link = fl_response.Header.Get("Location")
+
+	if strings.Contains(fl_link, "accounts.google.com") {
+		p.Delete(c, r) // Well they refuse to share it!@
+		return "", errors.New("403 - content no longer shared")
+	}
+
 	return fl_link, nil
 }
 
