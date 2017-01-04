@@ -2,6 +2,7 @@ package auth
 
 import (
 	// Go Builtin Packages
+	"fmt"
 	"html/template"
 	"net/http"
 	"strings"
@@ -36,6 +37,10 @@ func login(w http.ResponseWriter, r *http.Request) {
 		if dest = r.Referer(); dest == "" {
 			dest = "/pastebin/"
 		}
+	}
+
+	if !strings.HasPrefix(dest, "/") { // prevent reflection
+		dest = fmt.Sprintf("/%s", dest)
 	}
 
 	if usr := user.Current(c); usr != nil { // already logged in
