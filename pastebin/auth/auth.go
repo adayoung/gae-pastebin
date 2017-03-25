@@ -2,9 +2,9 @@ package auth
 
 import (
 	// Go Builtin Packages
-	"fmt"
 	"html/template"
 	"net/http"
+	"net/url"
 	"strings"
 
 	// Google Appengine Packages
@@ -39,8 +39,10 @@ func login(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if !strings.HasPrefix(dest, "/") { // prevent reflection
-		dest = fmt.Sprintf("/%s", dest)
+	if d, err := url.Parse(dest); err == nil {
+		dest = d.Path
+	} else {
+		dest = "/pastebin/"
 	}
 
 	if usr := user.Current(c); usr != nil { // already logged in
@@ -83,6 +85,12 @@ func logout(w http.ResponseWriter, r *http.Request) {
 		if dest = r.Referer(); dest == "" {
 			dest = "/pastebin/"
 		}
+	}
+
+	if d, err := url.Parse(dest); err == nil {
+		dest = d.Path
+	} else {
+		dest = "/pastebin/"
 	}
 
 	if usr := user.Current(c); usr == nil { // already logged out
