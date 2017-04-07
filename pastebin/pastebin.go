@@ -244,7 +244,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 
 func pastecontent(w http.ResponseWriter, r *http.Request) {
 	// This is what keeps people from abusing our pastebin ^_^
-	w.Header().Set("Content-Security-Policy", "default-src 'none'; style-src 'self' 'unsafe-inline'; img-src *")
+	w.Header().Set("Content-Security-Policy", "default-src 'none'; style-src 'self' 'unsafe-inline'; img-src *; frame-ancestors 'self'")
 
 	c := appengine.NewContext(r)
 	v := mux.Vars(r)
