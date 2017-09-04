@@ -55,7 +55,7 @@ $(document).ready(function(){
 
     if ($('#driveHosted').length > 0) {
       var loader = document.createElement('p');
-      $(loader).text('Loading content.. Please wait.');
+      $(loader).html('<span>Loading content.. Please wait.</span> <img alt="pretty spinner" src="/pastebin/static/img/spinner.gif">');
       $('article').append(loader);
       $.get(location.href+'/content/link', function(src){
         $(loader).append("<span>.</span>");
