@@ -1,9 +1,6 @@
 var scale_iframe = function(tehframe){
   $(tehframe).css('overflow', 'hidden');
 
-  // Because Firefox still shows scrollbars
-  $(tehframe).attr('scrolling', 'no');
-
   // the lines below need to be jQuery'd :o
   try {
     if (tehframe.contentDocument.body) {
