@@ -233,7 +233,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			"user":           usr,
 			"deleteBtn":      showDeleteBtn,
 			"driveHosted":    driveHosted,
-			"sixMonthsAway":  time.Now().AddDate(0, 0, 180).Format("Monday, Jan _2, 2006"),
+			"sixMonthsAway":  time.Now().AddDate(0, 0, 120).Format("Monday, Jan _2, 2006"),
 		}); err != nil {
 			c.Errorf(err.Error())
 			http.Error(w, "Meep! We were trying to assemble this paste but something went wrong.", http.StatusInternalServerError)
@@ -362,7 +362,7 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 func clean(w http.ResponseWriter, r *http.Request) {
 	// https://cloud.google.com/appengine/docs/go/config/cron#securing_urls_for_cron
 	c := appengine.NewContext(r)
-	sixmonthsago := time.Now().AddDate(0, 0, -180) // 180 days ago!
+	sixmonthsago := time.Now().AddDate(0, 0, -120) // 120 days ago!
 
 	old_stuff := datastore.NewQuery(models.PasteDSKind).
 		Filter("date_published <", sixmonthsago).
