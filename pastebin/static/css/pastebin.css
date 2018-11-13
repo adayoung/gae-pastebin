@@ -7,7 +7,6 @@
 
 body {
   background: url("/pastebin/static/img/bg.png") repeat fixed 0% 0% transparent;
-  font-family: 'Love Ya Like A Sister', cursive;
   font-size: 18px;
 }
 
@@ -26,6 +25,8 @@ body {
   border-left: 0px;
   border-right: 0px;
   background-color: transparent;
+
+  font-family: 'Love Ya Like A Sister', cursive;
 }
 
 #pastebar .navbar-brand {
