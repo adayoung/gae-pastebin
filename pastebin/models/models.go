@@ -6,6 +6,7 @@ import (
 	"compress/zlib"
 	"crypto/sha256"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -125,12 +126,12 @@ func (p *Paste) Validate() error {
 	return nil
 }
 
-func (p *Paste) save(c appengine.Context, r *http.Request) (string, error) {
+func (p *Paste) save(c appengine.Context, r *http.Request, score float64) (string, error) {
 	if err := p.Validate(); err == nil {
 		// Compress content here, AFTER validation
 
 		key, paste_id := genpasteKey(c, p)
-		c.Infof("Creating new paste with paste_id [%s]", paste_id)
+		c.Infof("Creating new paste with paste_id [%s] [%.1f]", paste_id, score)
 		p.PasteID = paste_id
 
 		havetoken := false
@@ -222,15 +223,17 @@ func (p *Paste) Delete(c appengine.Context, r *http.Request) error {
 	return nil
 }
 
-func NewPaste(c appengine.Context, r *http.Request) (string, error) {
+func NewPaste(c appengine.Context, r *http.Request, score float64) (string, error) {
 	var paste Paste
-
-	if usr := user.Current(c); usr != nil {
-		paste.UserID = usr.ID
-	}
 
 	if err := utils.ProcessForm(c, r); err != nil {
 		return "", err
+	}
+
+	// TODO: we do some magic with the received score here :D
+
+	if usr := user.Current(c); usr != nil {
+		paste.UserID = usr.ID
 	}
 
 	paste.Title = r.Form.Get("title")
@@ -240,7 +243,7 @@ func NewPaste(c appengine.Context, r *http.Request) (string, error) {
 	paste.Format = r.Form.Get("format")
 	paste.Date = time.Now()
 
-	paste_id, err := paste.save(c, r)
+	paste_id, err := paste.save(c, r, score)
 	if err != nil {
 		return "", err
 	}

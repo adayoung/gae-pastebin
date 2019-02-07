@@ -2,13 +2,17 @@ package utils
 
 import (
 	// Go Builtin Packages
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
 
 	// Google Appengine Packages
 	"appengine"
+	"appengine/urlfetch"
 
 	// Google OAuth2/Drive Packages
 	"golang.org/x/oauth2"
@@ -26,7 +30,7 @@ func ExtraSugar(f http.HandlerFunc) http.HandlerFunc {
 
 		w.Header().Set("Ada", "*skips about* Hi! <3 ^_^")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
-		w.Header().Set("Content-Security-Policy", "default-src 'self'; font-src netdna.bootstrapcdn.com fonts.gstatic.com; script-src 'self' netdna.bootstrapcdn.com ajax.googleapis.com linkhelp.clients.google.com www.google-analytics.com cdnjs.cloudflare.com; style-src 'self' netdna.bootstrapcdn.com cdnjs.cloudflare.com 'unsafe-inline'; img-src 'self' *; object-src 'none'; media-src 'none'; connect-src 'self' *.googleusercontent.com; frame-src 'self' blob:; frame-ancestors 'none'")
+		w.Header().Set("Content-Security-Policy", "default-src 'self'; font-src netdna.bootstrapcdn.com fonts.gstatic.com; script-src 'self' netdna.bootstrapcdn.com ajax.googleapis.com linkhelp.clients.google.com www.google-analytics.com cdnjs.cloudflare.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/; style-src 'self' netdna.bootstrapcdn.com cdnjs.cloudflare.com 'unsafe-inline'; img-src 'self' *; object-src 'none'; media-src 'none'; connect-src 'self' *.googleusercontent.com; frame-src 'self' blob: https://www.google.com/recaptcha/; frame-ancestors 'none'")
 		w.Header().Set("Strict-Transport-Security", "max-age=15552000")
 
 		if strings.Contains(strings.ToLower(r.UserAgent()), "msie") {
@@ -111,5 +115,44 @@ func OAuthConfigDance(c appengine.Context) (*oauth2.Config, error) {
 		return config, nil
 	} else {
 		return config, err
+	}
+}
+
+type reCaptchaResponse struct {
+	Success bool    `json:"success"`
+	Score   float64 `json:"score,number"`
+}
+
+func ValidateCaptcha(c appengine.Context, recaptchaResponse string, remoteip string) (float64, error) {
+	gRecaptchaRequest := url.Values{}
+	gRecaptchaRequest.Add("secret", os.Getenv("ReCAPTCHASecrt"))
+	gRecaptchaRequest.Add("response", recaptchaResponse)
+	gRecaptchaRequest.Add("remoteip", remoteip)
+
+	if !(len(recaptchaResponse) > 0) {
+		c.Warningf("missing reCAPTCHA token")
+		return 0.0, nil
+	}
+
+	rvCall := urlfetch.Client(c)
+	if response, err := rvCall.PostForm("https://www.google.com/recaptcha/api/siteverify", gRecaptchaRequest); err == nil {
+		defer response.Body.Close()
+		if rContent, err := ioutil.ReadAll(response.Body); err == nil {
+			rvResponse := &reCaptchaResponse{}
+			if err := json.Unmarshal(rContent, &rvResponse); err == nil {
+				if rvResponse.Success {
+					return rvResponse.Score, nil
+				} else {
+					c.Warningf("invalid reCAPTCHA token")
+					return 0.0, nil
+				}
+			} else {
+				return 0.0, err
+			}
+		} else {
+			return 0.0, err
+		}
+	} else {
+		return 0.0, err
 	}
 }

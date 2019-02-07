@@ -129,7 +129,7 @@ pre .line::before {
     user-select: none;
 }
 
-iframe {
+article > iframe {
   border: 0px;
 
   -moz-border-radius: 5px;
@@ -139,4 +139,22 @@ iframe {
   width: 100%;
   min-height: 70vh;
   background: #fff;
+}
+
+.grecaptcha-badge {
+  margin-bottom: 40px;
+}
+
+.grecaptcha-text {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .grecaptcha-badge {
+    display: none;
+  }
+
+  .grecaptcha-text {
+    display: block;
+  }
 }

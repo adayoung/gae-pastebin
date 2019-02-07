@@ -97,13 +97,28 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			csrf.TemplateTag: csrf.TemplateField(r),
 			"user":           user.Current(c),
 			"dest":           destination,
+			"rkey":           os.Getenv("ReCAPTCHAKey"),
 		}); err != nil {
 			c.Errorf(err.Error())
 			http.Error(w, "Meep! We were trying to make the 'home' page but something went wrong.", http.StatusInternalServerError)
 			return
 		}
 	} else if r.Method == "POST" {
-		paste_id, err := models.NewPaste(c, r)
+		var err error
+		if err = utils.ProcessForm(c, r); err != nil {
+			c.Errorf(err.Error())
+			http.Error(w, "Meep! We were trying to parse the posted data but something went wrong.", http.StatusInternalServerError)
+			return
+		}
+
+		var score float64
+		if score, err = utils.ValidateCaptcha(c, r.Form.Get("token"), r.RemoteAddr); err != nil {
+			c.Errorf(err.Error())
+			http.Error(w, "Meep! We were trying to validate the posted data but something went wrong.", http.StatusInternalServerError)
+			return
+		}
+
+		paste_id, err := models.NewPaste(c, r, score)
 		if err != nil {
 			if _, ok := err.(*models.ValidationError); ok {
 				http.Error(w, err.Error(), http.StatusBadRequest)
@@ -384,7 +399,9 @@ func clean(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	c.Infof("About to delete the following pastes: %s", paste_ids)
+	if len(paste_ids) > 0 {
+		c.Infof("About to delete the following pastes: %s", paste_ids)
+	}
 	err = datastore.DeleteMulti(c, paste_ids)
 	if err != nil {
 		c.Errorf(err.Error())

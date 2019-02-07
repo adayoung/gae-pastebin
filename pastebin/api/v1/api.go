@@ -34,8 +34,8 @@ func welcome(w http.ResponseWriter, r *http.Request) {
 	token, _ := gencookie(usr)
 	var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl", "pastebin/templates/api_v1.tmpl"))
 	if err := tmpl.Execute(w, map[string]interface{}{
-		"token":      token,
-		"user":           usr,
+		"token": token,
+		"user":  usr,
 	}); err != nil {
 		c.Errorf(err.Error())
 		http.Error(w, "Meep! We were trying to assemble the API Key page but something went wrong.", http.StatusInternalServerError)
@@ -79,7 +79,7 @@ func create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	paste_id, err := models.NewPaste(c, r)
+	paste_id, err := models.NewPaste(c, r, 0.0)
 	if err != nil {
 		if _, ok := err.(*models.ValidationError); ok {
 			http.Error(w, err.Error(), http.StatusBadRequest)

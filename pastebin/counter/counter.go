@@ -67,7 +67,7 @@ func Count(ctx appengine.Context, name string) (int, error) {
 // Last retrieves the latest timestamp value across all counter shards for a given name
 func Last(ctx appengine.Context, name string) (time.Time, error) {
 	// I think we can do this with q.Order('-last_viewed').Limit(1) or something too
-	last := time.Now().AddDate(0, 0, -180) // let's start from six months ago
+	last := time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)
 	q := datastore.NewQuery(shardKind).Filter("Name =", name)
 	for t := q.Run(ctx); ; {
 		var s shard

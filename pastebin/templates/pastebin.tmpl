@@ -5,7 +5,7 @@
 {{ end }}
 
 {{ block "morehead" . }}
-  <link href="/pastebin/static/css/20180905/pastebin.css" rel="stylesheet">
+  <link href="/pastebin/static/css/20190207/pastebin.css" rel="stylesheet">
   {{ block "evenmorehead" . }}
   {{ end }}
 {{ end }}
@@ -128,7 +128,7 @@
               &nbsp;
               <button class="btn btn-primary" data-title="Ctrl-Enter to paste in plain, Alt-Enter to paste in HTML!" id="paste_btn" type="submit">Paste it!</button>
               <img alt="pretty spinner" id="spinner" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" height="24" width="24" data-src="/pastebin/static/img/spinner.gif">
-              <em><span class="pull-right text-muted havejs" id="noc_wrap"><span id="noc">0</span> characters.</span></em>
+              <em><span class="pull-right text-muted havejs" id="noc_wrap"><span id="noc">0</span> characters.</span> <span class="help-block grecaptcha-text">Protected by reCAPTCHA. <a href="https://www.google.com/intl/en/policies/privacy/" target="_blank">Privacy</a>. <a href="https://www.google.com/intl/en/policies/terms/" target="_blank">Terms</a>.</span></em>
             </div>
           </div>
           <div class="row">
@@ -160,6 +160,8 @@
 {{ block "moretail" . }}
   <script src="/pastebin/static/js/common.js"></script>
   {{ block "evenmoretail" . }}
-    <script src="/pastebin/static/js/20161019/pastebin.js"></script>
+    <input type="hidden" name="rkey" value="{{ .rkey }}">
+    <script src="https://www.google.com/recaptcha/api.js?render={{ .rkey }}"></script>
+    <script src="/pastebin/static/js/20190206/pastebin.js"></script>
   {{ end }}
 {{ end }}

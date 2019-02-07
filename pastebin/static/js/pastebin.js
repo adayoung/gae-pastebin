@@ -110,29 +110,35 @@ var DoPaste = function() {
   $('#tags').attr('disabled', true);
 
   $('#spinner').toggle(true);
-  $.post(location.href, {
-    content: $('#content').val(),
-    title: $('#title').val(),
-    tags: $('#tags').val(),
-    format: $('input[name=format]:checked').val(),
-    destination: $('input[name=destination]:checked').val(),
-    "gorilla.csrf.Token": $('input[name="gorilla.csrf.Token"]').val()
-  }).done(function(e){
-    location.replace(e);
-  }).fail(function(e){
-    alert("Oops, we couldn't post your paste :( The following was encountered:\n\n" + e.status + " - " + e.statusText + '\n' + e.responseText);
+  var rkey = $('input[name="rkey"]').val();
+  grecaptcha.execute(rkey, {
+    action: 'paste'
+  }).then(function(token) {
+    $.post(location.href, {
+      content: $('#content').val(),
+      title: $('#title').val(),
+      tags: $('#tags').val(),
+      format: $('input[name=format]:checked').val(),
+      destination: $('input[name=destination]:checked').val(),
+      "gorilla.csrf.Token": $('input[name="gorilla.csrf.Token"]').val(),
+      token: token // reCaptcha token
+    }).done(function(e){
+      location.replace(e);
+    }).fail(function(e){
+      alert("Oops, we couldn't post your paste :( The following was encountered:\n\n" + e.status + " - " + e.statusText + '\n' + e.responseText);
 
-    $('#searchbox').attr('disabled', false);
-    $('#content').attr('disabled', false);
-    $('#title').attr('disabled', false);
-    $('#tags').attr('disabled', false);
-    $('#spinner').toggle(false);
+      $('#searchbox').attr('disabled', false);
+      $('#content').attr('disabled', false);
+      $('#title').attr('disabled', false);
+      $('#tags').attr('disabled', false);
+      $('#spinner').toggle(false);
 
-    $('#paste_btn').text('Paste it!');
-    $('#paste_btn').removeClass('disabled');
+      $('#paste_btn').text('Paste it!');
+      $('#paste_btn').removeClass('disabled');
 
-    $('#content').focus();
-    $('#content').select();
+      $('#content').focus();
+      $('#content').select();
+    });
   });
 };
 
