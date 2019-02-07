@@ -74,6 +74,7 @@ func about(w http.ResponseWriter, r *http.Request) {
 	var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl", "pastebin/templates/about.tmpl"))
 	if err := tmpl.Execute(w, map[string]interface{}{
 		"user": user.Current(c),
+		"rkey": os.Getenv("ReCAPTCHAKey"),
 	}); err != nil {
 		c.Errorf(err.Error())
 		http.Error(w, "Meep! We were trying to make the 'about' page but something went wrong.", http.StatusInternalServerError)
@@ -249,6 +250,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			"deleteBtn":      showDeleteBtn,
 			"driveHosted":    driveHosted,
 			"sixMonthsAway":  time.Now().AddDate(0, 0, 120).Format("Monday, Jan _2, 2006"),
+			"rkey":           os.Getenv("ReCAPTCHAKey"),
 		}); err != nil {
 			c.Errorf(err.Error())
 			http.Error(w, "Meep! We were trying to assemble this paste but something went wrong.", http.StatusInternalServerError)
@@ -504,6 +506,7 @@ func search(w http.ResponseWriter, r *http.Request) {
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl", "pastebin/templates/search.tmpl"))
 		if err := tmpl.Execute(w, map[string]interface{}{
 			"user": usr,
+			"rkey": os.Getenv("ReCAPTCHAKey"),
 		}); err != nil {
 			http.Error(w, "Meep! We were trying to make the 'search' page but something went wrong.", http.StatusInternalServerError)
 		}

@@ -78,3 +78,8 @@ $(document).ready(function(){
     });
   }
 });
+
+grecaptcha.ready(function() {
+  var rkey = $('input[name="rkey"]').val();
+  grecaptcha.execute(rkey, {action: 'cpaste'});
+});

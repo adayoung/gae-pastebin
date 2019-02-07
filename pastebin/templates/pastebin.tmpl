@@ -159,9 +159,9 @@
 
 {{ block "moretail" . }}
   <script src="/pastebin/static/js/common.js"></script>
+  <input type="hidden" name="rkey" value="{{ .rkey }}">
+  <script src="https://www.google.com/recaptcha/api.js?render={{ .rkey }}"></script>
   {{ block "evenmoretail" . }}
-    <input type="hidden" name="rkey" value="{{ .rkey }}">
-    <script src="https://www.google.com/recaptcha/api.js?render={{ .rkey }}"></script>
     <script src="/pastebin/static/js/20190206/pastebin.js"></script>
   {{ end }}
 {{ end }}

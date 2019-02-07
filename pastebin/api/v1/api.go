@@ -4,6 +4,7 @@ import (
 	// Go Builtin Packages
 	"html/template"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -36,6 +37,7 @@ func welcome(w http.ResponseWriter, r *http.Request) {
 	if err := tmpl.Execute(w, map[string]interface{}{
 		"token": token,
 		"user":  usr,
+		"rkey":  os.Getenv("ReCAPTCHAKey"),
 	}); err != nil {
 		c.Errorf(err.Error())
 		http.Error(w, "Meep! We were trying to assemble the API Key page but something went wrong.", http.StatusInternalServerError)
