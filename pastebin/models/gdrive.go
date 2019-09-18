@@ -134,7 +134,7 @@ func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, paste_id strin
 		p_content := new(drive.File)
 
 		if len(p.Title) > 0 {
-			p_content.Name = p.Title
+			p_content.Name = p.Title + "__" + paste_id
 		} else {
 			p_content.Name = paste_id
 		}
@@ -228,7 +228,7 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 		p.Content = item.Value
 		return nil
 	} else if err == memcache.ErrCacheMiss {
-		fl_link, ferr := p.LinkFromDrive(c, r);
+		fl_link, ferr := p.LinkFromDrive(c, r)
 		if ferr != nil {
 			return ferr
 		}
@@ -258,7 +258,7 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 			} else if response.StatusCode == 404 {
 				p.Delete(c, r) // No err here, we just want to get rid of it xD
 				return &GDriveAPIError{
-					Code: 404,
+					Code:     404,
 					Response: "404 - content not found",
 				}
 			}
