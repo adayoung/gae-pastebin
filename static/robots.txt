@@ -4,3 +4,9 @@ Disallow: /*/download
 Disallow: /pastebin/auth/
 Disallow: /pastebin/search/
 Allow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
