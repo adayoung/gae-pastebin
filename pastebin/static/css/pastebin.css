@@ -93,22 +93,6 @@ body {
   height: 30px;
 }
 
-.back-to-top {
-  position: fixed;
-  top: 2em;
-  right: 0px;
-  text-decoration: none;
-  color: #000000;
-  background-color: rgba(235, 235, 235, 0.80);
-  font-size: 12px;
-  padding: 1em;
-  display: none;
-}
-
-.back-to-top:hover {
-  background-color: rgba(135, 135, 135, 0.50);
-}
-
 /* paste.html */
 pre {
   border: 0px;

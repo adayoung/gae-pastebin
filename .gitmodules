@@ -1,3 +1,6 @@
 [submodule "static/js/PACE"]
 	path = static/js/PACE
 	url = https://github.com/HubSpot/PACE
+[submodule "vendor/github.com/gorilla/mux"]
+	path = vendor/github.com/gorilla/mux
+	url = https://github.com/gorilla/mux
