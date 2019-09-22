@@ -2,26 +2,23 @@ package utils
 
 import (
 	// Go Builtin Packages
-	"encoding/json"
-	"io/ioutil"
+	// "encoding/json"
+	// "io/ioutil"
 	"net/http"
-	"net/url"
-	"os"
+	// "net/url"
+	// "os"
 	"strings"
-	"time"
-
+	// "time"
 	// Google Appengine Packages
-	"appengine"
-	"appengine/urlfetch"
-
+	// "appengine"
+	// "appengine/urlfetch"
 	// Google OAuth2/Drive Packages
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
-	"google.golang.org/api/drive/v3"
-
+	// "golang.org/x/oauth2"
+	// "golang.org/x/oauth2/google"
+	// "google.golang.org/api/drive/v3"
 	// The Gorilla Web Toolkit
-	"github.com/gorilla/securecookie"
-	"github.com/gorilla/sessions"
+	// "github.com/gorilla/securecookie"
+	// "github.com/gorilla/sessions"
 )
 
 // http://andyrees.github.io/2015/your-code-a-mess-maybe-its-time-to-bring-in-the-decorators/
@@ -42,6 +39,7 @@ func ExtraSugar(f http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+/*
 var sessionStore = sessions.NewCookieStore([]byte(os.Getenv("CSRFAuthKey")))
 
 func UpdateSession(w http.ResponseWriter, r *http.Request, paste_id string, remove bool) error {
@@ -91,8 +89,9 @@ func CheckSession(r *http.Request, paste_id string) (bool, error) {
 	}
 	return false, nil
 }
+*/
 
-func ProcessForm(c appengine.Context, r *http.Request) error {
+func ProcessForm(r *http.Request) error {
 	var err error
 	if strings.Contains(strings.ToLower(r.Header.Get("content-type")), "multipart") {
 		err = r.ParseMultipartForm(32 << 20) // 32 MB - http.defaultMaxMemory
@@ -102,6 +101,7 @@ func ProcessForm(c appengine.Context, r *http.Request) error {
 	return err
 }
 
+/*
 func SC() *securecookie.SecureCookie {
 	CSRFAuthKey := []byte(os.Getenv("CSRFAuthKey"))
 	EncryptionK := []byte(os.Getenv("EncryptionK"))
@@ -156,3 +156,4 @@ func ValidateCaptcha(c appengine.Context, recaptchaResponse string, remoteip str
 		return 0.0, err
 	}
 }
+*/

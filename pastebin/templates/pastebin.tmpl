@@ -29,12 +29,14 @@
           <li><a href="/">Home</a></li>
           <li><a href="/pastebin/about">About</a></li>
           <li><a href="https://github.com/adayoung/gae-pastebin/" target="_blank">GitHub!</a></li>
+          <!--
           <li><a href="/pastebin/api/v1/">API</a></li>
           {{ if .user }}
             <li><a href="/pastebin/auth/logout">Sign out ({{ .user.Email }})</a></li>
           {{ else }}
             <li><a href="/pastebin/auth/login">Sign in</a></li>
           {{ end }}
+          -->
         </ul>
         <div class="col-md-3 navbar-nav navbar-right">
           <div id="searchdiv">
@@ -55,6 +57,7 @@
     <noscript>
       <p class="text-danger text-center">Oops, you have Javascript disabled. Some features are unavailable.</p>
     </noscript>
+    <p class="text-warning text-center">This site is still under construction, it may not work at all!</p>
     <div class="container">
       {{ block "content" . }}
       <div class="row">

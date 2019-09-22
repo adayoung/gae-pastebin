@@ -2,87 +2,75 @@ package pastebin
 
 import (
 	// Go Builtin Packages
-	"bufio"
-	"bytes"
-	"encoding/json"
+	// "bufio"
+	// "bytes"
+	// "encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
 
 	"os"
-	"strings"
-	"time"
+	// "strings"
+	// "time"
 
 	// Google Appengine Packages
-	"appengine"
-	"appengine/datastore"
-	"appengine/user"
+	// "appengine"
+	// "appengine/datastore"
+	// "appengine/user"
 
 	// The Gorilla Web Toolkit
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 
 	// Go Humanize by Dustin Sallings
-	"github.com/dustin/go-humanize"
-
+	// "github.com/dustin/go-humanize"
 	// Local Packages
-	api_v1 "pastebin/api/v1"
-	"pastebin/auth"
-	counter "pastebin/counter"
-	"pastebin/models"
-	"pastebin/utils"
+	// api_v1 "github.com/adayoung/gae-pastebin/pastebin/api/v1"
+	// "github.com/adayoung/gae-pastebin/pastebin/auth"
+	// counter "github.com/adayoung/gae-pastebin/pastebin/counter"
+	// "github.com/adayoung/gae-pastebin/pastebin/models"
+	"github.com/adayoung/gae-pastebin/pastebin/utils"
 )
 
-func init() {
-	r := mux.NewRouter().StrictSlash(true)
+func InitRoutes(s *mux.Router) {
+	r := s.PathPrefix("/pastebin").Subrouter().StrictSlash(true)
 
-	r.HandleFunc("/pastebin/", utils.ExtraSugar(pastebin)).Methods("GET", "POST").Name("pastebin")
-	r.HandleFunc("/pastebin/about", utils.ExtraSugar(about)).Methods("GET").Name("about")
-	r.HandleFunc("/pastebin/clean", clean).Methods("GET").Name("pastecleanr") // Order is important! :o
-	r.HandleFunc("/pastebin/search/", utils.ExtraSugar(search)).Methods("GET").Name("pastesearch")
-	r.HandleFunc("/pastebin/{paste_id}", utils.ExtraSugar(pasteframe)).Methods("GET").Name("pasteframe")
-	r.HandleFunc("/pastebin/{paste_id}/content", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastecontent")
-	r.HandleFunc("/pastebin/{paste_id}/content/link", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastecontentlink")
-	r.HandleFunc("/pastebin/{paste_id}/download", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastedownload")
-	r.HandleFunc("/pastebin/{paste_id}/delete", utils.ExtraSugar(pastecontent)).Methods("POST").Name("pastedelete")
+	r.HandleFunc("/", utils.ExtraSugar(pastebin)).Methods("GET", "POST").Name("pastebin")
+	r.HandleFunc("/about", utils.ExtraSugar(about)).Methods("GET").Name("about")
+	// r.HandleFunc("/pastebin/clean", clean).Methods("GET").Name("pastecleanr") // Order is important! :o
+	// r.HandleFunc("/pastebin/search/", utils.ExtraSugar(search)).Methods("GET").Name("pastesearch")
+	// r.HandleFunc("/pastebin/{paste_id}", utils.ExtraSugar(pasteframe)).Methods("GET").Name("pasteframe")
+	// r.HandleFunc("/pastebin/{paste_id}/content", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastecontent")
+	// r.HandleFunc("/pastebin/{paste_id}/content/link", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastecontentlink")
+	// r.HandleFunc("/pastebin/{paste_id}/download", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastedownload")
+	// r.HandleFunc("/pastebin/{paste_id}/delete", utils.ExtraSugar(pastecontent)).Methods("POST").Name("pastedelete")
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/pastebin/static/", http.FileServer(http.Dir("pastebin/static"))))
 
-	r.NotFoundHandler = http.HandlerFunc(Http404)
-
-	CSRFAuthKey := os.Getenv("CSRFAuthKey")
-	CSRF := csrf.Protect([]byte(CSRFAuthKey), csrf.Secure(!appengine.IsDevAppServer()))
-	http.Handle("/pastebin/", CSRF(r))
+	// CSRFAuthKey := os.Getenv("CSRFAuthKey")
+	// CSRF := csrf.Protect([]byte(CSRFAuthKey), csrf.Secure(os.Getenv("CSRFSecureC") == "true"))
+	// http.Handle("/", CSRF(r))
 
 	// Here be auth handlers
-	http.Handle("/pastebin/auth/", CSRF(auth.Router))
+	// http.Handle("/pastebin/auth/", CSRF(auth.Router))
 
 	// Here be API handlers
-	http.Handle("/pastebin/api/v1/", api_v1.API_Router)
-}
-
-func Http404(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
-	w.WriteHeader(http.StatusNotFound)
-	var tmpl = template.Must(template.ParseFiles("templates/404.tmpl"))
-	if err := tmpl.Execute(w, nil); err != nil {
-		c.Errorf(err.Error())
-		http.Error(w, "Meep! We were trying to make the '404' page but something went wrong.", http.StatusInternalServerError)
-	}
+	// http.Handle("/pastebin/api/v1/", api_v1.API_Router)
 }
 
 func about(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
+	// c := appengine.NewContext(r)
 	var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl", "pastebin/templates/about.tmpl"))
 	if err := tmpl.Execute(w, map[string]interface{}{
-		"user": user.Current(c),
+		"user": "", // user.Current(c),
 		"rkey": os.Getenv("ReCAPTCHAKey"),
 	}); err != nil {
-		c.Errorf(err.Error())
+		// c.Errorf(err.Error())
 		http.Error(w, "Meep! We were trying to make the 'about' page but something went wrong.", http.StatusInternalServerError)
 	}
 }
 
 func pastebin(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
+	// c := appengine.NewContext(r)
 	if r.Method == "GET" {
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl"))
 
@@ -96,22 +84,24 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 		// http://www.gorillatoolkit.org/pkg/csrf
 		if err := tmpl.Execute(w, map[string]interface{}{
 			csrf.TemplateTag: csrf.TemplateField(r),
-			"user":           user.Current(c),
+			"user":           "", // user.Current(c),
 			"dest":           destination,
 			"rkey":           os.Getenv("ReCAPTCHAKey"),
 		}); err != nil {
-			c.Errorf(err.Error())
+			// c.Errorf(err.Error())
 			http.Error(w, "Meep! We were trying to make the 'home' page but something went wrong.", http.StatusInternalServerError)
 			return
 		}
 	} else if r.Method == "POST" {
 		var err error
-		if err = utils.ProcessForm(c, r); err != nil {
-			c.Errorf(err.Error())
+		if err = utils.ProcessForm(r); err != nil {
+			// c.Errorf(err.Error())
 			http.Error(w, "Meep! We were trying to parse the posted data but something went wrong.", http.StatusInternalServerError)
 			return
 		}
 
+		fmt.Fprint(w, "eepidunworkyet")
+	} /*
 		var score float64
 		if score, err = utils.ValidateCaptcha(c, r.Form.Get("token"), r.RemoteAddr); err != nil {
 			c.Errorf(err.Error())
@@ -171,9 +161,10 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			// http://tools.ietf.org/html/rfc2616#section-10.3.4 / Http 303
 			http.Redirect(w, r, "/pastebin/"+paste_id, http.StatusSeeOther)
 		}
-	}
+	} */
 }
 
+/*
 func pasteframe(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 	usr := user.Current(c)
@@ -512,3 +503,4 @@ func search(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
+*/
