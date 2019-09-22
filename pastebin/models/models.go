@@ -6,21 +6,22 @@ import (
 	"compress/zlib"
 	"crypto/sha256"
 	"encoding/base64"
-	"errors"
+	"log"
+	// "errors"
 	"fmt"
-	"io"
+	// "io"
 	"net/http"
 	"regexp"
 	"strings"
 	"time"
 
 	// Google Appengine Packages
-	"appengine"
-	"appengine/datastore"
-	"appengine/user"
+	// "appengine"
+	// "appengine/datastore"
+	// "appengine/user"
 
 	// Local Packages
-	"pastebin/utils"
+	"github.com/adayoung/gae-pastebin/pastebin/utils"
 )
 
 type Tags []string
@@ -38,23 +39,9 @@ type Paste struct {
 	GDriveDL string    `datastore:"gdrive_dl,noindex"`
 }
 
-func (p *Paste) Load(ds <-chan datastore.Property) error {
-	err := datastore.LoadStruct(p, ds)
-	if _, ok := err.(*datastore.ErrFieldMismatch); ok {
-		return nil
-	} else if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (p *Paste) Save(ds chan<- datastore.Property) error {
-	return datastore.SaveStruct(p, ds)
-}
-
 const PasteDSKind string = "Paste"
 
-func genpasteKey(c appengine.Context, p *Paste) (*datastore.Key, string) {
+func genpasteKey(p *Paste) string {
 	timestamp := p.Date.Format(time.StampNano)
 
 	hasher := sha256.New()
@@ -65,7 +52,8 @@ func genpasteKey(c appengine.Context, p *Paste) (*datastore.Key, string) {
 
 	paste_id := digest[:8] // This is probably a silly way to go about it xD
 	// We're such trolls, we don't even check for collisions ^_^
-	return datastore.NewKey(c, PasteDSKind, paste_id, 0, nil), paste_id
+	// FIXME: check for collisions D:
+	return paste_id
 }
 
 type ValidationError struct {
@@ -126,26 +114,24 @@ func (p *Paste) Validate() error {
 	return nil
 }
 
-func (p *Paste) save(c appengine.Context, r *http.Request, score float64) (string, error) {
+func (p *Paste) save(r *http.Request, score float64) (string, error) {
 	if err := p.Validate(); err == nil {
 		// Compress content here, AFTER validation
 
-		key, paste_id := genpasteKey(c, p)
-		c.Infof("Creating new paste with paste_id [%s] [%.1f]", paste_id, score)
+		paste_id := genpasteKey(p)
+		log.Printf("INFO: Creating new paste with paste_id [%s] [%.1f]", paste_id, score)
 		p.PasteID = paste_id
 
-		havetoken := false
-		if r.Form.Get("destination") == "gdrive" {
-			havetoken = true
-		}
+		havetoken := (r.Form.Get("destination") == "gdrive")
 
 		p.Zlib = false
 		if havetoken == true {
 			// TODO: This should should probably happen in a goroutine
-			err = p.saveToDrive(c, r, paste_id)
-			if err != nil {
-				return "", err
-			}
+			// err = p.saveToDrive(c, r, paste_id)
+			// if err != nil {
+			// 	return "", err
+			// }
+			return "eepidunworkyet", nil
 		} else {
 			var content bytes.Buffer
 			w := zlib.NewWriter(&content)
@@ -155,10 +141,11 @@ func (p *Paste) save(c appengine.Context, r *http.Request, score float64) (strin
 			p.Zlib = true
 		}
 
-		_, err := datastore.Put(c, key, p)
-		if err != nil {
-			return "", err
-		}
+		// TODO: Here is where we SAVE the thingie to DB. Ha!
+		// _, err := datastore.Put(c, key, p)
+		// if err != nil {
+		// 	return "", err
+		// }
 		return paste_id, nil
 	} else {
 		return "", err
@@ -222,19 +209,19 @@ func (p *Paste) Delete(c appengine.Context, r *http.Request) error {
 
 	return nil
 }
-
-func NewPaste(c appengine.Context, r *http.Request, score float64) (string, error) {
+*/
+func NewPaste(r *http.Request, score float64) (string, error) {
 	var paste Paste
 
-	if err := utils.ProcessForm(c, r); err != nil {
+	if err := utils.ProcessForm(r); err != nil {
 		return "", err
 	}
 
 	// TODO: we do some magic with the received score here :D
 
-	if usr := user.Current(c); usr != nil {
-		paste.UserID = usr.ID
-	}
+	// if usr := user.Current(c); usr != nil {
+	// 	paste.UserID = usr.ID
+	// }
 
 	paste.Title = r.Form.Get("title")
 	paste.uContent = r.Form.Get("content")
@@ -243,7 +230,7 @@ func NewPaste(c appengine.Context, r *http.Request, score float64) (string, erro
 	paste.Format = r.Form.Get("format")
 	paste.Date = time.Now()
 
-	paste_id, err := paste.save(c, r, score)
+	paste_id, err := paste.save(r, score)
 	if err != nil {
 		return "", err
 	}
@@ -251,6 +238,7 @@ func NewPaste(c appengine.Context, r *http.Request, score float64) (string, erro
 	return paste_id, nil
 }
 
+/*
 func GetPaste(c appengine.Context, paste_id string) (*Paste, error) {
 	key := datastore.NewKey(c, PasteDSKind, paste_id, 0, nil)
 	paste := new(Paste)
@@ -260,3 +248,4 @@ func GetPaste(c appengine.Context, paste_id string) (*Paste, error) {
 
 	return paste, nil
 }
+*/

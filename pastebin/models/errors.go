@@ -1,5 +1,6 @@
 package models
 
+/*
 import (
 	// Go Builtin Packages
 	"fmt"
@@ -85,3 +86,4 @@ func parseAPIError(c appengine.Context, r *http.Request, rerr error, p *Paste, d
 		return rerr
 	}
 }
+*/

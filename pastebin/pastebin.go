@@ -5,8 +5,9 @@ import (
 	// "bufio"
 	// "bytes"
 	// "encoding/json"
-	"fmt"
+	// "fmt"
 	"html/template"
+	"log"
 	"net/http"
 
 	"os"
@@ -28,7 +29,7 @@ import (
 	// api_v1 "github.com/adayoung/gae-pastebin/pastebin/api/v1"
 	// "github.com/adayoung/gae-pastebin/pastebin/auth"
 	// counter "github.com/adayoung/gae-pastebin/pastebin/counter"
-	// "github.com/adayoung/gae-pastebin/pastebin/models"
+	"github.com/adayoung/gae-pastebin/pastebin/models"
 	"github.com/adayoung/gae-pastebin/pastebin/utils"
 )
 
@@ -64,7 +65,7 @@ func about(w http.ResponseWriter, r *http.Request) {
 		"user": "", // user.Current(c),
 		"rkey": os.Getenv("ReCAPTCHAKey"),
 	}); err != nil {
-		// c.Errorf(err.Error())
+		log.Printf("ERROR: %v\n", err)
 		http.Error(w, "Meep! We were trying to make the 'about' page but something went wrong.", http.StatusInternalServerError)
 	}
 }
@@ -88,44 +89,45 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			"dest":           destination,
 			"rkey":           os.Getenv("ReCAPTCHAKey"),
 		}); err != nil {
-			// c.Errorf(err.Error())
+			log.Printf("ERROR: %v\n", err)
 			http.Error(w, "Meep! We were trying to make the 'home' page but something went wrong.", http.StatusInternalServerError)
 			return
 		}
 	} else if r.Method == "POST" {
 		var err error
 		if err = utils.ProcessForm(r); err != nil {
-			// c.Errorf(err.Error())
+			log.Printf("ERROR: %v\n", err)
 			http.Error(w, "Meep! We were trying to parse the posted data but something went wrong.", http.StatusInternalServerError)
 			return
 		}
 
 		var score float64
 		if score, err = utils.ValidateCaptcha(r.Form.Get("token"), r.RemoteAddr); err != nil {
-			// c.Errorf(err.Error())
+			log.Printf("ERROR: %v\n", err)
 			http.Error(w, "Meep! We were trying to validate the posted data but something went wrong.", http.StatusInternalServerError)
 			return
 		}
 
-		fmt.Fprint(w, "eepidunworkyet")
-	} /*
-		paste_id, err := models.NewPaste(c, r, score)
+		paste_id, err := models.NewPaste(r, score)
 		if err != nil {
 			if _, ok := err.(*models.ValidationError); ok {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
 
-			c.Errorf(err.Error())
+			log.Printf("ERROR: %v\n", err)
+			/*
 			if err, ok := err.(*models.GDriveAPIError); ok {
 				http.Error(w, err.Response, err.Code)
 				return
 			}
+			*/
 
 			http.Error(w, "BARF!@ Something's broken!@%", http.StatusInternalServerError)
 			return
 		}
 
+		/*
 		if err := utils.UpdateSession(w, r, paste_id, false); err != nil {
 			c.Errorf(err.Error())
 			http.SetCookie(w, &http.Cookie{
@@ -154,6 +156,7 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			HttpOnly: true,
 			Secure:   !appengine.IsDevAppServer(),
 		})
+		*/
 
 		if r.Header.Get("X-Requested-With") == "XMLHttpRequest" { // AJAX
 			w.Write([]byte("/pastebin/" + paste_id))
@@ -161,7 +164,7 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			// http://tools.ietf.org/html/rfc2616#section-10.3.4 / Http 303
 			http.Redirect(w, r, "/pastebin/"+paste_id, http.StatusSeeOther)
 		}
-	} */
+	}
 }
 
 /*

@@ -1,5 +1,6 @@
 package models
 
+/*
 import (
 	// Go Builtin Packages
 	"bytes"
@@ -269,3 +270,4 @@ func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
 
 	return nil
 }
+*/

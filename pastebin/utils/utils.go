@@ -4,6 +4,7 @@ import (
 	// Go Builtin Packages
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -131,7 +132,7 @@ func ValidateCaptcha(recaptchaResponse string, remoteip string) (float64, error)
 	gRecaptchaRequest.Add("remoteip", remoteip)
 
 	if !(len(recaptchaResponse) > 0) {
-		// c.Warningf("missing reCAPTCHA token")
+		log.Println("WARNING: missing reCAPTCHA token")
 		return 0.0, nil
 	}
 
@@ -144,7 +145,7 @@ func ValidateCaptcha(recaptchaResponse string, remoteip string) (float64, error)
 				if rvResponse.Success {
 					return rvResponse.Score, nil
 				} else {
-					// c.Warningf("invalid reCAPTCHA token")
+					log.Println("WARNING: invalid reCAPTCHA token")
 					return 0.0, nil
 				}
 			} else {
