@@ -2,11 +2,11 @@ package utils
 
 import (
 	// Go Builtin Packages
-	// "encoding/json"
-	// "io/ioutil"
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
-	// "net/url"
-	// "os"
+	"net/url"
+	"os"
 	"strings"
 	// "time"
 	// Google Appengine Packages
@@ -117,24 +117,25 @@ func OAuthConfigDance(c appengine.Context) (*oauth2.Config, error) {
 		return config, err
 	}
 }
+*/
 
 type reCaptchaResponse struct {
 	Success bool    `json:"success"`
 	Score   float64 `json:"score,number"`
 }
 
-func ValidateCaptcha(c appengine.Context, recaptchaResponse string, remoteip string) (float64, error) {
+func ValidateCaptcha(recaptchaResponse string, remoteip string) (float64, error) {
 	gRecaptchaRequest := url.Values{}
 	gRecaptchaRequest.Add("secret", os.Getenv("ReCAPTCHASecrt"))
 	gRecaptchaRequest.Add("response", recaptchaResponse)
 	gRecaptchaRequest.Add("remoteip", remoteip)
 
 	if !(len(recaptchaResponse) > 0) {
-		c.Warningf("missing reCAPTCHA token")
+		// c.Warningf("missing reCAPTCHA token")
 		return 0.0, nil
 	}
 
-	rvCall := urlfetch.Client(c)
+	rvCall := &http.Client{}
 	if response, err := rvCall.PostForm("https://www.google.com/recaptcha/api/siteverify", gRecaptchaRequest); err == nil {
 		defer response.Body.Close()
 		if rContent, err := ioutil.ReadAll(response.Body); err == nil {
@@ -143,7 +144,7 @@ func ValidateCaptcha(c appengine.Context, recaptchaResponse string, remoteip str
 				if rvResponse.Success {
 					return rvResponse.Score, nil
 				} else {
-					c.Warningf("invalid reCAPTCHA token")
+					// c.Warningf("invalid reCAPTCHA token")
 					return 0.0, nil
 				}
 			} else {
@@ -156,4 +157,3 @@ func ValidateCaptcha(c appengine.Context, recaptchaResponse string, remoteip str
 		return 0.0, err
 	}
 }
-*/

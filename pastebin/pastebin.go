@@ -100,15 +100,15 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		fmt.Fprint(w, "eepidunworkyet")
-	} /*
 		var score float64
-		if score, err = utils.ValidateCaptcha(c, r.Form.Get("token"), r.RemoteAddr); err != nil {
-			c.Errorf(err.Error())
+		if score, err = utils.ValidateCaptcha(r.Form.Get("token"), r.RemoteAddr); err != nil {
+			// c.Errorf(err.Error())
 			http.Error(w, "Meep! We were trying to validate the posted data but something went wrong.", http.StatusInternalServerError)
 			return
 		}
 
+		fmt.Fprint(w, "eepidunworkyet")
+	} /*
 		paste_id, err := models.NewPaste(c, r, score)
 		if err != nil {
 			if _, ok := err.(*models.ValidationError); ok {
