@@ -4,3 +4,6 @@
 [submodule "vendor/github.com/gorilla/mux"]
 	path = vendor/github.com/gorilla/mux
 	url = https://github.com/gorilla/mux
+[submodule "vendor/github.com/gorilla/csrf"]
+	path = vendor/github.com/gorilla/csrf
+	url = https://github.com/gorilla/csrf
