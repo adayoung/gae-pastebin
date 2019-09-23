@@ -188,40 +188,6 @@ func (p *Paste) ZContent(r *http.Request, pc pasteContent) error {
 	return nil
 }
 
-/*
-func (p *Paste) Delete(c appengine.Context, r *http.Request) error {
-	paste_id := p.PasteID
-	key := datastore.NewKey(c, PasteDSKind, paste_id, 0, nil)
-	c.Infof("Delete paste with paste_id [%s]", paste_id)
-	err := datastore.Delete(c, key)
-	if err != nil {
-		return err
-	}
-
-	// FIXME: This is duplicated from pastebin.clean
-	// Clear counter shards here
-	var shardc_dkeys []*datastore.Key
-	c_key := datastore.NewKey(c, "GeneralCounterShardConfig", paste_id, 0, nil)
-	shardc_dkeys = append(shardc_dkeys, c_key)
-
-	shard_keys := datastore.NewQuery("GeneralCounterShard").Filter("Name =", paste_id).KeysOnly()
-	if shard_dkeys, cerr := shard_keys.GetAll(c, nil); cerr == nil {
-		derr := datastore.DeleteMulti(c, shard_dkeys)
-		if derr != nil {
-			return derr
-		}
-	} else {
-		return cerr
-	}
-
-	err = datastore.DeleteMulti(c, shardc_dkeys)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-*/
 func NewPaste(r *http.Request, score float64) (string, error) {
 	var paste Paste
 
@@ -262,4 +228,39 @@ func GetPaste(paste_id string) (*Paste, error) {
 	err := storage.DB.QueryRowx(query, paste_id).StructScan(&paste)
 
 	return &paste, err
+}
+
+func (p *Paste) Delete(r *http.Request) error {
+	paste_id := p.PasteID
+
+	query := "DELETE FROM pastebin WHERE paste_id=?"
+	query = storage.DB.Rebind(query)
+	if _, err := storage.DB.Exec(query, paste_id); err == nil {
+		log.Printf("INFO: Delete paste with paste_id [%s]", paste_id)
+	} else {
+		return err
+	}
+	/*
+		// FIXME: This is duplicated from pastebin.clean
+		// Clear counter shards here
+		var shardc_dkeys []*datastore.Key
+		c_key := datastore.NewKey(c, "GeneralCounterShardConfig", paste_id, 0, nil)
+		shardc_dkeys = append(shardc_dkeys, c_key)
+
+		shard_keys := datastore.NewQuery("GeneralCounterShard").Filter("Name =", paste_id).KeysOnly()
+		if shard_dkeys, cerr := shard_keys.GetAll(c, nil); cerr == nil {
+			derr := datastore.DeleteMulti(c, shard_dkeys)
+			if derr != nil {
+				return derr
+			}
+		} else {
+			return cerr
+		}
+
+		err = datastore.DeleteMulti(c, shardc_dkeys)
+		if err != nil {
+			return err
+		}
+	*/
+	return nil
 }

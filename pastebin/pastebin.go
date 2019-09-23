@@ -4,7 +4,6 @@ import (
 	// Go Builtin Packages
 	"bufio"
 	"bytes"
-	// "encoding/json"
 	"database/sql"
 	"fmt"
 	"html/template"
@@ -13,11 +12,7 @@ import (
 	"os"
 	"strings"
 	"time"
-
-	// Google Appengine Packages
-	// "appengine"
-	// "appengine/datastore"
-	// "appengine/user"
+	// "encoding/json"
 
 	// The Gorilla Web Toolkit
 	"github.com/gorilla/csrf"
@@ -44,7 +39,7 @@ func InitRoutes(s *mux.Router) {
 	r.HandleFunc("/{paste_id}/content", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastecontent")
 	r.HandleFunc("/{paste_id}/content/link", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastecontentlink")
 	r.HandleFunc("/{paste_id}/download", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastedownload")
-	// r.HandleFunc("/pastebin/{paste_id}/delete", utils.ExtraSugar(pastecontent)).Methods("POST").Name("pastedelete")
+	r.HandleFunc("/{paste_id}/delete", utils.ExtraSugar(pastecontent)).Methods("POST").Name("pastedelete")
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/pastebin/static/", http.FileServer(http.Dir("pastebin/static"))))
 
 	// CSRFAuthKey := os.Getenv("CSRFAuthKey")
@@ -237,8 +232,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			"p_content":      p_content,
 			"p_count":        p_count,
 			"user":           "", // usr,
-			"deleteBtn":      false,
-			"deleteBtn_":     showDeleteBtn, // FIXME: enable this pls
+			"deleteBtn":      showDeleteBtn,
 			"driveHosted":    driveHosted,
 			"sixMonthsAway":  time.Now().AddDate(0, 0, 120).Format("Monday, Jan _2, 2006"),
 			"rkey":           os.Getenv("ReCAPTCHAKey"),
@@ -313,16 +307,14 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Disposition", dl_disposition)
 		}
 
-		/*
 		// Check ownership and expire paste on the /delete route, POST is enforced here by the mux
 		if dl := strings.Split(r.URL.Path, "/"); dl[len(dl)-1] == "delete" {
 			canDelete := false
-			if usr := user.Current(c); usr != nil {
-				if paste.UserID == usr.ID || user.IsAdmin(c) {
-					canDelete = true
-				}
-			}
-
+			// if usr := user.Current(c); usr != nil {
+			// 	if paste.UserID == usr.ID || user.IsAdmin(c) {
+			// 		canDelete = true
+			// 	}
+			// }
 
 			if checkDelete, err := utils.CheckSession(r, paste_id); err != nil {
 				log.Printf("ERROR: %v\n", err)
@@ -332,12 +324,12 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 			}
 
 			if canDelete {
-				err := paste.Delete(c, r)
+				err := paste.Delete(r)
 				if err != nil {
-					if derr, ok := err.(*models.GDriveAPIError); ok {
-						http.Error(w, derr.Response, derr.Code)
-						return
-					}
+					// if derr, ok := err.(*models.GDriveAPIError); ok {
+					// 	http.Error(w, derr.Response, derr.Code)
+					// 	return
+					// }
 					log.Printf("ERROR: %v\n", err)
 					http.Error(w, "Meep! We were trying to delete this paste but something went wrong.", http.StatusInternalServerError)
 				}
@@ -353,11 +345,9 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 					// http://tools.ietf.org/html/rfc2616#section-10.3.4 / Http 303
 					http.Redirect(w, r, "/pastebin/", http.StatusSeeOther)
 				}
-				return
 			}
 			return
 		}
-		*/
 
 		err := paste.ZContent(r, w)
 		if err != nil {
