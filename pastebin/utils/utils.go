@@ -3,6 +3,7 @@ package utils
 import (
 	// Go Builtin Packages
 	"encoding/json"
+	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -20,6 +21,14 @@ import (
 	// "github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 )
+
+func Http404(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotFound)
+	var tmpl = template.Must(template.ParseFiles("templates/404.tmpl"))
+	if err := tmpl.Execute(w, nil); err != nil {
+		http.Error(w, "Meep! We were trying to make the '404' page but something went wrong.", http.StatusInternalServerError)
+	}
+}
 
 // http://andyrees.github.io/2015/your-code-a-mess-maybe-its-time-to-bring-in-the-decorators/
 func ExtraSugar(f http.HandlerFunc) http.HandlerFunc {

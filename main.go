@@ -2,7 +2,6 @@ package main
 
 import (
 	// Go Builtin Packages
-	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -16,6 +15,7 @@ import (
 
 	// Local Packages
 	"github.com/adayoung/gae-pastebin/pastebin"
+	"github.com/adayoung/gae-pastebin/pastebin/utils"
 	"github.com/adayoung/gae-pastebin/pastebin/utils/storage"
 )
 
@@ -62,7 +62,7 @@ func main() {
 	r := mux.NewRouter().StrictSlash(true)
 	r.HandleFunc("/", index).Methods("GET").Name("index")
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-	r.NotFoundHandler = http.HandlerFunc(Http404)
+	r.NotFoundHandler = http.HandlerFunc(utils.Http404)
 
 	pastebin.InitRoutes(r)
 
@@ -70,14 +70,6 @@ func main() {
 	CSRF := csrf.Protect([]byte(CSRFAuthKey), csrf.Secure(os.Getenv("CSRFSecureC") == "true"))
 
 	log.Fatal(http.ListenAndServe("127.0.0.1:2019", CSRF(r)))
-}
-
-func Http404(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotFound)
-	var tmpl = template.Must(template.ParseFiles("templates/404.tmpl"))
-	if err := tmpl.Execute(w, nil); err != nil {
-		http.Error(w, "Meep! We were trying to make the '404' page but something went wrong.", http.StatusInternalServerError)
-	}
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
