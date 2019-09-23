@@ -7,18 +7,13 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"regexp"
 	"strings"
 	"time"
-	// "errors"
-	// "io"
 
-	// Google Appengine Packages
-	// "appengine"
-	// "appengine/datastore"
-	// "appengine/user"
 	"github.com/lib/pq"
 
 	// Local Packages
@@ -28,17 +23,17 @@ import (
 
 type Tags []string
 type Paste struct {
-	PasteID  string    `datastore:"paste_id,noindex"`
-	UserID   string    `datastore:"user_id"`
-	Title    string    `datastore:"title"`
-	Content  []byte    `datastore:"content,noindex"`
-	Tags     Tags      `datastore:"tags"`
-	Format   string    `datastore:"format,noindex"`
-	Date     time.Time `datastore:"date_published"`
-	Zlib     bool      `datastore:"zlib,noindex"`
-	uContent string    `datastore:"-"` // Private content, for validation and processing
-	GDriveID string    `datastore:"gdrive_id"`
-	GDriveDL string    `datastore:"gdrive_dl,noindex"`
+	PasteID  string    `db:"paste_id"`
+	UserID   string    `db:"user_id"`
+	Title    string    `db:"title"`
+	Content  []byte    `db:"content"`
+	Tags     Tags      `db:"tags"`
+	Format   string    `db:"format"`
+	Date     time.Time `db:"date"`
+	Zlib     bool      `db:"zlib"`
+	uContent string    `db:"-"` // Private content, for validation and processing
+	GDriveID string    `db:"gdriveid"`
+	GDriveDL string    `db:"gdrivedl"`
 }
 
 func genpasteKey(p *Paste) string {
@@ -172,12 +167,12 @@ type pasteContent interface {
 	Write([]byte) (int, error)
 }
 
-func (p *Paste) ZContent(c appengine.Context, r *http.Request, pc pasteContent) error {
-	if len(p.GDriveID) > 0 {
-		if err := p.loadFromDrive(c, r); err != nil {
-			return err
-		}
-	}
+func (p *Paste) ZContent(r *http.Request, pc pasteContent) error {
+	// if len(p.GDriveID) > 0 {
+	// 	if err := p.loadFromDrive(c, r); err != nil {
+	// 		return err
+	// 	}
+	// }
 
 	if p.Zlib {
 		// Decompress content and write out the response
@@ -193,6 +188,7 @@ func (p *Paste) ZContent(c appengine.Context, r *http.Request, pc pasteContent) 
 	return nil
 }
 
+/*
 func (p *Paste) Delete(c appengine.Context, r *http.Request) error {
 	paste_id := p.PasteID
 	key := datastore.NewKey(c, PasteDSKind, paste_id, 0, nil)
@@ -254,14 +250,16 @@ func NewPaste(r *http.Request, score float64) (string, error) {
 	return paste_id, nil
 }
 
-/*
-func GetPaste(c appengine.Context, paste_id string) (*Paste, error) {
-	key := datastore.NewKey(c, PasteDSKind, paste_id, 0, nil)
-	paste := new(Paste)
-	if err := datastore.Get(c, key, paste); err != nil {
-		return paste, err
-	}
+func GetPaste(paste_id string) (*Paste, error) {
+	var paste Paste
 
-	return paste, nil
+	query := "SELECT"
+	query = query + " paste_id, user_id, title, content," // , tags"
+	query = query + " format, date, zlib, gdriveid, gdrivedl"
+	query = query + " FROM pastebin WHERE paste_id=?"
+
+	query = storage.DB.Rebind(query)
+	err := storage.DB.QueryRowx(query, paste_id).StructScan(&paste)
+
+	return &paste, err
 }
-*/

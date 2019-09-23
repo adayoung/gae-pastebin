@@ -2,17 +2,17 @@ package pastebin
 
 import (
 	// Go Builtin Packages
-	// "bufio"
-	// "bytes"
+	"bufio"
+	"bytes"
 	// "encoding/json"
-	// "fmt"
+	"database/sql"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
-
 	"os"
-	// "strings"
-	// "time"
+	"strings"
+	"time"
 
 	// Google Appengine Packages
 	// "appengine"
@@ -40,10 +40,10 @@ func InitRoutes(s *mux.Router) {
 	r.HandleFunc("/about", utils.ExtraSugar(about)).Methods("GET").Name("about")
 	// r.HandleFunc("/pastebin/clean", clean).Methods("GET").Name("pastecleanr") // Order is important! :o
 	// r.HandleFunc("/pastebin/search/", utils.ExtraSugar(search)).Methods("GET").Name("pastesearch")
-	// r.HandleFunc("/pastebin/{paste_id}", utils.ExtraSugar(pasteframe)).Methods("GET").Name("pasteframe")
-	// r.HandleFunc("/pastebin/{paste_id}/content", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastecontent")
-	// r.HandleFunc("/pastebin/{paste_id}/content/link", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastecontentlink")
-	// r.HandleFunc("/pastebin/{paste_id}/download", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastedownload")
+	r.HandleFunc("/{paste_id}", utils.ExtraSugar(pasteframe)).Methods("GET").Name("pasteframe")
+	r.HandleFunc("/{paste_id}/content", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastecontent")
+	r.HandleFunc("/{paste_id}/content/link", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastecontentlink")
+	r.HandleFunc("/{paste_id}/download", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastedownload")
 	// r.HandleFunc("/pastebin/{paste_id}/delete", utils.ExtraSugar(pastecontent)).Methods("POST").Name("pastedelete")
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/pastebin/static/", http.FileServer(http.Dir("pastebin/static"))))
 
@@ -164,60 +164,59 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-/*
 func pasteframe(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
-	usr := user.Current(c)
+	// usr := user.Current(c)
 	v := mux.Vars(r)
 	paste_id := v["paste_id"]
 	if len(paste_id) > 8 {
 		paste_id = paste_id[:8]
 	}
 
-	if paste, err := models.GetPaste(c, paste_id); err == datastore.ErrNoSuchEntity {
-		Http404(w, r)
+	if paste, err := models.GetPaste(paste_id); err == sql.ErrNoRows {
+		utils.Http404(w, r)
 		return
 	} else if err != nil {
-		c.Errorf(err.Error())
+		log.Printf("ERROR: %v\n", err)
 		http.Error(w, "Meep! We were trying to retrieve this paste but something went wrong.", http.StatusInternalServerError)
 		return
 	} else {
 		showDeleteBtn := false
-		if usr != nil {
-			if paste.UserID == usr.ID || user.IsAdmin(c) {
-				showDeleteBtn = true
-			}
-		}
+		// if usr != nil {
+		// 	if paste.UserID == usr.ID || user.IsAdmin(c) {
+		// 		showDeleteBtn = true
+		// 	}
+		// }
 
 		if checkDelete, err := utils.CheckSession(r, paste_id); err != nil {
-			c.Errorf(err.Error())
+			log.Printf("ERROR: %v\n", err)
 			http.SetCookie(w, &http.Cookie{
 				Path:     "/pastebin/",
 				Name:     "_pb_session",
 				Value:    "",
 				MaxAge:   -1,
-				Secure:   !appengine.IsDevAppServer(),
+				Secure:   os.Getenv("CSRFSecureC") == "true",
 				HttpOnly: true,
 			})
 		} else {
 			showDeleteBtn = checkDelete
 		}
 
-		defer counter.Increment(c, paste_id)
-		p_count, _ := counter.Count(c, paste_id)
+		// defer counter.Increment(c, paste_id)
+		// p_count, _ := counter.Count(c, paste_id)
+		p_count := 0
 
 		var p_content string
 		if paste.Format == "plain" {
 			var _b_content bytes.Buffer
 			_p_content := bufio.NewWriter(&_b_content)
-			err := paste.ZContent(c, r, _p_content)
+			err := paste.ZContent(r, _p_content)
 			if err != nil {
-				c.Errorf(err.Error())
-				if gerr, ok := err.(*models.GDriveAPIError); ok {
-					http.Error(w, gerr.Response, gerr.Code)
-				} else {
-					http.Error(w, "Meep! We were trying to retrieve this paste's plain content but something went wrong.", http.StatusInternalServerError)
-				}
+				log.Printf("ERROR: %v\n", err)
+				// if gerr, ok := err.(*models.GDriveAPIError); ok {
+				// 	http.Error(w, gerr.Response, gerr.Code)
+				// } else {
+				// 	http.Error(w, "Meep! We were trying to retrieve this paste's plain content but something went wrong.", http.StatusInternalServerError)
+				// }
 				return
 			} else {
 				_p_content.Flush()
@@ -237,13 +236,14 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			"paste":          paste,
 			"p_content":      p_content,
 			"p_count":        p_count,
-			"user":           usr,
-			"deleteBtn":      showDeleteBtn,
+			"user":           "", // usr,
+			"deleteBtn":      false,
+			"deleteBtn_":     showDeleteBtn, // FIXME: enable this pls
 			"driveHosted":    driveHosted,
 			"sixMonthsAway":  time.Now().AddDate(0, 0, 120).Format("Monday, Jan _2, 2006"),
 			"rkey":           os.Getenv("ReCAPTCHAKey"),
 		}); err != nil {
-			c.Errorf(err.Error())
+			log.Printf("ERROR: %v\n", err)
 			http.Error(w, "Meep! We were trying to assemble this paste but something went wrong.", http.StatusInternalServerError)
 			return
 		}
@@ -255,41 +255,42 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Security-Policy", "default-src 'none'; style-src 'self' 'unsafe-inline'; img-src i.imgur.com data:; frame-ancestors 'self'")
 	w.Header().Set("Cache-Control", "public")
 
-	c := appengine.NewContext(r)
 	v := mux.Vars(r)
 	paste_id := v["paste_id"]
 	if len(paste_id) > 8 {
 		paste_id = paste_id[:8]
 	}
 
-	if paste, err := models.GetPaste(c, paste_id); err == datastore.ErrNoSuchEntity {
-		Http404(w, r)
+	if paste, err := models.GetPaste(paste_id); err == sql.ErrNoRows {
+		utils.Http404(w, r)
 		return
 	} else if err != nil {
-		c.Errorf(err.Error())
+		log.Printf("ERROR: %v\n", err)
 		http.Error(w, "Meep! We were trying to retrieve this paste but something went wrong.", http.StatusInternalServerError)
 		return
 	} else {
 		// Return content link alone on the /link route
 		// TODO: detect 404s and remove metadata here as well
 		if cl := strings.Split(r.URL.Path, "/"); cl[len(cl)-1] == "link" {
-			if len(paste.GDriveDL) > 0 {
-				fl_link, ferr := paste.LinkFromDrive(c, r)
-				if ferr != nil {
-					fl_link = ferr.Error()
-					w.WriteHeader(500) // Umm.. it just needs to go to .fail() O_o
-				}
-				w.Write([]byte(fl_link))
-				return
-			} else {
-				w.Write([]byte(strings.Join(strings.Split(r.URL.Path, "/")[:len(cl)-1], "/")))
-				return
-			}
+			// if len(paste.GDriveDL) > 0 {
+			// 	fl_link, ferr := paste.LinkFromDrive(c, r)
+			// 	if ferr != nil {
+			// 		fl_link = ferr.Error()
+			// 		w.WriteHeader(500) // Umm.. it just needs to go to .fail() O_o
+			// 	}
+			// 	w.Write([]byte(fl_link))
+			// 	return
+			// } else {
+			w.Write([]byte(strings.Join(strings.Split(r.URL.Path, "/")[:len(cl)-1], "/")))
+			return
+			// }
 		}
 
 		// Add a Content-Type header for plain text pastes
 		if paste.Format == "plain" {
 			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		} else {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		}
 
 		// Add a Content-Disposition header on the /download route
@@ -312,6 +313,7 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Disposition", dl_disposition)
 		}
 
+		/*
 		// Check ownership and expire paste on the /delete route, POST is enforced here by the mux
 		if dl := strings.Split(r.URL.Path, "/"); dl[len(dl)-1] == "delete" {
 			canDelete := false
@@ -321,8 +323,9 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
+
 			if checkDelete, err := utils.CheckSession(r, paste_id); err != nil {
-				c.Errorf(err.Error())
+				log.Printf("ERROR: %v\n", err)
 				http.Error(w, "Meep! We were trying to get a session but something went wrong.", http.StatusInternalServerError)
 			} else {
 				canDelete = checkDelete
@@ -335,12 +338,12 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 						http.Error(w, derr.Response, derr.Code)
 						return
 					}
-					c.Errorf(err.Error())
+					log.Printf("ERROR: %v\n", err)
 					http.Error(w, "Meep! We were trying to delete this paste but something went wrong.", http.StatusInternalServerError)
 				}
 
 				if err := utils.UpdateSession(w, r, paste_id, true); err != nil {
-					c.Errorf(err.Error())
+					log.Printf("ERROR: %v\n", err)
 					http.Error(w, "Meep! We were trying to get or set a session but something went wrong. Your paste has been deleted, however!", http.StatusInternalServerError)
 				}
 
@@ -354,20 +357,21 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		}
+		*/
 
-		err := paste.ZContent(c, r, w)
+		err := paste.ZContent(r, w)
 		if err != nil {
-			c.Errorf(err.Error())
-			if gerr, ok := err.(*models.GDriveAPIError); ok {
-				http.Error(w, gerr.Response, gerr.Code)
-			} else {
-				http.Error(w, "Meep! We were trying to retrieve this paste's content but something went wrong.", http.StatusInternalServerError)
-			}
-			return
+			log.Printf("ERROR: %v\n", err)
+			// if gerr, ok := err.(*models.GDriveAPIError); ok {
+			// 	http.Error(w, gerr.Response, gerr.Code)
+			// } else {
+			// 	http.Error(w, "Meep! We were trying to retrieve this paste's content but something went wrong.", http.StatusInternalServerError)
+			// }
 		}
 	}
 }
 
+/*
 func clean(w http.ResponseWriter, r *http.Request) {
 	// https://cloud.google.com/appengine/docs/go/config/cron#securing_urls_for_cron
 	c := appengine.NewContext(r)

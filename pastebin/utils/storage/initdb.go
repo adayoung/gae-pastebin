@@ -25,6 +25,15 @@ func initDB() {
 		log.Println("ERROR: The 'pastebin' table could not be initialised.")
 		log.Fatalf("ERROR: %v", err)
 	}
+
+	sqlIndex := `
+		CREATE INDEX IF NOT EXISTS paste_id_index ON pastebin(paste_id);
+	`
+
+	if _, err := DB.Exec(sqlIndex); err != nil {
+		log.Println("ERROR: The 'pastebin.paste_id' index could not be initialised.")
+		log.Fatalf("ERROR: %v", err)
+	}
 }
 
 func init() {
