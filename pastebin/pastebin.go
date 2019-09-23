@@ -71,7 +71,6 @@ func about(w http.ResponseWriter, r *http.Request) {
 }
 
 func pastebin(w http.ResponseWriter, r *http.Request) {
-	// c := appengine.NewContext(r)
 	if r.Method == "GET" {
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl"))
 
@@ -127,15 +126,14 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		/*
 		if err := utils.UpdateSession(w, r, paste_id, false); err != nil {
-			c.Errorf(err.Error())
+			log.Printf("WARNING: %v", err)
 			http.SetCookie(w, &http.Cookie{
 				Path:     "/pastebin/",
 				Name:     "_pb_session",
 				Value:    "",
 				MaxAge:   -1,
-				Secure:   !appengine.IsDevAppServer(),
+				Secure:   os.Getenv("CSRFSecureC") == "true",
 				HttpOnly: true,
 			})
 		}
@@ -144,7 +142,7 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			Name:     "dest",
 			Value:    r.Form.Get("destination"),
 			MaxAge:   0,
-			Secure:   !appengine.IsDevAppServer(),
+			Secure:   os.Getenv("CSRFSecureC") == "true",
 			HttpOnly: true,
 		})
 
@@ -154,9 +152,8 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			Value:    "",
 			MaxAge:   -1,
 			HttpOnly: true,
-			Secure:   !appengine.IsDevAppServer(),
+			Secure:   os.Getenv("CSRFSecureC") == "true",
 		})
-		*/
 
 		if r.Header.Get("X-Requested-With") == "XMLHttpRequest" { // AJAX
 			w.Write([]byte("/pastebin/" + paste_id))

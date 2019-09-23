@@ -9,17 +9,16 @@ import (
 	"net/url"
 	"os"
 	"strings"
-	// "time"
+	"time"
 	// Google Appengine Packages
 	// "appengine"
-	// "appengine/urlfetch"
 	// Google OAuth2/Drive Packages
 	// "golang.org/x/oauth2"
 	// "golang.org/x/oauth2/google"
 	// "google.golang.org/api/drive/v3"
 	// The Gorilla Web Toolkit
 	// "github.com/gorilla/securecookie"
-	// "github.com/gorilla/sessions"
+	"github.com/gorilla/sessions"
 )
 
 // http://andyrees.github.io/2015/your-code-a-mess-maybe-its-time-to-bring-in-the-decorators/
@@ -40,7 +39,6 @@ func ExtraSugar(f http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-/*
 var sessionStore = sessions.NewCookieStore([]byte(os.Getenv("CSRFAuthKey")))
 
 func UpdateSession(w http.ResponseWriter, r *http.Request, paste_id string, remove bool) error {
@@ -51,7 +49,7 @@ func UpdateSession(w http.ResponseWriter, r *http.Request, paste_id string, remo
 			Path:     "/pastebin/",
 			MaxAge:   0,
 			HttpOnly: true,
-			Secure:   !appengine.IsDevAppServer(),
+			Secure:   os.Getenv("CSRFSecureC") == "true",
 		}
 
 		if remove == true {
@@ -90,7 +88,6 @@ func CheckSession(r *http.Request, paste_id string) (bool, error) {
 	}
 	return false, nil
 }
-*/
 
 func ProcessForm(r *http.Request) error {
 	var err error
