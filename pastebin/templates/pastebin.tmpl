@@ -39,6 +39,7 @@
           -->
         </ul>
         <div class="col-md-3 navbar-nav navbar-right">
+          <div class="hidden"> <!-- FIXME: unhide when available  -->
           <div id="searchdiv">
             <form action="/pastebin/search" method="get" role="search">
               <label class="sr-only" for="searchbox">Search Tags</label>
@@ -51,13 +52,14 @@
               >
             </form>
           </div>
+          </div>
         </div>
       </div><!--/.nav-collapse -->
     </div>
     <noscript>
       <p class="text-danger text-center">Oops, you have Javascript disabled. Some features are unavailable.</p>
     </noscript>
-    <p class="text-warning text-center">This site is still under construction, it may not work at all!</p>
+    <p class="text-warning text-center">This site is still undergoing migration, some features do not work yet (Accounts, API, Google Drive, Search by Tags)</p>
     <div class="container">
       {{ block "content" . }}
       <div class="row">
@@ -106,6 +108,7 @@
                   </label>
                 </div>
 
+                <div class="hidden"> <!-- FIXME: unhide when available  -->
                 <div class="btn-group" data-toggle="buttons">
                   <label class="btn btn-default" for="datastore" id="label_datastore" title="Paste to App Engine Datastore!">
                     <input disabled
@@ -124,6 +127,7 @@
                     <img src="/pastebin/static/img/drive.png" alt="Paste to Google Drive!">
                   </label>
                   <a class="btn btn-default" href="/pastebin/about#PasteToGoogleDrive" id="about_btn" data-title="About" target="_blank"><i class="glyphicon glyphicon-question-sign"></i><span class="sr-only">About</span></a>
+                </div>
                 </div>
 
               </div>
