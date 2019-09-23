@@ -167,7 +167,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 		paste_id = paste_id[:8]
 	}
 
-	if paste, err := models.GetPaste(paste_id); err == sql.ErrNoRows {
+	if paste, err := models.GetPaste(paste_id, false, true); err == sql.ErrNoRows {
 		utils.Http404(w, r)
 		return
 	} else if err != nil {
@@ -255,7 +255,7 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 		paste_id = paste_id[:8]
 	}
 
-	if paste, err := models.GetPaste(paste_id); err == sql.ErrNoRows {
+	if paste, err := models.GetPaste(paste_id, true, false); err == sql.ErrNoRows {
 		utils.Http404(w, r)
 		return
 	} else if err != nil {

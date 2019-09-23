@@ -173,6 +173,12 @@ func (p *Paste) ZContent(r *http.Request, pc pasteContent) error {
 	// 	}
 	// }
 
+	if !(len(p.Content) > 0) {
+		if err := p.loadContent(); err != nil {
+			return err
+		}
+	}
+
 	if p.Zlib {
 		// Decompress content and write out the response
 		var zbuffer io.Reader
@@ -215,24 +221,36 @@ func NewPaste(r *http.Request, score float64) (string, error) {
 	return paste_id, nil
 }
 
-func GetPaste(paste_id string) (*Paste, error) {
+func GetPaste(paste_id string, withContent, withTags bool) (*Paste, error) {
 	var paste Paste
 
 	query := "SELECT"
-	query = query + " paste_id, user_id, title, content," // , tags"
+	query = query + " paste_id, user_id, title,"
+	if withContent {
+		query = query + " content,"
+	}
 	query = query + " format, date, zlib, gdriveid, gdrivedl"
 	query = query + " FROM pastebin WHERE paste_id=?"
 
 	query = storage.DB.Rebind(query)
 	err := storage.DB.QueryRowx(query, paste_id).StructScan(&paste)
 
-	if err == nil { // FIXME: There has to be a better way of doing this
-		query = "SELECT tags FROM pastebin WHERE paste_id=?"
-		query = storage.DB.Rebind(query)
-		err = storage.DB.QueryRow(query, paste_id).Scan(pq.Array(&paste.Tags))
+	if withTags {
+		if err == nil { // FIXME: There has to be a better way of doing this
+			query = "SELECT tags FROM pastebin WHERE paste_id=?"
+			query = storage.DB.Rebind(query)
+			err = storage.DB.QueryRow(query, paste_id).Scan(pq.Array(&paste.Tags))
+		}
 	}
 
 	return &paste, err
+}
+
+func (p *Paste) loadContent() error {
+	query := "SELECT content FROM pastebin WHERE paste_id=?"
+	query = storage.DB.Rebind(query)
+	err := storage.DB.QueryRow(query, p.PasteID).Scan(&p.Content)
+	return err
 }
 
 func (p *Paste) Delete(r *http.Request) error {
