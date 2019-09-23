@@ -7,3 +7,9 @@
 [submodule "vendor/github.com/gorilla/csrf"]
 	path = vendor/github.com/gorilla/csrf
 	url = https://github.com/gorilla/csrf
+[submodule "vendor/github.com/jmoiron/sqlx"]
+	path = vendor/github.com/jmoiron/sqlx
+	url = https://github.com/jmoiron/sqlx
+[submodule "vendor/github.com/lib/pq"]
+	path = vendor/github.com/lib/pq
+	url = https://github.com/lib/pq
