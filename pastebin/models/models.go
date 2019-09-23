@@ -6,22 +6,24 @@ import (
 	"compress/zlib"
 	"crypto/sha256"
 	"encoding/base64"
-	"log"
-	// "errors"
 	"fmt"
-	// "io"
+	"log"
 	"net/http"
 	"regexp"
 	"strings"
 	"time"
+	// "errors"
+	// "io"
 
 	// Google Appengine Packages
 	// "appengine"
 	// "appengine/datastore"
 	// "appengine/user"
+	"github.com/lib/pq"
 
 	// Local Packages
 	"github.com/adayoung/gae-pastebin/pastebin/utils"
+	"github.com/adayoung/gae-pastebin/pastebin/utils/storage"
 )
 
 type Tags []string
@@ -38,8 +40,6 @@ type Paste struct {
 	GDriveID string    `datastore:"gdrive_id"`
 	GDriveDL string    `datastore:"gdrive_dl,noindex"`
 }
-
-const PasteDSKind string = "Paste"
 
 func genpasteKey(p *Paste) string {
 	timestamp := p.Date.Format(time.StampNano)
@@ -141,15 +141,31 @@ func (p *Paste) save(r *http.Request, score float64) (string, error) {
 			p.Zlib = true
 		}
 
-		// TODO: Here is where we SAVE the thingie to DB. Ha!
-		// _, err := datastore.Put(c, key, p)
-		// if err != nil {
-		// 	return "", err
-		// }
+		if err := p.saveToDB(); err != nil {
+			return "", err
+		}
+
 		return paste_id, nil
 	} else {
 		return "", err
 	}
+}
+
+func (p *Paste) saveToDB() error {
+	if len(p.Content) > (2 * 1024 * 1024) {
+		return fmt.Errorf("Paste content is still over 2MB after compression.")
+	}
+	pasteSQL := `INSERT INTO pastebin (
+			paste_id, user_id, title, content, tags,
+			format, date, zlib, gdriveid, gdrivedl
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`
+	pasteSQL = storage.DB.Rebind(pasteSQL)
+	_, err := storage.DB.Exec(pasteSQL,
+		p.PasteID, p.UserID, p.Title, p.Content, pq.Array(p.Tags),
+		p.Format, p.Date, p.Zlib, p.GDriveID, p.GDriveDL,
+	)
+	return err
 }
 
 type pasteContent interface {

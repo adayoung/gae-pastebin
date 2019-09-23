@@ -16,6 +16,7 @@ import (
 
 	// Local Packages
 	"github.com/adayoung/gae-pastebin/pastebin"
+	"github.com/adayoung/gae-pastebin/pastebin/utils/storage"
 )
 
 type envKeys struct {
@@ -25,6 +26,10 @@ type envKeys struct {
 	GCPOAuthCID    string `yaml:"GCPOAuthCID"`
 	ReCAPTCHAKey   string `yaml:"ReCAPTCHAKey"`
 	ReCAPTCHASecrt string `yaml:"ReCAPTCHASecrt"`
+
+	Database struct {
+		Connection string
+	}
 }
 
 func main() {
@@ -41,11 +46,16 @@ func main() {
 			os.Setenv("ReCAPTCHASecrt", _envKeys.ReCAPTCHASecrt)
 		} else {
 			log.Println("ERROR: Error with parsing keys.yaml.")
-			log.Fatalf("error: %v", err)
+			log.Fatalf("ERROR: %v", err)
 		}
 	} else {
 		log.Println("ERROR: The file 'keys.yaml' could not be read.")
-		log.Fatalf("error: %v", err)
+		log.Fatalf("ERROR: %v", err)
+	}
+
+	if err := storage.InitDB(_envKeys.Database.Connection); err != nil {
+		log.Println("ERROR: The database could not be initialized, DB will not unavailable.")
+		log.Fatalf("ERROR: %v", err)
 	}
 
 	// Router begins here

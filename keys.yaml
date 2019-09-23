@@ -4,3 +4,6 @@ EncryptionK: '&y"c5B[YnZpV.$dFfCu53ij/Dya[Bu?L'
 GCPOAuthCID: 'GCP Console > API Manager > Credentials > OAuth Client ID > Download JSON'
 ReCAPTCHAKey: 'Paste your ReCaptcha v3 Site Key here'
 ReCAPTCHASecrt: 'Paste your ReCaptcha v3 Secret Key here'
+
+database:
+  connection: "user=ada password=ada dbname=ada-bot sslmode=disable"
