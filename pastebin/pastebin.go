@@ -234,7 +234,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			"user":           "", // usr,
 			"deleteBtn":      showDeleteBtn,
 			"driveHosted":    driveHosted,
-			"sixMonthsAway":  time.Now().AddDate(0, 0, 120).Format("Monday, Jan _2, 2006"),
+			"sixMonthsAway":  time.Now().AddDate(0, 0, 180).Format("Monday, Jan _2, 2006"),
 			"rkey":           os.Getenv("ReCAPTCHAKey"),
 		}); err != nil {
 			log.Printf("ERROR: %v\n", err)
