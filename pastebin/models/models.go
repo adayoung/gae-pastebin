@@ -21,13 +21,12 @@ import (
 	"github.com/adayoung/gae-pastebin/pastebin/utils/storage"
 )
 
-type Tags []string
 type Paste struct {
 	PasteID  string    `db:"paste_id"`
 	UserID   string    `db:"user_id"`
 	Title    string    `db:"title"`
 	Content  []byte    `db:"content"`
-	Tags     Tags      `db:"tags"`
+	Tags     []string  `db:"tags"`
 	Format   string    `db:"format"`
 	Date     time.Time `db:"date"`
 	Zlib     bool      `db:"zlib"`
@@ -226,6 +225,12 @@ func GetPaste(paste_id string) (*Paste, error) {
 
 	query = storage.DB.Rebind(query)
 	err := storage.DB.QueryRowx(query, paste_id).StructScan(&paste)
+
+	if err == nil { // FIXME: There has to be a better way of doing this
+		query = "SELECT tags FROM pastebin WHERE paste_id=?"
+		query = storage.DB.Rebind(query)
+		err = storage.DB.QueryRow(query, paste_id).Scan(pq.Array(&paste.Tags))
+	}
 
 	return &paste, err
 }
