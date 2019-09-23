@@ -13,3 +13,6 @@
 [submodule "vendor/github.com/lib/pq"]
 	path = vendor/github.com/lib/pq
 	url = https://github.com/lib/pq
+[submodule "vendor/github.com/gorilla/sessions"]
+	path = vendor/github.com/gorilla/sessions
+	url = https://github.com/gorilla/sessions
