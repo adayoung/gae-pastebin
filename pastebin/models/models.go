@@ -38,9 +38,14 @@ type Paste struct {
 func genpasteKey(p *Paste) string {
 	timestamp := p.Date.Format(time.StampNano)
 
+	maxContentHashLen := 2 * 1024 // let's read only upto the first 2kbs
 	hasher := sha256.New()
 	hasher.Write([]byte(timestamp))
-	hasher.Write(p.Content)
+	if len(p.Content) > maxContentHashLen {
+		hasher.Write(p.Content[:maxContentHashLen])
+	} else {
+		hasher.Write(p.Content)
+	}
 	// This, because Gwawr was here, and Gwawr is awesome!
 	digest := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(hasher.Sum(nil))
 
