@@ -210,7 +210,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 				// if gerr, ok := err.(*models.GDriveAPIError); ok {
 				// 	http.Error(w, gerr.Response, gerr.Code)
 				// } else {
-				// 	http.Error(w, "Meep! We were trying to retrieve this paste's plain content but something went wrong.", http.StatusInternalServerError)
+				http.Error(w, "Meep! We were trying to retrieve this paste's plain content but something went wrong.", http.StatusInternalServerError)
 				// }
 				return
 			} else {
@@ -355,7 +355,7 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 			// if gerr, ok := err.(*models.GDriveAPIError); ok {
 			// 	http.Error(w, gerr.Response, gerr.Code)
 			// } else {
-			// 	http.Error(w, "Meep! We were trying to retrieve this paste's content but something went wrong.", http.StatusInternalServerError)
+			http.Error(w, "Meep! We were trying to retrieve this paste's content but something went wrong.", http.StatusInternalServerError)
 			// }
 		}
 	}
