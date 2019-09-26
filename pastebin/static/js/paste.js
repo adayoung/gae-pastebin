@@ -69,8 +69,8 @@ $(document).ready(function(){
           meep(loader, f);
       });
     } else {
-      var paste_id = location.href.split('/pastebin/')[1];
-      content.src="/pastebin/"+paste_id+"/content";
+      var paste_id = $('input[name="paste_id"]').val();
+      content.src="/pastebinc/"+paste_id+"/content";
     }
   } else {
     $("pre").html(function (index, html) {
