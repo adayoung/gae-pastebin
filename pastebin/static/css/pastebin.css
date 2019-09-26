@@ -113,7 +113,7 @@ pre .line::before {
     user-select: none;
 }
 
-article > iframe {
+article iframe {
   border: 0px;
 
   -moz-border-radius: 5px;

@@ -40,7 +40,7 @@ body {
         <p>No required fields means you can paste, hit ctrl-enter (or alt-enter if it's html) and you're done!</p>
       </div>
       <div class="col-md-4">
-        <img alt="Tesha and Ada - drawn by Tibitha" class="img-responsive" src="/pastebin/static/img/vU1OJdC.jpg">
+        <img alt="Tesha and Ada - drawn by Tibitha" class="img-responsive" src="//{{ .staticDomain }}/pastebin/static/img/vU1OJdC.jpg">
         <p class="text-center">
           <small><em>Lookie Ada and Tesha as drawn by Tibitha!</em></small>
         </p>
@@ -103,7 +103,7 @@ body {
           Select from Plain Text / Colourful HTML.
         </li>
         <li>
-          Select the Google Drive datastore option (<img src="/pastebin/static/img/drive.png" alt="Google Drive">) and click Paste it!
+          Select the Google Drive datastore option (<img src="//{{ .staticDomain }}/pastebin/static/img/drive.png" alt="Google Drive">) and click Paste it!
         </li>
         <li>
           This will open a window asking for your consent, you need a Google Account to sign in.
@@ -111,7 +111,7 @@ body {
         <li>
           <div>The consent screen would have the following permission listed in there:</div>
           <ul>
-            <li><img alt="Google Drive permissions" src="/pastebin/static/img/drive_rfp.png"></li>
+            <li><img alt="Google Drive permissions" src="//{{ .staticDomain }}/pastebin/static/img/drive_rfp.png"></li>
           </ul>
           <div>
             This permission grants the application access to files and folders it created <em>itself</em> only. You can read more about it <a href="https://developers.google.com/drive/v3/web/about-auth" title="About Authorization &nbsp;|&nbsp; Drive REST API &nbsp;|&nbsp; Google Developers">here</a>!

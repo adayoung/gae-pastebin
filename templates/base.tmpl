@@ -18,11 +18,10 @@
     <!-- Bootstrap core CSS -->
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.css" />
-    <link rel="stylesheet" href="/static/css/base.css">
-    <!--
-    <script src="/static/js/PACE/pace.min.js"></script>
-    <link href="/static/js/PACE/themes/blue/pace-theme-minimal.css" rel="stylesheet" />
-    -->
+    <link rel="stylesheet" href="//{{ .staticDomain }}/static/css/base.css">
+
+    <script src="//{{ .staticDomain }}/static/js/PACE/pace.min.js"></script>
+    <link href="//{{ .staticDomain }}/static/js/PACE/themes/blue/pace-theme-minimal.css" rel="stylesheet" />
     {{ block "morehead" . }}
     {{ end }}
   </head>
@@ -52,7 +51,7 @@
     <script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.js"></script>
-    <script src="/static/js/base.js"></script>
+    <script src="//{{ .staticDomain }}/static/js/base.js"></script>
 
     {{ end }}
     {{ block "moretail" . }}

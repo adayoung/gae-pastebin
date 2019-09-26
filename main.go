@@ -26,6 +26,7 @@ type envKeys struct {
 	GCPOAuthCID    string `yaml:"GCPOAuthCID"`
 	ReCAPTCHAKey   string `yaml:"ReCAPTCHAKey"`
 	ReCAPTCHASecrt string `yaml:"ReCAPTCHASecrt"`
+	StaticDomain   string `yaml:"StaticDomain"`
 
 	Database struct {
 		Connection string
@@ -44,6 +45,7 @@ func main() {
 			os.Setenv("GCPOAuthCID", _envKeys.GCPOAuthCID)
 			os.Setenv("ReCAPTCHAKey", _envKeys.ReCAPTCHAKey)
 			os.Setenv("ReCAPTCHASecrt", _envKeys.ReCAPTCHASecrt)
+			os.Setenv("StaticDomain", _envKeys.StaticDomain)
 		} else {
 			log.Println("ERROR: Error with parsing keys.yaml.")
 			log.Fatalf("ERROR: %v", err)

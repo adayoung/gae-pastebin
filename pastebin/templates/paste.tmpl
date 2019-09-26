@@ -46,7 +46,7 @@
 
       {{ if .driveHosted }}
       <a href="/pastebin/about#PasteToGoogleDrive" class="btn btn-default btn-xs" title="Google Drive Hosted Content!" target="_blank">
-        <img src="/pastebin/static/img/drive.png" alt="Google Drive!">
+        <img src="//{{ .staticDomain }}/pastebin/static/img/drive.png" alt="Google Drive!">
         <span id="driveHosted" class="sr-only">Google Drive Hosted Content!</span>
       </a>
       {{ end }}
@@ -69,7 +69,7 @@
 
   {{ if eq .paste.Format "html" }}
   <noscript>
-    <iframe id="content" src="/pastebin/{{ .paste_id }}/content" sandbox="allow-same-origin"></iframe>
+    <iframe id="content" src="//{{ .staticDomain }}/pastebin/{{ .paste_id }}/content" sandbox="allow-same-origin"></iframe>
   </noscript>
   {{ else }}
     <pre id="content">{{ .p_content }}</pre>
@@ -92,5 +92,5 @@
 &nbsp;
 {{ end }}
 {{ block "evenmoretail" . }}
-<script src="/pastebin/static/js/20190207/paste.js"></script>
+<script src="//{{ .staticDomain }}/pastebin/static/js/20190926/paste.js"></script>
 {{ end }}

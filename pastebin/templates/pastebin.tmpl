@@ -6,7 +6,7 @@
 {{ end }}
 
 {{ block "morehead" . }}
-  <link href="/pastebin/static/css/20190207/pastebin.css" rel="stylesheet">
+  <link href="//{{ .staticDomain }}/pastebin/static/css/20190926/pastebin.css" rel="stylesheet">
   {{ block "evenmorehead" . }}
   {{ end }}
 {{ end }}
@@ -117,7 +117,7 @@
                     checked=""
                     {{ end }}
                     id="datastore" name="destination" type="radio" value="datastore">
-                    <img src="/pastebin/static/img/datastore-symbol.png" alt="Paste to App Engine Datastore!" style="height:16px">
+                    <img src="//{{ .staticDomain }}/pastebin/static/img/datastore-symbol.png" alt="Paste to App Engine Datastore!" style="height:16px">
                   </label>
                   <label class="btn btn-default" for="gdrive" id="label_gdrive" title="Paste to Google Drive!">
                     <input disabled
@@ -125,7 +125,7 @@
                       checked=""
                       {{ end }}
                     id="gdrive" name="destination" type="radio" value="gdrive">
-                    <img src="/pastebin/static/img/drive.png" alt="Paste to Google Drive!">
+                    <img src="//{{ .staticDomain }}/pastebin/static/img/drive.png" alt="Paste to Google Drive!">
                   </label>
                   <a class="btn btn-default" href="/pastebin/about#PasteToGoogleDrive" id="about_btn" data-title="About" target="_blank"><i class="glyphicon glyphicon-question-sign"></i><span class="sr-only">About</span></a>
                 </div>
@@ -135,7 +135,7 @@
               {{ .csrfField }}
               &nbsp;
               <button class="btn btn-primary" data-title="Ctrl-Enter to paste in plain, Alt-Enter to paste in HTML!" id="paste_btn" type="submit">Paste it!</button>
-              <img alt="pretty spinner" id="spinner" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" height="24" width="24" data-src="/pastebin/static/img/spinner.gif">
+              <img alt="pretty spinner" id="spinner" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" height="24" width="24" data-src="//{{ .staticDomain }}/pastebin/static/img/spinner.gif">
               <em><span class="pull-right text-muted havejs" id="noc_wrap"><span id="noc">0</span> characters.</span> <span class="help-block grecaptcha-text">Protected by reCAPTCHA. <a href="https://www.google.com/intl/en/policies/privacy/" target="_blank">Privacy</a>. <a href="https://www.google.com/intl/en/policies/terms/" target="_blank">Terms</a>.</span></em>
             </div>
           </div>
@@ -159,7 +159,7 @@
     <!--
     <div class="pull-right">
       <a href="https://cloud.google.com/products/app-engine/" target="_blank">
-        <img alt="Powered by Google App Engine" id="appengine" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" height="30" width="120" data-src="/static/img/appengine-noborder-120x30.gif">
+        <img alt="Powered by Google App Engine" id="appengine" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" height="30" width="120" data-src="//{{ .staticDomain }}/static/img/appengine-noborder-120x30.gif">
       </a>
     </div>
     -->
@@ -168,10 +168,10 @@
 {{ end }}
 
 {{ block "moretail" . }}
-  <script src="/pastebin/static/js/common.js"></script>
+  <script src="//{{ .staticDomain }}/pastebin/static/js/common.js"></script>
   <input type="hidden" name="rkey" value="{{ .rkey }}">
   <script src="https://www.google.com/recaptcha/api.js?render={{ .rkey }}"></script>
   {{ block "evenmoretail" . }}
-    <script src="/pastebin/static/js/20190206/pastebin.js"></script>
+    <script src="//{{ .staticDomain }}/pastebin/static/js/20190206/pastebin.js"></script>
   {{ end }}
 {{ end }}

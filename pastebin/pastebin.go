@@ -34,7 +34,7 @@ func InitRoutes(s *mux.Router) {
 	r.HandleFunc("/", utils.ExtraSugar(pastebin)).Methods("GET", "POST").Name("pastebin")
 	r.HandleFunc("/about", utils.ExtraSugar(about)).Methods("GET").Name("about")
 	// r.HandleFunc("/pastebin/clean", clean).Methods("GET").Name("pastecleanr") // Order is important! :o
-	// r.HandleFunc("/pastebin/search/", utils.ExtraSugar(search)).Methods("GET").Name("pastesearch")
+	// r.HandleFunc("/search/", utils.ExtraSugar(search)).Methods("GET").Name("pastesearch")
 	r.HandleFunc("/{paste_id}", utils.ExtraSugar(pasteframe)).Methods("GET").Name("pasteframe")
 	r.HandleFunc("/{paste_id}/content", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastecontent")
 	r.HandleFunc("/{paste_id}/content/link", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastecontentlink")
@@ -57,8 +57,9 @@ func about(w http.ResponseWriter, r *http.Request) {
 	// c := appengine.NewContext(r)
 	var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl", "pastebin/templates/about.tmpl"))
 	if err := tmpl.Execute(w, map[string]interface{}{
-		"user": "", // user.Current(c),
-		"rkey": os.Getenv("ReCAPTCHAKey"),
+		"user":         "", // user.Current(c),
+		"rkey":         os.Getenv("ReCAPTCHAKey"),
+		"staticDomain": r.Context().Value("staticDomain"),
 	}); err != nil {
 		log.Printf("ERROR: %v\n", err)
 		http.Error(w, "Meep! We were trying to make the 'about' page but something went wrong.", http.StatusInternalServerError)
@@ -82,6 +83,7 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			"user":           "", // user.Current(c),
 			"dest":           destination,
 			"rkey":           os.Getenv("ReCAPTCHAKey"),
+			"staticDomain":   r.Context().Value("staticDomain"),
 		}); err != nil {
 			log.Printf("ERROR: %v\n", err)
 			http.Error(w, "Meep! We were trying to make the 'home' page but something went wrong.", http.StatusInternalServerError)
@@ -236,6 +238,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			"driveHosted":    driveHosted,
 			"sixMonthsAway":  time.Now().AddDate(0, 0, 180).Format("Monday, Jan _2, 2006"),
 			"rkey":           os.Getenv("ReCAPTCHAKey"),
+			"staticDomain":   r.Context().Value("staticDomain"),
 		}); err != nil {
 			log.Printf("ERROR: %v\n", err)
 			http.Error(w, "Meep! We were trying to assemble this paste but something went wrong.", http.StatusInternalServerError)
@@ -423,18 +426,19 @@ func clean(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Meep! We were trying to delete old shard keys but something went wrong.", http.StatusInternalServerError)
 	}
 }
-
+*/
 func search(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
-	usr := user.Current(c)
+	// usr := user.Current(c)
 
 	if r.Header.Get("X-Requested-With") == "XMLHttpRequest" { // AJAX
+		/*
 		cursor := r.URL.Query().Get("c")
 		// Let's abuse an empty Paste object to validate/clean tags
 		p := new(models.Paste)
 		p.Tags = strings.Split(r.URL.Query().Get("tags"), " ")
 		p.Validate()
 
+		// select paste_id, title, tags, format, date from pastebin where tags @> '{"tag2","tag3"}';
 		q := datastore.NewQuery(models.PasteDSKind)
 		// q = q.Project("title", "date_published", "tags") // <-- That's not allowed for '='' filter queries O_o
 		for _, tag := range p.Tags {
@@ -487,14 +491,15 @@ func search(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(q_result)
+		*/
 	} else {
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl", "pastebin/templates/search.tmpl"))
 		if err := tmpl.Execute(w, map[string]interface{}{
-			"user": usr,
-			"rkey": os.Getenv("ReCAPTCHAKey"),
+			"user":         "", // usr,
+			"rkey":         os.Getenv("ReCAPTCHAKey"),
+			"staticDomain": r.Context().Value("staticDomain"),
 		}); err != nil {
 			http.Error(w, "Meep! We were trying to make the 'search' page but something went wrong.", http.StatusInternalServerError)
 		}
 	}
 }
-*/

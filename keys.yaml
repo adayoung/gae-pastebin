@@ -7,3 +7,5 @@ ReCAPTCHASecrt: 'Paste your ReCaptcha v3 Secret Key here'
 
 database:
   connection: "user=ada password=ada dbname=ada-bot sslmode=disable"
+
+StaticDomain: "localhost:2019"
