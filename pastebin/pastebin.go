@@ -39,7 +39,7 @@ func InitRoutes(s *mux.Router) {
 	r.HandleFunc("/{paste_id}/content", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastecontent")
 	r.HandleFunc("/{paste_id}/content/link", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastecontentlink")
 	r.HandleFunc("/{paste_id}/download", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastedownload")
-	r.HandleFunc("/{paste_id}/delete", utils.ExtraSugar(pastecontent)).Methods("POST").Name("pastedelete")
+	r.HandleFunc("/{paste_id}/delete", utils.ExtraSugar(pastedelete)).Methods("POST").Name("pastedelete")
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/pastebin/static/", http.FileServer(http.Dir("pastebin/static"))))
 
 	// CSRFAuthKey := os.Getenv("CSRFAuthKey")
@@ -112,12 +112,10 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			}
 
 			log.Printf("ERROR: %v\n", err)
-			/*
-			if err, ok := err.(*models.GDriveAPIError); ok {
-				http.Error(w, err.Response, err.Code)
-				return
-			}
-			*/
+			// if err, ok := err.(*models.GDriveAPIError); ok {
+			// 	http.Error(w, err.Response, err.Code)
+			// 	return
+			// }
 
 			http.Error(w, "BARF!@ Something's broken!@%", http.StatusInternalServerError)
 			return
@@ -310,48 +308,6 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Disposition", dl_disposition)
 		}
 
-		// Check ownership and expire paste on the /delete route, POST is enforced here by the mux
-		if dl := strings.Split(r.URL.Path, "/"); dl[len(dl)-1] == "delete" {
-			canDelete := false
-			// if usr := user.Current(c); usr != nil {
-			// 	if paste.UserID == usr.ID || user.IsAdmin(c) {
-			// 		canDelete = true
-			// 	}
-			// }
-
-			if checkDelete, err := utils.CheckSession(r, paste_id); err != nil {
-				log.Printf("ERROR: %v\n", err)
-				http.Error(w, "Meep! We were trying to get a session but something went wrong.", http.StatusInternalServerError)
-			} else {
-				canDelete = checkDelete
-			}
-
-			if canDelete {
-				err := paste.Delete(r)
-				if err != nil {
-					// if derr, ok := err.(*models.GDriveAPIError); ok {
-					// 	http.Error(w, derr.Response, derr.Code)
-					// 	return
-					// }
-					log.Printf("ERROR: %v\n", err)
-					http.Error(w, "Meep! We were trying to delete this paste but something went wrong.", http.StatusInternalServerError)
-				}
-
-				if err := utils.UpdateSession(w, r, paste_id, true); err != nil {
-					log.Printf("ERROR: %v\n", err)
-					http.Error(w, "Meep! We were trying to get or set a session but something went wrong. Your paste has been deleted, however!", http.StatusInternalServerError)
-				}
-
-				if r.Header.Get("X-Requested-With") == "XMLHttpRequest" { // AJAX
-					w.Write([]byte("/pastebin/"))
-				} else {
-					// http://tools.ietf.org/html/rfc2616#section-10.3.4 / Http 303
-					http.Redirect(w, r, "/pastebin/", http.StatusSeeOther)
-				}
-			}
-			return
-		}
-
 		err := paste.ZContent(r, w)
 		if err != nil {
 			log.Printf("ERROR: %v\n", err)
@@ -362,6 +318,65 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 			// }
 		}
 	}
+}
+
+func pastedelete(w http.ResponseWriter, r *http.Request) {
+	v := mux.Vars(r)
+	paste_id := v["paste_id"]
+	if len(paste_id) > 8 {
+		paste_id = paste_id[:8]
+	}
+
+	if paste, err := models.GetPaste(paste_id, false, false); err == sql.ErrNoRows {
+		utils.Http404(w, r)
+		return
+	} else if err != nil {
+		log.Printf("ERROR: %v\n", err)
+		http.Error(w, "Meep! We were trying to retrieve this paste but something went wrong.", http.StatusInternalServerError)
+		return
+	} else {
+		canDelete := false
+		// Check ownership and expire paste on the /delete route, POST is enforced here by the mux
+		// if usr := user.Current(c); usr != nil {
+		// 	if paste.UserID == usr.ID || user.IsAdmin(c) {
+		// 		canDelete = true
+		// 	}
+		// }
+
+		if checkDelete, err := utils.CheckSession(r, paste_id); err != nil {
+			log.Printf("ERROR: %v\n", err)
+			http.Error(w, "Meep! We were trying to get a session but something went wrong.", http.StatusInternalServerError)
+		} else {
+			canDelete = checkDelete
+		}
+
+		if canDelete {
+			err := paste.Delete(r)
+			if err != nil {
+				// if derr, ok := err.(*models.GDriveAPIError); ok {
+				// 	http.Error(w, derr.Response, derr.Code)
+				// 	return
+				// }
+				log.Printf("ERROR: %v\n", err)
+				http.Error(w, "Meep! We were trying to delete this paste but something went wrong.", http.StatusInternalServerError)
+			}
+
+			if err := utils.UpdateSession(w, r, paste_id, true); err != nil {
+				log.Printf("ERROR: %v\n", err)
+				http.Error(w, "Meep! We were trying to get or set a session but something went wrong. Your paste has been deleted, however!", http.StatusInternalServerError)
+			}
+
+			if r.Header.Get("X-Requested-With") == "XMLHttpRequest" { // AJAX
+				w.Write([]byte("/pastebin/"))
+			} else {
+				// http://tools.ietf.org/html/rfc2616#section-10.3.4 / Http 303
+				http.Redirect(w, r, "/pastebin/", http.StatusSeeOther)
+			}
+			return
+		}
+	}
+
+	http.Error(w, "Eep, you do not have permission to delete this paste.", http.StatusUnauthorized)
 }
 
 /*
