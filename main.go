@@ -27,6 +27,7 @@ type envKeys struct {
 	ReCAPTCHAKey   string `yaml:"ReCAPTCHAKey"`
 	ReCAPTCHASecrt string `yaml:"ReCAPTCHASecrt"`
 	StaticDomain   string `yaml:"StaticDomain"`
+	ListenPort     string `yaml:"ListenPort"`
 
 	Database struct {
 		Connection string
@@ -71,7 +72,7 @@ func main() {
 	CSRFAuthKey := os.Getenv("CSRFAuthKey")
 	CSRF := csrf.Protect([]byte(CSRFAuthKey), csrf.Secure(os.Getenv("CSRFSecureC") == "true"))
 
-	log.Fatal(http.ListenAndServe("127.0.0.1:2019", CSRF(r)))
+	log.Fatal(http.ListenAndServe("127.0.0.1:"+_envKeys.ListenPort, CSRF(r)))
 }
 
 func index(w http.ResponseWriter, r *http.Request) {

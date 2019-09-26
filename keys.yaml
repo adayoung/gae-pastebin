@@ -9,3 +9,4 @@ database:
   connection: "user=ada password=ada dbname=ada-bot sslmode=disable"
 
 StaticDomain: "localhost:2019"
+ListenPort: 2019
