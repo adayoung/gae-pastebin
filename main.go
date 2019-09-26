@@ -10,7 +10,6 @@ import (
 	"gopkg.in/yaml.v2"
 
 	// The Gorilla Web Toolkit
-	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 
 	// Local Packages
@@ -68,11 +67,9 @@ func main() {
 	r.NotFoundHandler = http.HandlerFunc(utils.Http404)
 
 	pastebin.InitRoutes(r)
+	http.Handle("/", r)
 
-	CSRFAuthKey := os.Getenv("CSRFAuthKey")
-	CSRF := csrf.Protect([]byte(CSRFAuthKey), csrf.Secure(os.Getenv("CSRFSecureC") == "true"))
-
-	log.Fatal(http.ListenAndServe("127.0.0.1:"+_envKeys.ListenPort, CSRF(r)))
+	log.Fatal(http.ListenAndServe("127.0.0.1:"+_envKeys.ListenPort, nil))
 }
 
 func index(w http.ResponseWriter, r *http.Request) {

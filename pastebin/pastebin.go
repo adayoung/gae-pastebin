@@ -42,9 +42,9 @@ func InitRoutes(s *mux.Router) {
 	r.HandleFunc("/{paste_id}/delete", utils.ExtraSugar(pastecontent)).Methods("POST").Name("pastedelete")
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/pastebin/static/", http.FileServer(http.Dir("pastebin/static"))))
 
-	// CSRFAuthKey := os.Getenv("CSRFAuthKey")
-	// CSRF := csrf.Protect([]byte(CSRFAuthKey), csrf.Secure(os.Getenv("CSRFSecureC") == "true"))
-	// http.Handle("/", CSRF(r))
+	CSRFAuthKey := os.Getenv("CSRFAuthKey")
+	CSRF := csrf.Protect([]byte(CSRFAuthKey), csrf.Secure(os.Getenv("CSRFSecureC") == "true"))
+	http.Handle("/pastebin", CSRF(r))
 
 	// Here be auth handlers
 	// http.Handle("/pastebin/auth/", CSRF(auth.Router))
