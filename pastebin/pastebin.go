@@ -33,7 +33,7 @@ func InitRoutes(s *mux.Router) {
 
 	r.HandleFunc("/", utils.ExtraSugar(pastebin)).Methods("GET", "POST").Name("pastebin")
 	r.HandleFunc("/about", utils.ExtraSugar(about)).Methods("GET").Name("about")
-	// r.HandleFunc("/pastebin/clean", clean).Methods("GET").Name("pastecleanr") // Order is important! :o
+	// r.HandleFunc("/clean", clean).Methods("GET").Name("pastecleanr") // Order is important! :o
 	// r.HandleFunc("/search/", utils.ExtraSugar(search)).Methods("GET").Name("pastesearch")
 	r.HandleFunc("/{paste_id}", utils.ExtraSugar(pasteframe)).Methods("GET").Name("pasteframe")
 	r.HandleFunc("/{paste_id}/content", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastecontent")
@@ -42,15 +42,9 @@ func InitRoutes(s *mux.Router) {
 	r.HandleFunc("/{paste_id}/delete", utils.ExtraSugar(pastedelete)).Methods("POST").Name("pastedelete")
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/pastebin/static/", http.FileServer(http.Dir("pastebin/static"))))
 
-	// CSRFAuthKey := os.Getenv("CSRFAuthKey")
-	// CSRF := csrf.Protect([]byte(CSRFAuthKey), csrf.Secure(os.Getenv("CSRFSecureC") == "true"))
-	// http.Handle("/", CSRF(r))
-
-	// Here be auth handlers
-	// http.Handle("/pastebin/auth/", CSRF(auth.Router))
-
-	// Here be API handlers
-	// http.Handle("/pastebin/api/v1/", api_v1.API_Router)
+	CSRFAuthKey := os.Getenv("CSRFAuthKey")
+	CSRF := csrf.Protect([]byte(CSRFAuthKey), csrf.Secure(os.Getenv("CSRFSecureC") == "true"))
+	http.Handle("/pastebin/", CSRF(r))
 }
 
 func about(w http.ResponseWriter, r *http.Request) {
