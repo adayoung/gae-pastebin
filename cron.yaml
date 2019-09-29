@@ -1,4 +1,0 @@
-cron:
-- description: cleanup old pastes
-  url: /pastebin/clean
-  schedule: every 2 hours
