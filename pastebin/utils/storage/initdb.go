@@ -12,12 +12,13 @@ func initDB() {
 			"user_id" varchar(256),
 			"title" varchar(50),
 			"content" bytea NOT NULL,
-      "tags" varchar(15) ARRAY[15],
-      "format" varchar(5) NOT NULL,
-      "date" timestamp with time zone NOT NULL,
-      "zlib" bool NOT NULL,
-      "gdriveid" varchar(384),
-      "gdrivedl" varchar(384)
+			"tags" varchar(15) ARRAY[15],
+			"format" varchar(5) NOT NULL,
+			"date" timestamp with time zone NOT NULL,
+			"zlib" bool NOT NULL,
+			"gdriveid" varchar(384),
+			"gdrivedl" varchar(384),
+			"rcscore" numeric
 		);
 	`
 

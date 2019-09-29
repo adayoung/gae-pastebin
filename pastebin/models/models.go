@@ -140,7 +140,7 @@ func (p *Paste) save(r *http.Request, score float64) (string, error) {
 			p.Zlib = true
 		}
 
-		if err := p.saveToDB(); err != nil {
+		if err := p.saveToDB(score); err != nil {
 			return "", err
 		}
 
@@ -150,19 +150,19 @@ func (p *Paste) save(r *http.Request, score float64) (string, error) {
 	}
 }
 
-func (p *Paste) saveToDB() error {
+func (p *Paste) saveToDB(score float64) error {
 	if len(p.Content) > (2 * 1024 * 1024) {
 		return fmt.Errorf("Paste content is still over 2MB after compression.")
 	}
 	pasteSQL := `INSERT INTO pastebin (
 			paste_id, user_id, title, content, tags,
-			format, date, zlib, gdriveid, gdrivedl
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			format, date, zlib, gdriveid, gdrivedl, rcscore
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 	pasteSQL = storage.DB.Rebind(pasteSQL)
 	_, err := storage.DB.Exec(pasteSQL,
 		p.PasteID, p.UserID, p.Title, p.Content, pq.Array(p.Tags),
-		p.Format, p.Date, p.Zlib, p.GDriveID, p.GDriveDL,
+		p.Format, p.Date, p.Zlib, p.GDriveID, p.GDriveDL, score,
 	)
 	return err
 }
