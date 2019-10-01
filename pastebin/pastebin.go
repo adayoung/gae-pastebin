@@ -279,6 +279,9 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 		if paste.Format == "plain" {
 			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		} else {
+			if paste.Gzip {
+				w.Header().Set("Content-Encoding", "gzip")
+			}
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		}
 

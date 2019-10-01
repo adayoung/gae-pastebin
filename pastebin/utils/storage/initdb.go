@@ -15,6 +15,7 @@ func initDB() {
 			"tags" varchar(15) ARRAY[15],
 			"format" varchar(5) NOT NULL,
 			"date" timestamp with time zone NOT NULL,
+			"gzip" bool NOT NULL,
 			"zlib" bool NOT NULL,
 			"gdriveid" varchar(384),
 			"gdrivedl" varchar(384),

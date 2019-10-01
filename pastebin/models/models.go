@@ -3,6 +3,7 @@ package models
 import (
 	// Go Builtin Packages
 	"bytes"
+	"compress/gzip"
 	"compress/zlib"
 	"crypto/sha256"
 	"encoding/base64"
@@ -29,6 +30,7 @@ type Paste struct {
 	Tags     []string  `db:"tags"`
 	Format   string    `db:"format"`
 	Date     time.Time `db:"date"`
+	Gzip     bool      `db:"gzip"`
 	Zlib     bool      `db:"zlib"`
 	uContent string    `db:"-"` // Private content, for validation and processing
 	GDriveID string    `db:"gdriveid"`
@@ -133,11 +135,11 @@ func (p *Paste) save(r *http.Request, score float64) (string, error) {
 			return "eepidunworkyet", nil
 		} else {
 			var content bytes.Buffer
-			w := zlib.NewWriter(&content)
+			w := gzip.NewWriter(&content)
 			w.Write([]byte(p.uContent))
 			w.Close()
 			p.Content = content.Bytes()
-			p.Zlib = true
+			p.Gzip = true
 		}
 
 		if err := p.saveToDB(score); err != nil {
@@ -156,13 +158,13 @@ func (p *Paste) saveToDB(score float64) error {
 	}
 	pasteSQL := `INSERT INTO pastebin (
 			paste_id, user_id, title, content, tags,
-			format, date, zlib, gdriveid, gdrivedl, rcscore
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			format, date, gzip, zlib, gdriveid, gdrivedl, rcscore
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 	pasteSQL = storage.DB.Rebind(pasteSQL)
 	_, err := storage.DB.Exec(pasteSQL,
 		p.PasteID, p.UserID, p.Title, p.Content, pq.Array(p.Tags),
-		p.Format, p.Date, p.Zlib, p.GDriveID, p.GDriveDL, score,
+		p.Format, p.Date, p.Gzip, p.Zlib, p.GDriveID, p.GDriveDL, score,
 	)
 	return err
 }
@@ -189,6 +191,11 @@ func (p *Paste) ZContent(r *http.Request, pc pasteContent) error {
 		var zbuffer io.Reader
 		zbuffer = bytes.NewReader(p.Content)
 		ureader, _ := zlib.NewReader(zbuffer)
+		io.Copy(pc, ureader)
+	} else if p.Format == "plain" && p.Gzip {
+		var zbuffer io.Reader
+		zbuffer = bytes.NewReader(p.Content)
+		ureader, _ := gzip.NewReader(zbuffer)
 		io.Copy(pc, ureader)
 	} else {
 		buffer := bytes.NewReader(p.Content)
@@ -234,7 +241,7 @@ func GetPaste(paste_id string, withContent, withTags bool) (*Paste, error) {
 	if withContent {
 		query = query + " content,"
 	}
-	query = query + " format, date, zlib, gdriveid, gdrivedl"
+	query = query + " format, date, gzip, zlib, gdriveid, gdrivedl"
 	query = query + " FROM pastebin WHERE paste_id=?"
 
 	query = storage.DB.Rebind(query)
