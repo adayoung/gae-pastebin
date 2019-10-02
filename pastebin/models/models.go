@@ -237,7 +237,7 @@ func GetPaste(paste_id string, withContent, withTags bool) (*Paste, error) {
 	var paste Paste
 
 	query := "SELECT"
-	query = query + " paste_id, user_id, title,"
+	query = query + " paste_id, user_id, title, tags,"
 	if withContent {
 		query = query + " content,"
 	}
@@ -245,14 +245,21 @@ func GetPaste(paste_id string, withContent, withTags bool) (*Paste, error) {
 	query = query + " FROM pastebin WHERE paste_id=?"
 
 	query = storage.DB.Rebind(query)
-	err := storage.DB.QueryRowx(query, paste_id).StructScan(&paste)
+	row := storage.DB.QueryRow(query, paste_id)
 
-	if withTags {
-		if err == nil { // FIXME: There has to be a better way of doing this
-			query = "SELECT tags FROM pastebin WHERE paste_id=?"
-			query = storage.DB.Rebind(query)
-			err = storage.DB.QueryRow(query, paste_id).Scan(pq.Array(&paste.Tags))
-		}
+	var err error
+	if withContent {
+		err = row.Scan(
+			&paste.PasteID, &paste.UserID, &paste.Title, pq.Array(&paste.Tags),
+			&paste.Content, &paste.Format, &paste.Date, &paste.Gzip,
+			&paste.Zlib, &paste.GDriveID, &paste.GDriveDL,
+		)
+	} else {
+		err = row.Scan(
+			&paste.PasteID, &paste.UserID, &paste.Title, pq.Array(&paste.Tags),
+			&paste.Format, &paste.Date, &paste.Gzip, &paste.Zlib,
+			&paste.GDriveID, &paste.GDriveDL,
+		)
 	}
 
 	return &paste, err
