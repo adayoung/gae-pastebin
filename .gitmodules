@@ -16,3 +16,6 @@
 [submodule "vendor/github.com/gorilla/sessions"]
 	path = vendor/github.com/gorilla/sessions
 	url = https://github.com/gorilla/sessions
+[submodule "vendor/golang.org/x/oauth2"]
+	path = vendor/golang.org/x/oauth2
+	url = https://go.googlesource.com/oauth2
