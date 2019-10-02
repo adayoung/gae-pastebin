@@ -1,40 +1,32 @@
 package models
 
-/*
 import (
 	// Go Builtin Packages
 	"bytes"
 	"encoding/gob"
-	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
-	// Google Appengine Packages
-	"appengine"
-	"appengine/urlfetch"
-
 	// Google OAuth2/Drive Packages
 	"golang.org/x/oauth2"
 	"google.golang.org/api/drive/v3"
-	go_ae "google.golang.org/appengine"
-	"google.golang.org/appengine/memcache"
 
 	// The Gorilla Web Toolkit
 	"github.com/gorilla/sessions"
-
 	// Local Packages
-	"pastebin/utils"
+	"github.com/adayoung/gae-pastebin/pastebin/utils"
 )
 
 func init() {
 	gob.Register(&oauth2.Token{})
 }
 
-var sessionStore = sessions.NewCookieStore([]byte(os.Getenv("CSRFAuthKey")), []byte(os.Getenv("EncryptionK")))
+var sessionStore = sessions.NewCookieStore([]byte(os.Getenv("CSRFAuthKey")))
 
 func SaveOAuthToken(w http.ResponseWriter, r *http.Request, token *oauth2.Token) error {
 	if session, err := sessionStore.Get(r, "_oauth2_gdrive"); err != nil {
@@ -44,7 +36,7 @@ func SaveOAuthToken(w http.ResponseWriter, r *http.Request, token *oauth2.Token)
 			Path:     "/pastebin/",
 			MaxAge:   0,
 			HttpOnly: true,
-			Secure:   !appengine.IsDevAppServer(),
+			Secure:   os.Getenv("CSRFSecureC") == "true",
 		}
 
 		session.Values["gdrive"] = token
@@ -70,10 +62,10 @@ func GetOAuthToken(r *http.Request, user_id string) (*oauth2.Token, error) {
 	return nil, nil
 }
 
-func GetOAuthClient(c appengine.Context, r *http.Request, user_id string) (*http.Client, error) {
+func GetOAuthClient(r *http.Request, user_id string) (*http.Client, error) {
 	if token, err := GetOAuthToken(r, user_id); err == nil {
-		ctx := go_ae.NewContext(r)
-		config, cerr := utils.OAuthConfigDance(c)
+		ctx := r.Context()
+		config, cerr := utils.OAuthConfigDance()
 		if cerr != nil {
 			return nil, cerr
 		}
@@ -84,11 +76,11 @@ func GetOAuthClient(c appengine.Context, r *http.Request, user_id string) (*http
 		return nil, err
 	}
 
-	c.Errorf("Oops, it's an error to arrive here just to return a nil client O_o")
+	log.Printf("ERROR: Oops, it's an error to arrive here just to return a nil client O_o")
 	return nil, nil
 }
 
-func makePastebinFolder(c appengine.Context, client *http.Client) (string, error) {
+func makePastebinFolder(client *http.Client) (string, error) {
 	if service, aerr := drive.New(client); aerr != nil {
 		return "", aerr
 	} else {
@@ -97,10 +89,8 @@ func makePastebinFolder(c appengine.Context, client *http.Client) (string, error
 		response, err := fl_call.Do()
 
 		if err != nil {
-			c.Errorf("Meep! We had an error when trying to do the FilesListCall call!")
-			c.Errorf(err.Error())
+			log.Printf("ERROR: %v\n", err)
 			return "", err
-
 		} else {
 			if len(response.Files) > 0 { // teh Pastebin!! folder is there!
 				pbdir_id := response.Files[0].Id
@@ -123,8 +113,8 @@ func makePastebinFolder(c appengine.Context, client *http.Client) (string, error
 	return "", nil
 }
 
-func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, paste_id string) error {
-	client, cerr := GetOAuthClient(c, r, p.UserID)
+func (p *Paste) saveToDrive(r *http.Request, paste_id string) error {
+	client, cerr := GetOAuthClient(r, p.UserID)
 	if cerr != nil {
 		return cerr
 	}
@@ -156,10 +146,10 @@ func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, paste_id strin
 		appProperties["Zlib"] = fmt.Sprintf("%v", p.Zlib)
 
 		p_content.AppProperties = appProperties
-		if pbdir_id, aerr := makePastebinFolder(c, client); aerr == nil {
+		if pbdir_id, aerr := makePastebinFolder(client); aerr == nil {
 			p_content.Parents = []string{pbdir_id}
 		} else {
-			return parseAPIError(c, r, aerr, p, false)
+			return parseAPIError(r, aerr, p, false)
 		}
 
 		buffer := bytes.NewReader([]byte(p.uContent))
@@ -168,27 +158,18 @@ func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, paste_id strin
 		response, err := fc_call.Do()
 
 		if err != nil {
-			c.Errorf(err.Error())
-			return parseAPIError(c, r, err, p, false)
+			log.Printf("ERROR: %v\n", err)
+			return parseAPIError(r, err, p, false)
 		} else {
-			c.Infof("Received Google Drive File ID -> " + response.Id)
+			log.Printf("INFO: Received Google Drive File ID -> " + response.Id)
 			p.GDriveID = response.Id
-
-			// Set the thing in memcache for immediate retrieval
-			mc_item := &memcache.Item{
-				Key:   response.Id,
-				Value: []byte(p.uContent),
-			}
-
-			ctx := go_ae.NewContext(r)
-			memcache.Add(ctx, mc_item)
 
 			// Add a permission to allow downloading content
 			fp_call := service.Permissions.Create(response.Id, &drive.Permission{
 				Role: "reader", Type: "anyone",
 			}).Fields("id")
 			if _, p_err := fp_call.Do(); p_err != nil {
-				c.Errorf(p_err.Error())
+				log.Printf("ERROR: %v\n", p_err)
 			} else {
 				p.GDriveDL = response.WebContentLink
 			}
@@ -198,76 +179,57 @@ func (p *Paste) saveToDrive(c appengine.Context, r *http.Request, paste_id strin
 	return nil
 }
 
-func (p *Paste) LinkFromDrive(c appengine.Context, r *http.Request) (string, error) {
+func (p *Paste) LinkFromDrive(r *http.Request) (string, error) {
 	fl_link := "" // yay empty string
 
-	fl_call := urlfetch.Client(c)
+	fl_call := &http.Client{}
 	fl_call.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		// return http.ErrUseLastResponse // <-- FIXME: Huh? Undefined? O_o
-		return errors.New("net/http: use last response")
+		return fmt.Errorf("net/http: use last response")
 	}
 	fl_response, _ := fl_call.Head(p.GDriveDL)
 
 	if fl_response.StatusCode == 404 {
-		p.Delete(c, r)
-		return "", errors.New("404 - content not found")
+		p.Delete()
+		return "", fmt.Errorf("404 - content not found")
 	}
 
 	fl_link = fl_response.Header.Get("Location")
 
 	if strings.Contains(fl_link, "accounts.google.com") {
-		p.Delete(c, r) // Well they refuse to share it!@
-		return "", errors.New("403 - content no longer shared")
+		p.Delete() // Well they refuse to share it!@
+		return "", fmt.Errorf("403 - content no longer shared")
 	}
 
 	return fl_link, nil
 }
 
-func (p *Paste) loadFromDrive(c appengine.Context, r *http.Request) error {
-	ctx := go_ae.NewContext(r)
-	if item, err := memcache.Get(ctx, p.GDriveID); err == nil {
-		p.Content = item.Value
-		return nil
-	} else if err == memcache.ErrCacheMiss {
-		fl_link, ferr := p.LinkFromDrive(c, r)
-		if ferr != nil {
-			return ferr
-		}
+func (p *Paste) loadFromDrive(r *http.Request) error {
+	fl_link, ferr := p.LinkFromDrive(r)
+	if ferr != nil {
+		return ferr
+	}
 
-		fg_call := urlfetch.Client(c)
-		if response, err := fg_call.Get(fl_link); err != nil {
-			c.Errorf(err.Error())
-			return parseAPIError(c, r, err, p, false)
+	fg_call := &http.Client{}
+	if response, err := fg_call.Get(fl_link); err != nil {
+		log.Printf("ERROR: %v\n", err)
+		return parseAPIError(r, err, p, false)
 
-		} else {
-			if response.StatusCode == 200 {
-				if p_content, err := ioutil.ReadAll(response.Body); err == nil {
-					p.Content = p_content
-
-					// Set the thing in memcache for immediate retrieval
-					mc_item := &memcache.Item{
-						Key:   p.GDriveID,
-						Value: p_content,
-					}
-
-					ctx := go_ae.NewContext(r)
-					memcache.Add(ctx, mc_item)
-
-				} else {
-					return err
-				}
-			} else if response.StatusCode == 404 {
-				p.Delete(c, r) // No err here, we just want to get rid of it xD
-				return &GDriveAPIError{
-					Code:     404,
-					Response: "404 - content not found",
-				}
+	} else {
+		if response.StatusCode == 200 {
+			if p_content, err := ioutil.ReadAll(response.Body); err == nil {
+				p.Content = p_content
+			} else {
+				return err
+			}
+		} else if response.StatusCode == 404 {
+			p.Delete() // No err here, we just want to get rid of it xD
+			return &GDriveAPIError{
+				Code:     404,
+				Response: "404 - content not found",
 			}
 		}
-	} else {
-		return err
 	}
 
 	return nil
 }
-*/

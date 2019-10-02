@@ -19,3 +19,9 @@
 [submodule "vendor/golang.org/x/oauth2"]
 	path = vendor/golang.org/x/oauth2
 	url = https://go.googlesource.com/oauth2
+[submodule "vendor/google.golang.org/api"]
+	path = vendor/google.golang.org/api
+	url = https://code.googlesource.com/google-api-go-client
+[submodule "vendor/github.com/gorilla/securecookie"]
+	path = vendor/github.com/gorilla/securecookie
+	url = https://github.com/gorilla/securecookie

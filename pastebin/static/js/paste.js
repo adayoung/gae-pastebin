@@ -50,11 +50,12 @@ $(document).ready(function(){
       scale_iframe(content);
     });
 
+    var paste_id = $('input[name="paste_id"]').val();
     if ($('#driveHosted').length > 0) {
       var loader = document.createElement('p');
       $(loader).html('<span>Loading content.. Please wait.</span> <img alt="pretty spinner" src="/pastebin/static/img/spinner.gif">');
       $('article').append(loader);
-      $.get(location.href+'/content/link', function(src){
+      $.get("/pastebinc/"+paste_id+"/content/link", function(src){
         $(loader).append("<span>.</span>");
         $.get(src, function(data){
           var blob = new Blob([data], {type: 'text/html'});
@@ -69,7 +70,6 @@ $(document).ready(function(){
           meep(loader, f);
       });
     } else {
-      var paste_id = $('input[name="paste_id"]').val();
       content.src="/pastebinc/"+paste_id+"/content";
     }
   } else {

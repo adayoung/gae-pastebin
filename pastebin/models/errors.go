@@ -1,16 +1,13 @@
 package models
 
-/*
 import (
 	// Go Builtin Packages
 	"fmt"
+	"log"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
-
-	// Google Appengine Packages
-	"appengine"
 )
 
 type GDriveAPIError struct {
@@ -22,7 +19,7 @@ func (e *GDriveAPIError) Error() string {
 	return fmt.Sprintf("%d - %s", e.Code, e.Response)
 }
 
-func parseAPIError(c appengine.Context, r *http.Request, rerr error, p *Paste, delete_c bool) error {
+func parseAPIError(r *http.Request, rerr error, p *Paste, delete_c bool) error {
 	// THIS! Because the upstream API won't give structured errors!@
 	serr := rerr.Error()
 	perr := &GDriveAPIError{}
@@ -70,7 +67,7 @@ func parseAPIError(c appengine.Context, r *http.Request, rerr error, p *Paste, d
 
 	if strings.Contains(serr, "oauth2: token expired and refresh token is not set") {
 		// https://github.com/golang/oauth2/blob/1e695b1c8febf17aad3bfa7bf0a819ef94b98ad5/oauth2.go#L227
-		c.Errorf("-flails- We've lost the recovery token for account, %s", p.UserID)
+		log.Printf("ERROR: -flails- We've lost the recovery token for account, %s", p.UserID)
 		code = 500
 		message = "Oops, we've lost the recovery token! Please disconnect the app from Google Drive > Settings > Manage App and try connecting again!"
 	}
@@ -81,9 +78,7 @@ func parseAPIError(c appengine.Context, r *http.Request, rerr error, p *Paste, d
 	if len(perr.Response) > 0 {
 		return perr
 	} else {
-		c.Warningf("-flails- We couldn't parse the API error from upstream!")
-		c.Errorf(rerr.Error())
+		log.Printf("ERROR: %v\n", rerr)
 		return rerr
 	}
 }
-*/

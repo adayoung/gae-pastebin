@@ -125,14 +125,14 @@ func (p *Paste) save(r *http.Request, score float64) (string, error) {
 
 		havetoken := (r.Form.Get("destination") == "gdrive")
 
+		p.Gzip = false
 		p.Zlib = false
 		if havetoken == true {
 			// TODO: This should should probably happen in a goroutine
-			// err = p.saveToDrive(c, r, paste_id)
-			// if err != nil {
-			// 	return "", err
-			// }
-			return "eepidunworkyet", nil
+			err = p.saveToDrive(r, paste_id)
+			if err != nil {
+				return "", err
+			}
 		} else {
 			var content bytes.Buffer
 			w := gzip.NewWriter(&content)
@@ -174,11 +174,11 @@ type pasteContent interface {
 }
 
 func (p *Paste) ZContent(r *http.Request, pc pasteContent) error {
-	// if len(p.GDriveID) > 0 {
-	// 	if err := p.loadFromDrive(c, r); err != nil {
-	// 		return err
-	// 	}
-	// }
+	if len(p.GDriveID) > 0 {
+		if err := p.loadFromDrive(r); err != nil {
+			return err
+		}
+	}
 
 	if !(len(p.Content) > 0) {
 		if err := p.loadContent(); err != nil {
@@ -265,7 +265,7 @@ func (p *Paste) loadContent() error {
 	return err
 }
 
-func (p *Paste) Delete(r *http.Request) error {
+func (p *Paste) Delete() error {
 	paste_id := p.PasteID
 
 	query := "DELETE FROM pastebin WHERE paste_id=?"

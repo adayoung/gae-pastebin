@@ -3,20 +3,17 @@ package auth
 import (
 	// Go Builtin Packages
 	"html/template"
+	"log"
 	"net/http"
 	"strings"
 	"time"
 
-	// Google Appengine Packages
-	"appengine"
-
 	// Google OAuth2/Drive Packages
 	"golang.org/x/oauth2"
-	go_ae "google.golang.org/appengine"
 
 	// Local Packages
-	"pastebin/models"
-	"pastebin/utils"
+	"github.com/adayoung/gae-pastebin/pastebin/models"
+	"github.com/adayoung/gae-pastebin/pastebin/utils"
 )
 
 const response_template = `
@@ -42,19 +39,18 @@ func auth_gdrive_start(w http.ResponseWriter, r *http.Request) {
 	// We need to be able to serve an inline script on this route for window.opener.*
 	w.Header().Set("Content-Security-Policy", "default-src 'none'; script-src 'unsafe-inline'")
 
-	c := appengine.NewContext(r)
 	state_token, err := utils.SC().Encode("state-token", time.Now().Format(time.StampNano))
 	if err != nil {
-		c.Errorf(err.Error())
+		log.Printf("ERROR: %v\n", err)
 		http.Error(w, "Meep! We were trying to encode a 'state-token' but something went wrong.", http.StatusInternalServerError)
 		return
 	}
 
-	if config, err := utils.OAuthConfigDance(c); err == nil {
+	if config, err := utils.OAuthConfigDance(); err == nil {
 		authURL := config.AuthCodeURL(state_token, oauth2.AccessTypeOnline)
 		http.Redirect(w, r, authURL, http.StatusFound)
 	} else {
-		c.Errorf(err.Error())
+		log.Printf("ERROR: %v\n", err)
 		http.Error(w, "Meep! We were trying to do the OAuthConfigDance but something went wrong.", http.StatusInternalServerError)
 	}
 }
@@ -63,9 +59,8 @@ func auth_gdrive_finish(w http.ResponseWriter, r *http.Request) {
 	// We need to be able to serve an inline script on this route for window.opener.*
 	w.Header().Set("Content-Security-Policy", "default-src 'none'; script-src 'unsafe-inline'")
 
-	c := appengine.NewContext(r)
-	if err := utils.ProcessForm(c, r); err != nil {
-		c.Errorf(err.Error())
+	if err := utils.ProcessForm(r); err != nil {
+		log.Printf("ERROR: %v\n", err)
 		http.Error(w, "Meep! We were trying to process an input but something went wrong.", http.StatusInternalServerError)
 		return
 	}
@@ -74,7 +69,7 @@ func auth_gdrive_finish(w http.ResponseWriter, r *http.Request) {
 	var state_token string
 	received_token := strings.TrimSpace(r.Form.Get("state"))
 	if err := utils.SC().Decode("state-token", received_token, &state_token); err != nil {
-		c.Errorf(err.Error())
+		log.Printf("ERROR: %v\n", err)
 		http.Error(w, "Oops, we couldn't validate the state token after the round trip :(", http.StatusBadRequest)
 		return
 	}
@@ -83,7 +78,7 @@ func auth_gdrive_finish(w http.ResponseWriter, r *http.Request) {
 	if r.Form.Get("error") == "access_denied" {
 		// Make a sad face here or something -flails-
 		if err := responseTemplate.Execute(w, "Meep! Access Denied!"); err != nil {
-			c.Errorf(err.Error())
+			log.Printf("ERROR: %v\n", err)
 			http.Error(w, "Meep! We were trying to say 'Access Denied' but something went wrong.", http.StatusInternalServerError)
 			return
 		}
@@ -91,38 +86,38 @@ func auth_gdrive_finish(w http.ResponseWriter, r *http.Request) {
 
 	} else if r.Form.Get("error") != "" {
 		if err := responseTemplate.Execute(w, r.Form.Get("error")); err != nil {
-			c.Errorf(err.Error())
+			log.Printf("ERROR: %v\n", err)
 			http.Error(w, "Meep! We were trying to say 'Access Denied' but something went wrong.", http.StatusInternalServerError)
 			return
 		}
 		return
 	}
 
-	config, cerr := utils.OAuthConfigDance(c)
+	config, cerr := utils.OAuthConfigDance()
 	if cerr != nil {
-		c.Errorf(cerr.Error())
+		log.Printf("ERROR: %v\n", cerr)
 		http.Error(w, "Meep! We were trying to do the OAuthConfigDance but something went wrong.", http.StatusInternalServerError)
 		return
 	}
 
-	ctx := go_ae.NewContext(r)
+	ctx := r.Context()
 	code := r.Form.Get("code")
 	token, err := config.Exchange(ctx, code)
 	if err != nil {
-		c.Errorf(err.Error())
+		log.Printf("ERROR: %v\n", err)
 		http.Error(w, "Meep! We were trying to exchange the auth code for a token but something went wrong.", http.StatusInternalServerError)
 		return
 	}
 
 	err = models.SaveOAuthToken(w, r, token)
 	if err != nil {
-		c.Errorf(err.Error())
+		log.Printf("ERROR: %v\n", err)
 		http.Error(w, "Meep! We were trying to save the OAuth Token but something went wrong.", http.StatusInternalServerError)
 		return
 	}
 
 	if err = responseTemplate.Execute(w, "success"); err != nil {
-		c.Errorf(err.Error())
+		log.Printf("ERROR: %v\n", err)
 		http.Error(w, "Meep! We were trying to say 'We dunnit!' but something went wrong.", http.StatusInternalServerError)
 	}
 }

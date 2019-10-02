@@ -60,7 +60,7 @@
     <noscript>
       <p class="text-danger text-center">Oops, you have Javascript disabled. Some features are unavailable.</p>
     </noscript>
-    <p class="text-warning text-center">Hi! This site is still undergoing migration, some features do not work yet (Accounts, API, Google Drive, Hit Counter, Search by Tags).</p>
+    <p class="text-warning text-center">Hi! This site is still undergoing migration, some features do not work yet (Accounts, API, Hit Counter, Search by Tags).</p>
     <div class="container">
       {{ block "content" . }}
       <div class="row">
@@ -109,12 +109,11 @@
                   </label>
                 </div>
 
-                <div class="hidden"> <!-- FIXME: unhide when available  -->
                 <div class="btn-group" data-toggle="buttons">
                   <label class="btn btn-default" for="datastore" id="label_datastore" title="Paste to App Engine Datastore!">
                     <input disabled
                     {{ if eq .dest "datastore" }}
-                    checked=""
+                      checked=""
                     {{ end }}
                     id="datastore" name="destination" type="radio" value="datastore">
                     <img src="//{{ .staticDomain }}/pastebin/static/img/datastore-symbol.png" alt="Paste to App Engine Datastore!" style="height:16px">
@@ -123,12 +122,11 @@
                     <input disabled
                     {{ if eq .dest "gdrive" }}
                       checked=""
-                      {{ end }}
+                    {{ end }}
                     id="gdrive" name="destination" type="radio" value="gdrive">
                     <img src="//{{ .staticDomain }}/pastebin/static/img/drive.png" alt="Paste to Google Drive!">
                   </label>
                   <a class="btn btn-default" href="/pastebin/about#PasteToGoogleDrive" id="about_btn" data-title="About" target="_blank"><i class="glyphicon glyphicon-question-sign"></i><span class="sr-only">About</span></a>
-                </div>
                 </div>
 
               </div>

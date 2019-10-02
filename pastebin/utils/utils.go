@@ -12,14 +12,14 @@ import (
 	"os"
 	"strings"
 	"time"
-	// Google Appengine Packages
-	// "appengine"
+
 	// Google OAuth2/Drive Packages
-	// "golang.org/x/oauth2"
-	// "golang.org/x/oauth2/google"
-	// "google.golang.org/api/drive/v3"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/drive/v3"
+
 	// The Gorilla Web Toolkit
-	// "github.com/gorilla/securecookie"
+	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 )
 
@@ -111,7 +111,6 @@ func ProcessForm(r *http.Request) error {
 	return err
 }
 
-/*
 func SC() *securecookie.SecureCookie {
 	CSRFAuthKey := []byte(os.Getenv("CSRFAuthKey"))
 	EncryptionK := []byte(os.Getenv("EncryptionK"))
@@ -119,7 +118,7 @@ func SC() *securecookie.SecureCookie {
 	return sc
 }
 
-func OAuthConfigDance(c appengine.Context) (*oauth2.Config, error) {
+func OAuthConfigDance() (*oauth2.Config, error) {
 	GCPOAuthCID := []byte(os.Getenv("GCPOAuthCID"))
 	if config, err := google.ConfigFromJSON([]byte(GCPOAuthCID), drive.DriveFileScope); err == nil {
 		return config, nil
@@ -127,7 +126,6 @@ func OAuthConfigDance(c appengine.Context) (*oauth2.Config, error) {
 		return config, err
 	}
 }
-*/
 
 type reCaptchaResponse struct {
 	Success bool    `json:"success"`

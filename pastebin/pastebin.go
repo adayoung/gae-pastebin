@@ -24,6 +24,7 @@ import (
 	// api_v1 "github.com/adayoung/gae-pastebin/pastebin/api/v1"
 	// "github.com/adayoung/gae-pastebin/pastebin/auth"
 	// counter "github.com/adayoung/gae-pastebin/pastebin/counter"
+	"github.com/adayoung/gae-pastebin/pastebin/auth"
 	"github.com/adayoung/gae-pastebin/pastebin/models"
 	"github.com/adayoung/gae-pastebin/pastebin/utils"
 )
@@ -41,6 +42,8 @@ func InitRoutes(s *mux.Router) {
 	r.HandleFunc("/{paste_id}/download", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastedownload")
 	r.HandleFunc("/{paste_id}/delete", utils.ExtraSugar(pastedelete)).Methods("POST").Name("pastedelete")
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/pastebin/static/", http.FileServer(http.Dir("pastebin/static"))))
+
+	auth.InitRoutes(r)
 
 	CSRFAuthKey := os.Getenv("CSRFAuthKey")
 	CSRF := csrf.Protect([]byte(CSRFAuthKey), csrf.Secure(os.Getenv("CSRFSecureC") == "true"))
@@ -261,18 +264,18 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 		// Return content link alone on the /link route
 		// TODO: detect 404s and remove metadata here as well
 		if cl := strings.Split(r.URL.Path, "/"); cl[len(cl)-1] == "link" {
-			// if len(paste.GDriveDL) > 0 {
-			// 	fl_link, ferr := paste.LinkFromDrive(c, r)
-			// 	if ferr != nil {
-			// 		fl_link = ferr.Error()
-			// 		w.WriteHeader(500) // Umm.. it just needs to go to .fail() O_o
-			// 	}
-			// 	w.Write([]byte(fl_link))
-			// 	return
-			// } else {
-			w.Write([]byte(strings.Join(strings.Split(r.URL.Path, "/")[:len(cl)-1], "/")))
-			return
-			// }
+			if len(paste.GDriveDL) > 0 {
+				fl_link, ferr := paste.LinkFromDrive(r)
+				if ferr != nil {
+					fl_link = ferr.Error()
+					w.WriteHeader(500) // Umm.. it just needs to go to .fail() O_o
+				}
+				w.Write([]byte(fl_link))
+				return
+			} else {
+				w.Write([]byte(strings.Join(strings.Split(r.URL.Path, "/")[:len(cl)-1], "/")))
+				return
+			}
 		}
 
 		// Add a Content-Type header for plain text pastes
@@ -348,7 +351,7 @@ func pastedelete(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if canDelete {
-			err := paste.Delete(r)
+			err := paste.Delete()
 			if err != nil {
 				// if derr, ok := err.(*models.GDriveAPIError); ok {
 				// 	http.Error(w, derr.Response, derr.Code)

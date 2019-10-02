@@ -2,34 +2,27 @@ package auth
 
 import (
 	// Go Builtin Packages
-	"html/template"
-	"net/http"
-	"net/url"
-	"strings"
-
-	// Google Appengine Packages
-	"appengine"
-	"appengine/user"
+	// "html/template"
+	// "net/http"
+	// "net/url"
+	// "strings"
 
 	// The Gorilla Web Toolkit
-	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 
 	// Local Packages
-	"pastebin/utils"
+	"github.com/adayoung/gae-pastebin/pastebin/utils"
 )
 
-var Router *mux.Router
+func InitRoutes(r *mux.Router) {
+	// r.HandleFunc("/pastebin/auth/login", utils.ExtraSugar(login)).Methods("GET", "POST").Name("login")
+	// r.HandleFunc("/pastebin/auth/logout", utils.ExtraSugar(logout)).Methods("GET").Name("logout")
 
-func init() {
-	Router = mux.NewRouter()
-	Router.HandleFunc("/pastebin/auth/login", utils.ExtraSugar(login)).Methods("GET", "POST").Name("login")
-	Router.HandleFunc("/pastebin/auth/logout", utils.ExtraSugar(logout)).Methods("GET").Name("logout")
-
-	Router.HandleFunc("/pastebin/auth/gdrive/start", utils.ExtraSugar(auth_gdrive_start)).Methods("GET").Name("auth_gdrive_start")
-	Router.HandleFunc("/pastebin/auth/gdrive/finish", utils.ExtraSugar(auth_gdrive_finish)).Methods("GET").Name("auth_gdrive_finish")
+	r.HandleFunc("/auth/gdrive/start", utils.ExtraSugar(auth_gdrive_start)).Methods("GET").Name("auth_gdrive_start")
+	r.HandleFunc("/auth/gdrive/finish", utils.ExtraSugar(auth_gdrive_finish)).Methods("GET").Name("auth_gdrive_finish")
 }
 
+/*
 func login(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 	var dest string
@@ -110,3 +103,4 @@ func logout(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
+*/
