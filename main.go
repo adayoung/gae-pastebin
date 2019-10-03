@@ -14,6 +14,7 @@ import (
 
 	// Local Packages
 	"github.com/adayoung/gae-pastebin/pastebin"
+	"github.com/adayoung/gae-pastebin/pastebin/counter"
 	"github.com/adayoung/gae-pastebin/pastebin/utils"
 	"github.com/adayoung/gae-pastebin/pastebin/utils/storage"
 )
@@ -30,6 +31,7 @@ type envKeys struct {
 
 	Database struct {
 		Connection string
+		Redis      string
 	}
 }
 
@@ -59,6 +61,8 @@ func main() {
 		log.Println("ERROR: The database could not be initialized, DB will not unavailable.")
 		log.Fatalf("ERROR: %v", err)
 	}
+
+	counter.InitRedisPool(_envKeys.Database.Redis)
 
 	// Router begins here
 	r := mux.NewRouter().StrictSlash(true)

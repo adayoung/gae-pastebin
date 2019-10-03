@@ -18,6 +18,7 @@ import (
 	"github.com/lib/pq"
 
 	// Local Packages
+	"github.com/adayoung/gae-pastebin/pastebin/counter"
 	"github.com/adayoung/gae-pastebin/pastebin/utils"
 	"github.com/adayoung/gae-pastebin/pastebin/utils/storage"
 )
@@ -154,7 +155,7 @@ func (p *Paste) save(r *http.Request, score float64) (string, error) {
 
 func (p *Paste) saveToDB(score float64) error {
 	if len(p.Content) > (2 * 1024 * 1024) {
-		return fmt.Errorf("Paste content is still over 2MB after compression.")
+		return &ValidationError{"entityTooLarge", "Paste content is still over 2MB after compression."}
 	}
 	pasteSQL := `INSERT INTO pastebin (
 			paste_id, user_id, title, content, tags,
@@ -282,27 +283,7 @@ func (p *Paste) Delete() error {
 	} else {
 		return err
 	}
-	/*
-		// FIXME: This is duplicated from pastebin.clean
-		// Clear counter shards here
-		var shardc_dkeys []*datastore.Key
-		c_key := datastore.NewKey(c, "GeneralCounterShardConfig", paste_id, 0, nil)
-		shardc_dkeys = append(shardc_dkeys, c_key)
 
-		shard_keys := datastore.NewQuery("GeneralCounterShard").Filter("Name =", paste_id).KeysOnly()
-		if shard_dkeys, cerr := shard_keys.GetAll(c, nil); cerr == nil {
-			derr := datastore.DeleteMulti(c, shard_dkeys)
-			if derr != nil {
-				return derr
-			}
-		} else {
-			return cerr
-		}
-
-		err = datastore.DeleteMulti(c, shardc_dkeys)
-		if err != nil {
-			return err
-		}
-	*/
+	defer counter.Delete(paste_id)
 	return nil
 }

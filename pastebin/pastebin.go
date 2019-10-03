@@ -22,9 +22,8 @@ import (
 	// "github.com/dustin/go-humanize"
 	// Local Packages
 	// api_v1 "github.com/adayoung/gae-pastebin/pastebin/api/v1"
-	// "github.com/adayoung/gae-pastebin/pastebin/auth"
-	// counter "github.com/adayoung/gae-pastebin/pastebin/counter"
 	"github.com/adayoung/gae-pastebin/pastebin/auth"
+	"github.com/adayoung/gae-pastebin/pastebin/counter"
 	"github.com/adayoung/gae-pastebin/pastebin/models"
 	"github.com/adayoung/gae-pastebin/pastebin/utils"
 )
@@ -193,9 +192,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			showDeleteBtn = checkDelete
 		}
 
-		// defer counter.Increment(c, paste_id)
-		// p_count, _ := counter.Count(c, paste_id)
-		p_count := 0
+		p_count := counter.Count(paste_id)
 
 		var p_content string
 		if paste.Format == "plain" {
@@ -245,7 +242,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 func pastecontent(w http.ResponseWriter, r *http.Request) {
 	// This is what keeps people from abusing our pastebin ^_^
 	w.Header().Set("Content-Security-Policy", "default-src 'none'; style-src 'self' 'unsafe-inline'; img-src i.imgur.com data:; frame-ancestors 'self'")
-	w.Header().Set("Cache-Control", "public,immutable")
+	w.Header().Set("Cache-Control", "public,max-age=31536000,immutable") // https://bitsup.blogspot.com/2016/05/cache-control-immutable.html
 
 	v := mux.Vars(r)
 	paste_id := v["paste_id"]
