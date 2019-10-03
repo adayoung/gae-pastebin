@@ -201,11 +201,11 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			err := paste.ZContent(r, _p_content)
 			if err != nil {
 				log.Printf("ERROR: %v\n", err)
-				// if gerr, ok := err.(*models.GDriveAPIError); ok {
-				// 	http.Error(w, gerr.Response, gerr.Code)
-				// } else {
-				http.Error(w, "Meep! We were trying to retrieve this paste's plain content but something went wrong.", http.StatusInternalServerError)
-				// }
+				if gerr, ok := err.(*models.GDriveAPIError); ok {
+					http.Error(w, gerr.Response, gerr.Code)
+				} else {
+					http.Error(w, "Meep! We were trying to retrieve this paste's plain content but something went wrong.", http.StatusInternalServerError)
+				}
 				return
 			} else {
 				_p_content.Flush()

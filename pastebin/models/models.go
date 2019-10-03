@@ -18,6 +18,7 @@ import (
 	"github.com/lib/pq"
 
 	// Local Packages
+	"github.com/adayoung/gae-pastebin/pastebin/cloudflare"
 	"github.com/adayoung/gae-pastebin/pastebin/counter"
 	"github.com/adayoung/gae-pastebin/pastebin/utils"
 	"github.com/adayoung/gae-pastebin/pastebin/utils/storage"
@@ -285,5 +286,6 @@ func (p *Paste) Delete() error {
 	}
 
 	defer counter.Delete(paste_id)
+	defer cloudflare.Purge(paste_id)
 	return nil
 }

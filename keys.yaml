@@ -9,5 +9,13 @@ database:
   connection: "user=ada password=ada dbname=ada-bot sslmode=disable"
   redis: "localhost:6379"
 
+cloudflare:
+  token: "Paste your CF API Token here"
+  zoneid: "Paste your CF ZoneID here"
+  domain: "Paste your CF Domain here"
+  schema: "https"
+  pageurl: "/pastebinc/%s/content"
+  purgeapi: "https://api.cloudflare.com/client/v4/zones/%s/purge_cache"
+
 StaticDomain: "localhost:2019"
 ListenPort: 2019
