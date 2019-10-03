@@ -108,10 +108,10 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			}
 
 			log.Printf("ERROR: %v\n", err)
-			// if err, ok := err.(*models.GDriveAPIError); ok {
-			// 	http.Error(w, err.Response, err.Code)
-			// 	return
-			// }
+			if err, ok := err.(*models.GDriveAPIError); ok {
+				http.Error(w, err.Response, err.Code)
+				return
+			}
 
 			http.Error(w, "BARF!@ Something's broken!@%", http.StatusInternalServerError)
 			return
@@ -308,11 +308,11 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 		err := paste.ZContent(r, w)
 		if err != nil {
 			log.Printf("ERROR: %v\n", err)
-			// if gerr, ok := err.(*models.GDriveAPIError); ok {
-			// 	http.Error(w, gerr.Response, gerr.Code)
-			// } else {
-			http.Error(w, "Meep! We were trying to retrieve this paste's content but something went wrong.", http.StatusInternalServerError)
-			// }
+			if gerr, ok := err.(*models.GDriveAPIError); ok {
+				http.Error(w, gerr.Response, gerr.Code)
+			} else {
+				http.Error(w, "Meep! We were trying to retrieve this paste's content but something went wrong.", http.StatusInternalServerError)
+			}
 		}
 	}
 }
@@ -350,11 +350,11 @@ func pastedelete(w http.ResponseWriter, r *http.Request) {
 		if canDelete {
 			err := paste.Delete()
 			if err != nil {
-				// if derr, ok := err.(*models.GDriveAPIError); ok {
-				// 	http.Error(w, derr.Response, derr.Code)
-				// 	return
-				// }
 				log.Printf("ERROR: %v\n", err)
+				if derr, ok := err.(*models.GDriveAPIError); ok {
+					http.Error(w, derr.Response, derr.Code)
+					return
+				}
 				http.Error(w, "Meep! We were trying to delete this paste but something went wrong.", http.StatusInternalServerError)
 			}
 
