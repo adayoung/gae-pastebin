@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/adayoung/ada-young.svg?branch=noGoogleBranch)](https://travis-ci.org/adayoung/ada-bot)
+[![Build Status](https://travis-ci.org/adayoung/gae-pastebin.svg?branch=noGoogleBranch)](https://travis-ci.org/adayoung/gae-pastebin)
 
 # gae-pastebin
 Hi! Here's a pastebin that runs on Google App Engine!
