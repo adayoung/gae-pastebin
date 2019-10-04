@@ -25,3 +25,6 @@
 [submodule "vendor/google.golang.org/api"]
 	path = vendor/google.golang.org/api
 	url = https://code.googlesource.com/google-api-go-client
+[submodule "vendor/github.com/gomodule/redigo"]
+	path = vendor/github.com/gomodule/redigo
+	url = https://github.com/gomodule/redigo
