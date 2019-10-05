@@ -7,6 +7,7 @@ Hi! Here's a pastebin that runs ~on Google App Engine~ anywhere!
 
  * A working [Go](https://golang.org/doc/install) environment, preferably >go1.11
  * An account with a PostgreSQL server with credentials noted in keys.yaml
+ * Access to a [Redis](https://redis.io/) instance without password
  * An account with the [Google reCAPTCHA](https://www.google.com/recaptcha/) project with site key and secret key noted in keys.yaml
  * An account with [Google Cloud Platform](https://cloud.google.com/) with [Google Drive API (v3)](https://developers.google.com/drive/) enabled, credentials in keys.yaml
  * An account with [Cloudflare](https://www.cloudflare.com/) with an API Token scopred for `Zone.Cache Purge`, credentials in keys.yaml
