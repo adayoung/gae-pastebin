@@ -9,11 +9,11 @@ import (
 	"net/http"
 )
 
-var Token, Domain, PageURL, Schema, PurgeAPI string
+var token, Domain, PageURL, Schema, PurgeAPI string
 
 func InitCF(token, zoneid, domain, pageurl, schema, purgeapi string) {
 	PurgeAPI = fmt.Sprintf(purgeapi, zoneid)
-	Token = token
+	token = token
 	Domain = domain
 	PageURL = pageurl
 	Schema = schema
@@ -40,7 +40,7 @@ func Purge(pasteID string) {
 		return
 	}
 
-	request.Header.Set("Authorization", "Bearer "+Token)
+	request.Header.Set("Authorization", "Bearer "+token)
 	if _, err := client.Do(request); err != nil {
 		log.Printf("ERROR: cloudflare.Purge, Do: %v", err)
 	}

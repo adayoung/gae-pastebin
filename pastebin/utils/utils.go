@@ -65,7 +65,7 @@ func UpdateSession(w http.ResponseWriter, r *http.Request, paste_id string, remo
 		}
 
 		if remove == true {
-			_paste_id := paste_id[1:len(paste_id)]
+			_paste_id := paste_id[1:]
 			delete(session.Values, _paste_id)
 		} else {
 			session.Values[paste_id] = time.Now().Format(time.RFC3339)
