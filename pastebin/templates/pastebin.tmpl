@@ -40,7 +40,6 @@
           -->
         </ul>
         <div class="col-md-3 navbar-nav navbar-right">
-          <div class="hidden"> <!-- FIXME: unhide when available  -->
           <div id="searchdiv">
             <form action="/pastebin/search" method="get" role="search">
               <label class="sr-only" for="searchbox">Search Tags</label>
@@ -53,14 +52,12 @@
               >
             </form>
           </div>
-          </div>
         </div>
       </div><!--/.nav-collapse -->
     </div>
     <noscript>
       <p class="text-danger text-center">Oops, you have Javascript disabled. Some features are unavailable.</p>
     </noscript>
-    <p class="text-warning text-center">Hi! This site is still undergoing migration, some features do not work yet (Accounts, API, Search by Tags).</p>
     <div class="container">
       {{ block "content" . }}
       <div class="row">

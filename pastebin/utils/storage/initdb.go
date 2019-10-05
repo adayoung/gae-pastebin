@@ -36,6 +36,24 @@ func initDB() {
 		log.Println("ERROR: The 'pastebin.paste_id' index could not be initialised.")
 		log.Fatalf("ERROR: %v", err)
 	}
+
+	sqlIndex = `
+		CREATE INDEX IF NOT EXISTS tags_index ON pastebin USING GIN ("tags");
+	`
+
+	if _, err := DB.Exec(sqlIndex); err != nil {
+		log.Println("ERROR: The 'pastebin.tags' index could not be initialised.")
+		log.Fatalf("ERROR: %v", err)
+	}
+
+	sqlIndex = `
+		CREATE INDEX IF NOT EXISTS date_tags_index ON pastebin(tags, date);
+	`
+
+	if _, err := DB.Exec(sqlIndex); err != nil {
+		log.Println("ERROR: The 'pastebin.tags, pastebin.date' index could not be initialised.")
+		log.Fatalf("ERROR: %v", err)
+	}
 }
 
 func init() {

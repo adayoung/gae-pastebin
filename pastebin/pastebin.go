@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"bytes"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -12,20 +13,23 @@ import (
 	"os"
 	"strings"
 	"time"
-	// "encoding/json"
+
+	"github.com/lib/pq"
 
 	// The Gorilla Web Toolkit
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 
 	// Go Humanize by Dustin Sallings
-	// "github.com/dustin/go-humanize"
+	"github.com/dustin/go-humanize"
+
 	// Local Packages
 	// api_v1 "github.com/adayoung/gae-pastebin/pastebin/api/v1"
 	"github.com/adayoung/gae-pastebin/pastebin/auth"
 	"github.com/adayoung/gae-pastebin/pastebin/counter"
 	"github.com/adayoung/gae-pastebin/pastebin/models"
 	"github.com/adayoung/gae-pastebin/pastebin/utils"
+	"github.com/adayoung/gae-pastebin/pastebin/utils/storage"
 )
 
 func InitRoutes(s *mux.Router) {
@@ -34,7 +38,7 @@ func InitRoutes(s *mux.Router) {
 	r.HandleFunc("/", utils.ExtraSugar(pastebin)).Methods("GET", "POST").Name("pastebin")
 	r.HandleFunc("/about", utils.ExtraSugar(about)).Methods("GET").Name("about")
 	// r.HandleFunc("/clean", clean).Methods("GET").Name("pastecleanr") // Order is important! :o
-	// r.HandleFunc("/search/", utils.ExtraSugar(search)).Methods("GET").Name("pastesearch")
+	r.HandleFunc("/search/", utils.ExtraSugar(search)).Methods("GET").Name("pastesearch")
 	r.HandleFunc("/{paste_id}", utils.ExtraSugar(pasteframe)).Methods("GET").Name("pasteframe")
 	s.HandleFunc("/pastebinc/{paste_id}/content", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastecontent")
 	s.HandleFunc("/pastebinc/{paste_id}/content/link", utils.ExtraSugar(pastecontent)).Methods("GET").Name("pastecontentlink")
@@ -439,55 +443,55 @@ func clean(w http.ResponseWriter, r *http.Request) {
 	}
 }
 */
+
 func search(w http.ResponseWriter, r *http.Request) {
 	// usr := user.Current(c)
 
 	if r.Header.Get("X-Requested-With") == "XMLHttpRequest" { // AJAX
-		/*
+
 		cursor := r.URL.Query().Get("c")
+		lTime, err := time.Parse("2006-01-02 15:04:05.000000", cursor)
+		if err != nil {
+			lTime = time.Now()
+		}
+
 		// Let's abuse an empty Paste object to validate/clean tags
-		p := new(models.Paste)
+		p := models.Paste{}
 		p.Tags = strings.Split(r.URL.Query().Get("tags"), " ")
 		p.Validate()
 
-		// select paste_id, title, tags, format, date from pastebin where tags @> '{"tag2","tag3"}';
-		q := datastore.NewQuery(models.PasteDSKind)
-		// q = q.Project("title", "date_published", "tags") // <-- That's not allowed for '='' filter queries O_o
-		for _, tag := range p.Tags {
-			q = q.Filter("tags =", tag)
-		}
-		q = q.Order("-date_published").Limit(10)
-		if len(cursor) > 0 {
-			if cursor, err := datastore.DecodeCursor(cursor); err != nil {
-				c.Errorf(err.Error())
-				http.Error(w, "Meep! We were trying to search for pastes keys but something went wrong (Invalid Cursor?)", http.StatusInternalServerError)
-				return
-			} else {
-				q = q.Start(cursor)
-			}
+		query := "SELECT paste_id, title, tags, date FROM pastebin where tags @> ?"
+		query = query + " AND date < ? "
+		query = query + " ORDER BY date DESC LIMIT 10"
+		query = storage.DB.Rebind(query)
+
+		rows, err := storage.DB.Query(query, pq.Array(p.Tags), lTime)
+		if err != nil {
+			log.Printf("ERROR: %v\n", err)
+			http.Error(w, "Meep! We were trying to search for pastes but something went wrong (Query Error)", http.StatusInternalServerError)
+			return
 		}
 
 		var results []interface{}
-		t := q.Run(c)
-		for {
+		var lastDate time.Time
+		for rows.Next() {
 			q := models.Paste{}
-			key, err := t.Next(&q)
-			if err == datastore.Done {
-				break
-			}
+			err = rows.Scan(&q.PasteID, &q.Title, pq.Array(&q.Tags), &q.Date)
+
 			if err != nil {
-				c.Errorf(err.Error())
-				http.Error(w, "Meep! We were trying to search for pastes keys but something went wrong (Query Error)", http.StatusInternalServerError)
-				break
+				log.Printf("ERROR: %v\n", err)
+				http.Error(w, "Meep! We were trying to search for pastes but something went wrong (Scan Error)", http.StatusInternalServerError)
+				return
 			}
 
 			results = append(results, map[string]interface{}{
-				"paste_id": key.StringID(),
+				"paste_id": q.PasteID,
 				"title":    template.HTMLEscapeString(q.Title),
 				"tags":     q.Tags,
 				"i_date":   q.Date.Format(time.ANSIC),
 				"date":     humanize.Time(q.Date),
 			})
+			lastDate = q.Date
 		}
 
 		q_result := map[string]interface{}{
@@ -495,15 +499,11 @@ func search(w http.ResponseWriter, r *http.Request) {
 				"results": results,
 				"tags":    p.Tags,
 			},
-		}
-
-		if cursor, err := t.Cursor(); err == nil {
-			q_result["cursor"] = cursor.String()
+			"cursor": lastDate.Format("2006-01-02 15:04:05.000000"),
 		}
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(q_result)
-		*/
 	} else {
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl", "pastebin/templates/search.tmpl"))
 		if err := tmpl.Execute(w, map[string]interface{}{
