@@ -1,33 +1,22 @@
 [![Build Status](https://travis-ci.org/adayoung/gae-pastebin.svg?branch=noGoogleBranch)](https://travis-ci.org/adayoung/gae-pastebin)
 
 # gae-pastebin
-Hi! Here's a pastebin that runs on Google App Engine!
+Hi! Here's a pastebin that runs ~on Google App Engine~ anywhere!
 
 ## Prerequisites
 
- * [Google App Engine Go SDK](https://cloud.google.com/appengine/downloads)
- * [github.com/gorilla/mux](http://www.gorillatoolkit.org/pkg/mux)
- * [golang.org/x/oauth2/...](https://godoc.org/golang.org/x/oauth2)
- * [github.com/gorilla/csrf](http://www.gorillatoolkit.org/pkg/csrf)
- * [github.com/gorilla/sessions](http://www.gorillatoolkit.org/pkg/sessions)
- * [google.golang.org/api/drive/v3](https://godoc.org/google.golang.org/api/drive/v3)
- * [github.com/dustin/go-humanize](https://godoc.org/github.com/dustin/go-humanize)
- * [github.com/gorilla/securecookie](http://www.gorillatoolkit.org/pkg/securecookie)
+ * A working [Go](https://golang.org/doc/install) environment, preferably >go1.11
+ * An account with a PostgreSQL server with credentials noted in keys.yaml
+ * An account with the [Google reCAPTCHA](https://www.google.com/recaptcha/) project with site key and secret key noted in keys.yaml
+ * An account with [Google Cloud Platform](https://cloud.google.com/) with [Google Drive API (v3)](https://developers.google.com/drive/) enabled, credentials in keys.yaml
+ * An account with [Cloudflare](https://www.cloudflare.com/) with an API Token scopred for `Zone.Cache Purge`, credentials in keys.yaml
 
 ## How to use
 
- * You'll need to download and extract [Google App Engine Go SDK](https://cloud.google.com/appengine/downloads) for Go
- * Clone the repository and initialize submodules with:
-   * `git submodule init`
-   * `git submodule update`
- * Go get dependencies with:
-   * `env GOPATH=<sdk path>/gopath go get github.com/gorilla/mux`
-   * `env GOPATH=<sdk path>/gopath go get github.com/gorilla/csrf`
-   * ... and so on ...
- * Now launch the App Engine Development Server and you're good to go!
-   * `<sdk path>/goapp serve gae-pastebin`
- * Deploy to your own Google account with:
-   * `<sdk path>/goapp deploy -application [YOUR_PROJECT_ID] -version [YOUR_VERSION_ID] gae-pastebin`
+ * Get the package and its dependencies with `go get github.com/adayoung/gae-pastebin`
+ * `cd $GOPATH/src/github.com/adayoung/gae-pastebin`, `go run .`
+ * Point your brower to http://localhost:2019/
+ * Sample deployment stuffs are available in confs/
 
 _Oh, make sure to update static/js/base.js with your own GA user id!_  
-_And keys.yaml to change the CSRFAuthKey, EncryptionK and GCPOAuthCID as well!_
+_And keys.yaml to change the CSRFAuthKey and EncryptionK as well!_

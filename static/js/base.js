@@ -41,7 +41,6 @@ m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
 // FIXME: load GA user id from elsewhere!
-ga('create', 'UA-44889074-2', 'ada-young.com');
+ga('create', 'GA-Property-ID', 'GA-Property-Domain');
 ga('require', 'displayfeatures');
 ga('send', 'pageview');
-

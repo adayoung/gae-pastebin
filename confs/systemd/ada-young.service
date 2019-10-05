@@ -1,0 +1,15 @@
+[Unit]
+Description = ada-young.com
+Requires=network.target
+After=postgresql.service
+
+[Service]
+User=ada-young
+WorkingDirectory=/home/ada-young/pastebin
+ExecStart=/home/ada-young/pastebin/app
+MemoryLimit=256M
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
