@@ -15,9 +15,7 @@ func Count(name string) int {
 	var err error
 	conn := utils.RedisPool.Get()
 
-	if ount, err := conn.Do("HINCRBY", name, "count", 1); err != nil {
-		log.Printf("ERROR: Increment operation failed for %s, %v", name, err)
-	} else if count, err = redis.Int(ount, err); err != nil {
+	if count, err = redis.Int(conn.Do("HINCRBY", name, "count", 1)); err != nil {
 		log.Printf("ERROR: Increment operation failed for %s, %v", name, err)
 	} else if _, err = conn.Do("HSET", name, "last", time.Now().Format("2006-02-01")); err != nil {
 		log.Printf("ERROR: Date operation failed for %s, %v", name, err)

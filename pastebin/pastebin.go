@@ -503,7 +503,9 @@ func search(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(q_result)
+		if err := json.NewEncoder(w).Encode(q_result); err != nil {
+			http.Error(w, "Meep! We were trying to make the 'results' dict but something went wrong.", http.StatusInternalServerError)
+		}
 	} else {
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl", "pastebin/templates/search.tmpl"))
 		if err := tmpl.Execute(w, map[string]interface{}{
