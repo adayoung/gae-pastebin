@@ -15,7 +15,6 @@ import (
 	// Local Packages
 	"github.com/adayoung/gae-pastebin/pastebin"
 	"github.com/adayoung/gae-pastebin/pastebin/cloudflare"
-	"github.com/adayoung/gae-pastebin/pastebin/counter"
 	"github.com/adayoung/gae-pastebin/pastebin/utils"
 	"github.com/adayoung/gae-pastebin/pastebin/utils/storage"
 )
@@ -72,7 +71,7 @@ func main() {
 		log.Fatalf("ERROR: %v", err)
 	}
 
-	counter.InitRedisPool(_envKeys.Database.Redis)
+	utils.InitRedisPool(_envKeys.Database.Redis)
 	cloudflare.InitCF(
 		_envKeys.CloudFlare.Token, _envKeys.CloudFlare.ZoneID,
 		_envKeys.CloudFlare.Domain, _envKeys.CloudFlare.PageURL,

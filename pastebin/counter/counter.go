@@ -5,48 +5,21 @@ import (
 	"time"
 
 	"github.com/gomodule/redigo/redis"
+
+	"github.com/adayoung/gae-pastebin/pastebin/utils"
 )
-
-var pool *redis.Pool
-
-func InitRedisPool(addr string) {
-	pool = newPool(addr)
-}
-
-func newPool(addr string) *redis.Pool {
-	return &redis.Pool{
-		MaxIdle:     10,
-		IdleTimeout: 300 * time.Second,
-		Dial: func() (redis.Conn, error) {
-			return redis.Dial("tcp", addr)
-		},
-	}
-}
-
-/*
-// Last retrieves the latest timestamp value across all counter shards for a given name
-func Last(name string) (time.Time, error) {
-
-}
-*/
 
 // Increment increments the named counter and returns the count
 func Count(name string) int {
 	var count int
-	conn := pool.Get()
+	var err error
+	conn := utils.RedisPool.Get()
 
-	ount, err := conn.Do("HINCRBY", name, "count", 1)
-	if err != nil {
+	if ount, err := conn.Do("HINCRBY", name, "count", 1); err != nil {
 		log.Printf("ERROR: Increment operation failed for %s, %v", name, err)
-	}
-
-	count, err = redis.Int(ount, err)
-	if err != nil {
+	} else if count, err = redis.Int(ount, err); err != nil {
 		log.Printf("ERROR: Increment operation failed for %s, %v", name, err)
-	}
-
-	_, err = conn.Do("HSET", name, "last", time.Now().Format("2006-02-01"))
-	if err != nil {
+	} else if _, err = conn.Do("HSET", name, "last", time.Now().Format("2006-02-01")); err != nil {
 		log.Printf("ERROR: Date operation failed for %s, %v", name, err)
 	}
 
@@ -59,11 +32,11 @@ func Count(name string) int {
 }
 
 func Delete(name string) {
-	conn := pool.Get()
+	conn := utils.RedisPool.Get()
 
 	_, err := conn.Do("DEL", name)
 	if err != nil {
-		log.Printf("ERROR: Date operation failed for %s, %v", name, err)
+		log.Printf("ERROR: Delete operation failed for %s, %v", name, err)
 	}
 
 	err = conn.Close()
@@ -71,3 +44,10 @@ func Delete(name string) {
 		log.Printf("ERROR: Delete closure failed for %s, %v", name, err)
 	}
 }
+
+/*
+// Last retrieves the latest timestamp value across all counter shards for a given name
+func Last(name string) (time.Time, error) {
+
+}
+*/
