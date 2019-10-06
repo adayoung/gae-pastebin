@@ -188,19 +188,16 @@ func (p *Paste) ZContent(r *http.Request, pc pasteContent) error {
 		}
 	}
 
+	buffer := bytes.NewReader(p.Content)
 	if p.Zlib {
-		// Decompress content and write out the response
-		var zbuffer io.Reader
-		zbuffer = bytes.NewReader(p.Content)
-		ureader, _ := zlib.NewReader(zbuffer)
+		ureader, _ := zlib.NewReader(buffer)
+		defer ureader.Close()
 		io.Copy(pc, ureader)
 	} else if p.Format == "plain" && p.Gzip {
-		var zbuffer io.Reader
-		zbuffer = bytes.NewReader(p.Content)
-		ureader, _ := gzip.NewReader(zbuffer)
+		ureader, _ := gzip.NewReader(buffer)
+		defer ureader.Close()
 		io.Copy(pc, ureader)
 	} else {
-		buffer := bytes.NewReader(p.Content)
 		io.Copy(pc, buffer)
 	}
 

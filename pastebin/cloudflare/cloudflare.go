@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/gomodule/redigo/redis"
 
@@ -15,6 +16,7 @@ import (
 )
 
 var Token, Domain, PageURL, Schema, PurgeAPI string
+var cfMutex sync.Mutex
 
 func InitCF(token, zoneid, domain, pageurl, schema, purgeapi string) {
 	PurgeAPI = fmt.Sprintf(purgeapi, zoneid)
@@ -46,6 +48,9 @@ func doPurge(conn redis.Conn) {
 	if qLength, err := redis.Int(conn.Do("LLEN", "CFDelQueue")); err != nil {
 		log.Printf("ERROR: Could not retrieve delete queue length, %v", err)
 	} else if qLength > maxQueueLength {
+		cfMutex.Lock()
+		defer cfMutex.Unlock()
+
 		delPasteIDs := [maxQueueLength]string{}
 		delURLs := [maxQueueLength]map[string]string{}
 		c := 0

@@ -217,6 +217,7 @@ func (p *Paste) loadFromDrive(r *http.Request) error {
 
 	} else {
 		if response.StatusCode == 200 {
+			defer response.Body.Close()
 			if p_content, err := ioutil.ReadAll(response.Body); err == nil {
 				p.Content = p_content
 			} else {
