@@ -29,7 +29,7 @@
         <ul class="nav navbar-nav">
           <li><a href="/">Home</a></li>
           <li><a href="/pastebin/about">About</a></li>
-          <li><a href="https://github.com/adayoung/gae-pastebin/" target="_blank">GitHub!</a></li>
+          <li><a href="https://github.com/adayoung/gae-pastebin/" target="_blank" rel="noopener">GitHub!</a></li>
           <!--
           <li><a href="/pastebin/api/v1/">API</a></li>
           {{ if .user }}
@@ -61,17 +61,17 @@
     <div class="container">
       <div class="row hidden-xs">
         <div class="col-md-12 img-bar">
-          <a href="https://www.achaea.com/" target="_blank">
+          <a href="https://www.achaea.com/" target="_blank" rel="noopener">
             <img src="//{{ .staticDomain }}/pastebin/static/img/achaea.png" alt="Play Achaea!">
           </a>
-          <a href="https://www.lusternia.com/" target="_blank">
+          <a href="https://www.lusternia.com/" target="_blank" rel="noopener">
             <img src="//{{ .staticDomain }}/pastebin/static/img/lusternia.png" alt="Play Lusternia!">
           </a>
-          <a href="https://www.starmourn.com/" target="_blank">
+          <a href="https://www.starmourn.com/" target="_blank" rel="noopener">
             <img src="//{{ .staticDomain }}/pastebin/static/img/starmourn.png" alt="Play Starmourn!">
           </a>
           <div class="pull-right">
-            <a href="https://www.mudlet.org/" target="_blank">
+            <a href="https://www.mudlet.org/" target="_blank" rel="noopener">
               <img src="//{{ .staticDomain }}/pastebin/static/img/mudlet.png" alt="Play a MUD on Mudlet!">
             </a>
           </div>
@@ -149,7 +149,7 @@
               &nbsp;
               <button class="btn btn-primary" data-title="Ctrl-Enter to paste in plain, Alt-Enter to paste in HTML!" id="paste_btn" type="submit">Paste it!</button>
               <img alt="pretty spinner" id="spinner" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" height="24" width="24" data-src="//{{ .staticDomain }}/pastebin/static/img/spinner.gif">
-              <em><span class="pull-right text-muted havejs" id="noc_wrap"><span id="noc">0</span> characters.</span> <span class="help-block grecaptcha-text">Protected by reCAPTCHA. <a href="https://www.google.com/intl/en/policies/privacy/" target="_blank">Privacy</a>. <a href="https://www.google.com/intl/en/policies/terms/" target="_blank">Terms</a>.</span></em>
+              <em><span class="pull-right text-muted havejs" id="noc_wrap"><span id="noc">0</span> characters.</span> <span class="help-block grecaptcha-text">Protected by reCAPTCHA. <a href="https://www.google.com/intl/en/policies/privacy/" target="_blank" rel="noopener">Privacy</a>. <a href="https://www.google.com/intl/en/policies/terms/" target="_blank" rel="noopener">Terms</a>.</span></em>
             </div>
           </div>
           <div class="row">
@@ -171,7 +171,7 @@
     {{ block "footer" . }}
     <!--
     <div class="pull-right">
-      <a href="https://cloud.google.com/products/app-engine/" target="_blank">
+      <a href="https://cloud.google.com/products/app-engine/" target="_blank" rel="noopener">
         <img alt="Powered by Google App Engine" id="appengine" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" height="30" width="120" data-src="//{{ .staticDomain }}/static/img/appengine-noborder-120x30.gif">
       </a>
     </div>
