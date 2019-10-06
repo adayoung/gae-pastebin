@@ -12,6 +12,7 @@
 
 {{ block "content" . }}
 <div class="row">
+  <div class="col-md-12">
   <form action="/pastebin/{{ .paste_id }}/delete" method="post">
 
     <span class="text-muted">
@@ -53,9 +54,11 @@
 
     </span>
   </form>
+  </div>
 </div>
 <div class="spacer"></div>
 <div class="row">
+<div class="col-md-12">
 
   <h1 class="sr-only">
     {{ if .paste.Title }}
@@ -76,7 +79,7 @@
   {{ end }}
 
   </article>
-
+</div>
 </div>
   {{ if not .driveHosted }}
   <div class="row">
