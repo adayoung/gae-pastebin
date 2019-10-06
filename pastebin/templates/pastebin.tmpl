@@ -59,6 +59,25 @@
       <p class="text-danger text-center">Oops, you have Javascript disabled. Some features are unavailable.</p>
     </noscript>
     <div class="container">
+      <div class="row hidden-xs">
+        <div class="col-md-12 img-bar">
+          <a href="https://www.achaea.com/" target="_blank">
+            <img src="//{{ .staticDomain }}/pastebin/static/img/achaea.png" alt="Play Achaea!">
+          </a>
+          <a href="https://www.lusternia.com/" target="_blank">
+            <img src="//{{ .staticDomain }}/pastebin/static/img/lusternia.png" alt="Play Lusternia!">
+          </a>
+          <a href="https://www.starmourn.com/" target="_blank">
+            <img src="//{{ .staticDomain }}/pastebin/static/img/starmourn.png" alt="Play Starmourn!">
+          </a>
+          <div class="pull-right">
+            <a href="https://www.mudlet.org/" target="_blank">
+              <img src="//{{ .staticDomain }}/pastebin/static/img/mudlet.png" alt="Play a MUD on Mudlet!">
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="spacer"></div>
       {{ block "content" . }}
       <div class="not-a-row">
         <h1 class="sr-only">Welcome to Ada's HTML Pastebin!</h1>
