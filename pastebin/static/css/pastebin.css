@@ -44,7 +44,7 @@ body {
 
 textarea#content {
   font-family: Courier New;
-  height: 60vh;
+  height: 65vh;
 }
 
 .havejs {
@@ -121,7 +121,7 @@ article iframe {
   border-radius: 5px;
 
   width: 100%;
-  min-height: 60vh;
+  min-height: 70vh;
   background: #fff;
 }
 
@@ -141,8 +141,4 @@ article iframe {
   .grecaptcha-text {
     display: block;
   }
-}
-
-.img-bar img {
-  max-height: 50px;
 }
