@@ -19,15 +19,23 @@ import (
 	"github.com/adayoung/gae-pastebin/pastebin/utils/storage"
 )
 
-type envKeys struct {
-	CSRFAuthKey    string `yaml:"CSRFAuthKey"`
-	CSRFSecureC    string `yaml:"CSRFSecureC"`
-	EncryptionK    string `yaml:"EncryptionK"`
-	GCPOAuthCID    string `yaml:"GCPOAuthCID"`
-	ReCAPTCHAKey   string `yaml:"ReCAPTCHAKey"`
-	ReCAPTCHASecrt string `yaml:"ReCAPTCHASecrt"`
-	StaticDomain   string `yaml:"StaticDomain"`
-	ListenPort     string `yaml:"ListenPort"`
+type config struct {
+	WebApp struct {
+		CSRFAuthKey  string `yaml:"CSRFAuthKey"`
+		CSRFSecureC  string `yaml:"CSRFSecureC"`
+		EncryptionK  string `yaml:"EncryptionK"`
+		ListenPort   string `yaml:"ListenPort"`
+		StaticDomain string `yaml:"StaticDomain"`
+	}
+
+	GoogleDrive struct {
+		GCPOAuthCID string `yaml:"GCPOAuthCID"`
+	}
+
+	ReCAPTCHA struct {
+		Key    string
+		Secret string
+	}
 
 	Database struct {
 		Connection string
@@ -46,17 +54,17 @@ type envKeys struct {
 
 func main() {
 	// Environment formerly set from keys.yaml by AppEngine
-	var _envKeys envKeys
-	if data, err := ioutil.ReadFile("keys.yaml"); err == nil {
-		if err = yaml.Unmarshal([]byte(data), &_envKeys); err == nil {
+	var _config config
+	if data, err := ioutil.ReadFile("config.yaml"); err == nil {
+		if err = yaml.Unmarshal([]byte(data), &_config); err == nil {
 			// FIXME: os.Setenv may emit an error which is currently unhandled
-			os.Setenv("CSRFAuthKey", _envKeys.CSRFAuthKey)
-			os.Setenv("CSRFSecureC", _envKeys.CSRFSecureC)
-			os.Setenv("EncryptionK", _envKeys.EncryptionK)
-			os.Setenv("GCPOAuthCID", _envKeys.GCPOAuthCID)
-			os.Setenv("ReCAPTCHAKey", _envKeys.ReCAPTCHAKey)
-			os.Setenv("ReCAPTCHASecrt", _envKeys.ReCAPTCHASecrt)
-			os.Setenv("StaticDomain", _envKeys.StaticDomain)
+			os.Setenv("CSRFAuthKey", _config.WebApp.CSRFAuthKey)
+			os.Setenv("CSRFSecureC", _config.WebApp.CSRFSecureC)
+			os.Setenv("EncryptionK", _config.WebApp.EncryptionK)
+			os.Setenv("StaticDomain", _config.WebApp.StaticDomain)
+			os.Setenv("GCPOAuthCID", _config.GoogleDrive.GCPOAuthCID)
+			os.Setenv("ReCAPTCHAKey", _config.ReCAPTCHA.Key)
+			os.Setenv("ReCAPTCHASecrt", _config.ReCAPTCHA.Secret)
 		} else {
 			log.Println("ERROR: Error with parsing keys.yaml.")
 			log.Fatalf("ERROR: %v", err)
@@ -66,16 +74,16 @@ func main() {
 		log.Fatalf("ERROR: %v", err)
 	}
 
-	if err := storage.InitDB(_envKeys.Database.Connection); err != nil {
+	if err := storage.InitDB(_config.Database.Connection); err != nil {
 		log.Println("ERROR: The database could not be initialized, DB will not unavailable.")
 		log.Fatalf("ERROR: %v", err)
 	}
 
-	utils.InitRedisPool(_envKeys.Database.Redis)
+	utils.InitRedisPool(_config.Database.Redis)
 	cloudflare.InitCF(
-		_envKeys.CloudFlare.Token, _envKeys.CloudFlare.ZoneID,
-		_envKeys.CloudFlare.Domain, _envKeys.CloudFlare.PageURL,
-		_envKeys.CloudFlare.Schema, _envKeys.CloudFlare.PurgeAPI,
+		_config.CloudFlare.Token, _config.CloudFlare.ZoneID,
+		_config.CloudFlare.Domain, _config.CloudFlare.PageURL,
+		_config.CloudFlare.Schema, _config.CloudFlare.PurgeAPI,
 	)
 
 	// Router begins here
@@ -87,7 +95,7 @@ func main() {
 	pastebin.InitRoutes(r)
 
 	http.Handle("/", r)
-	log.Fatal(http.ListenAndServe("127.0.0.1:"+_envKeys.ListenPort, nil))
+	log.Fatal(http.ListenAndServe("127.0.0.1:"+_config.WebApp.ListenPort, nil))
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
