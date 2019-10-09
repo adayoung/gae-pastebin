@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -202,35 +201,4 @@ func (p *Paste) LinkFromDrive(r *http.Request) (string, error) {
 	}
 
 	return fl_link, nil
-}
-
-func (p *Paste) loadFromDrive(r *http.Request) error {
-	fl_link, ferr := p.LinkFromDrive(r)
-	if ferr != nil {
-		return ferr
-	}
-
-	fg_call := &http.Client{}
-	if response, err := fg_call.Get(fl_link); err != nil {
-		log.Printf("ERROR: %v\n", err)
-		return parseAPIError(r, err, p, false)
-
-	} else {
-		if response.StatusCode == 200 {
-			defer response.Body.Close()
-			if p_content, err := ioutil.ReadAll(response.Body); err == nil {
-				p.Content = p_content
-			} else {
-				return err
-			}
-		} else if response.StatusCode == 404 {
-			p.Delete() // No err here, we just want to get rid of it xD
-			return &GDriveAPIError{
-				Code:     404,
-				Response: "404 - content not found",
-			}
-		}
-	}
-
-	return nil
 }

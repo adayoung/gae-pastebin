@@ -18,6 +18,48 @@ var meep = function(l, f){
   console.log(f);
 }
 
+var loadContent = function(content_link, loader) {
+  if ($('input[name=format]').val() === "html") {
+    var content = document.createElement('iframe');
+    content.sandbox="allow-same-origin";
+    $('article').append(content);
+    $(content).on('load', function(){
+      scale_iframe(content);
+    });
+
+    if ($('#driveHosted').length > 0) {
+      $(loader).append("<span>.</span>");
+      $.get(content_link, function(data){
+        var blob = new Blob([data], {type: 'text/html'});
+        var url = URL.createObjectURL(blob);
+        content.src = url;
+        $(loader).append("<span>.done!</span>");
+        $(loader).slideUp();
+      }).fail(function(f){
+        meep(loader, f);
+      });
+    } else {
+      content.src = content_link;
+      $(loader).append("<span>.done!</span>");
+      $(loader).slideUp();
+    }
+  } else {
+    var content = document.createElement('pre');
+    $(content).attr('id', 'content');
+    $('article').append(content);
+    $.get(content_link, function(data){
+      $(content).text(data);
+      $(content).html(function (index, html) {
+        return html.replace(/^(.*)$/mg, "<span class=\"line\">$1</span>")
+      });
+      $(loader).append("<span>.done!</span>");
+      $(loader).slideUp();
+    }).fail(function(e){
+      meep(loader, f);
+    });
+  }
+}
+
 $(document).ready(function(){
   $.each($('.btn'), function(){
     $(this).tooltip();
@@ -41,41 +83,21 @@ $(document).ready(function(){
     });
   });
 
-  if ($('input[name=format]').val() === "html") {
+  var paste_id = $('input[name="paste_id"]').val();
 
-    var content = document.createElement('iframe');
-    content.sandbox="allow-same-origin";
-    $('article').append(content);
-    $(content).on('load', function(){
-      scale_iframe(content);
+  var loader = document.createElement('p');
+  $(loader).html('<span>Loading content.. Please wait.</span> <img alt="pretty spinner" src="/pastebin/static/img/spinner.gif">');
+  $('#not-article').append(loader);
+
+  if ($('#driveHosted').length > 0) {
+    $.get("/pastebinc/"+paste_id+"/content/link", function(src){
+      loadContent(src, loader);
+    }).fail(function(f){
+        meep(loader, f);
+        return; // bail out, we don't have a content_link
     });
-
-    var paste_id = $('input[name="paste_id"]').val();
-    if ($('#driveHosted').length > 0) {
-      var loader = document.createElement('p');
-      $(loader).html('<span>Loading content.. Please wait.</span> <img alt="pretty spinner" src="/pastebin/static/img/spinner.gif">');
-      $('article').append(loader);
-      $.get("/pastebinc/"+paste_id+"/content/link", function(src){
-        $(loader).append("<span>.</span>");
-        $.get(src, function(data){
-          var blob = new Blob([data], {type: 'text/html'});
-          var url = URL.createObjectURL(blob);
-          content.src = url;
-          $(loader).append("<span>.done!</span>");
-          $(loader).slideUp();
-        }).fail(function(f){
-          meep(loader, f);
-        });
-      }).fail(function(f){
-          meep(loader, f);
-      });
-    } else {
-      content.src="/pastebinc/"+paste_id+"/content";
-    }
   } else {
-    $("pre").html(function (index, html) {
-      return html.replace(/^(.*)$/mg, "<span class=\"line\">$1</span>")
-    });
+    loadContent("/pastebinc/"+paste_id+"/content", loader);
   }
 });
 

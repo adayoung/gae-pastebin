@@ -2,8 +2,6 @@ package pastebin
 
 import (
 	// Go Builtin Packages
-	"bufio"
-	"bytes"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -198,25 +196,6 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 
 		p_count := counter.Count(paste_id)
 
-		var p_content string
-		if paste.Format == "plain" {
-			var _b_content bytes.Buffer
-			_p_content := bufio.NewWriter(&_b_content)
-			err := paste.ZContent(r, _p_content)
-			if err != nil {
-				log.Printf("ERROR: %v\n", err)
-				if gerr, ok := err.(*models.GDriveAPIError); ok {
-					http.Error(w, gerr.Response, gerr.Code)
-				} else {
-					http.Error(w, "Meep! We were trying to retrieve this paste's plain content but something went wrong.", http.StatusInternalServerError)
-				}
-				return
-			} else {
-				_p_content.Flush()
-				p_content = _b_content.String()
-			}
-		}
-
 		driveHosted := false
 		if len(paste.GDriveID) > 0 {
 			driveHosted = true
@@ -227,7 +206,6 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			csrf.TemplateTag: csrf.TemplateField(r),
 			"paste_id":       paste_id,
 			"paste":          paste,
-			"p_content":      p_content,
 			"p_count":        p_count,
 			"user":           "", // usr,
 			"deleteBtn":      showDeleteBtn,
@@ -280,12 +258,13 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Add a Content-Type header for plain text pastes
+		if paste.Gzip {
+			w.Header().Set("Content-Encoding", "gzip")
+		}
+
 		if paste.Format == "plain" {
 			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		} else {
-			if paste.Gzip {
-				w.Header().Set("Content-Encoding", "gzip")
-			}
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		}
 

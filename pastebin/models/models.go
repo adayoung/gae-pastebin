@@ -176,12 +176,6 @@ type pasteContent interface {
 }
 
 func (p *Paste) ZContent(r *http.Request, pc pasteContent) error {
-	if len(p.GDriveID) > 0 {
-		if err := p.loadFromDrive(r); err != nil {
-			return err
-		}
-	}
-
 	if !(len(p.Content) > 0) {
 		if err := p.loadContent(); err != nil {
 			return err
@@ -191,10 +185,6 @@ func (p *Paste) ZContent(r *http.Request, pc pasteContent) error {
 	buffer := bytes.NewReader(p.Content)
 	if p.Zlib {
 		ureader, _ := zlib.NewReader(buffer)
-		defer ureader.Close()
-		io.Copy(pc, ureader)
-	} else if p.Format == "plain" && p.Gzip {
-		ureader, _ := gzip.NewReader(buffer)
 		defer ureader.Close()
 		io.Copy(pc, ureader)
 	} else {

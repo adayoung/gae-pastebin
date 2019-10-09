@@ -66,11 +66,11 @@ func main() {
 			os.Setenv("ReCAPTCHAKey", _config.ReCAPTCHA.Key)
 			os.Setenv("ReCAPTCHASecrt", _config.ReCAPTCHA.Secret)
 		} else {
-			log.Println("ERROR: Error with parsing keys.yaml.")
+			log.Println("ERROR: Error with parsing config.yaml.")
 			log.Fatalf("ERROR: %v", err)
 		}
 	} else {
-		log.Println("ERROR: The file 'keys.yaml' could not be read.")
+		log.Println("ERROR: The file 'config.yaml' could not be read.")
 		log.Fatalf("ERROR: %v", err)
 	}
 

@@ -59,7 +59,6 @@
 <div class="spacer"></div>
 <div class="row">
 <div class="col-md-12">
-
   <h1 class="sr-only">
     {{ if .paste.Title }}
       {{ .paste.Title }}
@@ -67,18 +66,15 @@
       {{ .paste_id }}
     {{ end }}
   </h1>
-
   <article class="text-muted" role="main">
-
-  {{ if eq .paste.Format "html" }}
-  <noscript>
-    <iframe id="content" src="/pastebinc/{{ .paste_id }}/content" sandbox="allow-same-origin"></iframe>
-  </noscript>
-  {{ else }}
-    <pre id="content">{{ .p_content }}</pre>
-  {{ end }}
-
+    <noscript>
+      <iframe id="content" src="/pastebinc/{{ .paste_id }}/content" sandbox="allow-same-origin"></iframe>
+      {{ if .driveHosted }}
+      <p>Oops, we need Javascript to load this content. Alternatively, you may click <a href="{{ .paste.GDriveDL }}">here</a> to download it.</p>
+      {{ end }}
+    </noscript>
   </article>
+  <div id="not-article"></div>
 </div>
 </div>
   {{ if not .driveHosted }}
@@ -96,5 +92,5 @@
 {{ end }}
 {{ block "evenmoretail" . }}
 <input type="hidden" name="paste_id" value="{{ .paste_id }}">
-<script src="//{{ .staticDomain }}/pastebin/static/js/20191002/paste.js"></script>
+<script src="//{{ .staticDomain }}/pastebin/static/js/20191009/paste.js"></script>
 {{ end }}
