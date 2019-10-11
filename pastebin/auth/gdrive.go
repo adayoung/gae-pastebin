@@ -35,7 +35,7 @@ const response_template = `
 
 var responseTemplate = template.Must(template.New("response").Parse(response_template))
 
-func auth_gdrive_start(w http.ResponseWriter, r *http.Request) {
+func authGDriveStart(w http.ResponseWriter, r *http.Request) {
 	// We need to be able to serve an inline script on this route for window.opener.*
 	w.Header().Set("Content-Security-Policy", "default-src 'none'; script-src 'unsafe-inline'")
 
@@ -55,7 +55,7 @@ func auth_gdrive_start(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func auth_gdrive_finish(w http.ResponseWriter, r *http.Request) {
+func authGDriveFinish(w http.ResponseWriter, r *http.Request) {
 	// We need to be able to serve an inline script on this route for window.opener.*
 	w.Header().Set("Content-Security-Policy", "default-src 'none'; script-src 'unsafe-inline'")
 

@@ -9,6 +9,6 @@ import (
 )
 
 func InitRoutes(r *mux.Router) {
-	r.HandleFunc("/auth/gdrive/start", utils.ExtraSugar(auth_gdrive_start)).Methods("GET").Name("auth_gdrive_start")
-	r.HandleFunc("/auth/gdrive/finish", utils.ExtraSugar(auth_gdrive_finish)).Methods("GET").Name("auth_gdrive_finish")
+	r.HandleFunc("/auth/gdrive/start", utils.ExtraSugar(authGDriveStart)).Methods("GET").Name("auth_gdrive_start")
+	r.HandleFunc("/auth/gdrive/finish", utils.ExtraSugar(authGDriveFinish)).Methods("GET").Name("auth_gdrive_finish")
 }
