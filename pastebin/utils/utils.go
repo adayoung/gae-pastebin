@@ -16,7 +16,6 @@ import (
 	// Google OAuth2/Drive Packages
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	"google.golang.org/api/drive/v3"
 
 	// The Gorilla Web Toolkit
 	"github.com/gorilla/securecookie"
@@ -118,9 +117,9 @@ func SC() *securecookie.SecureCookie {
 	return sc
 }
 
-func OAuthConfigDance() (*oauth2.Config, error) {
+func OAuthConfigDance(scopes ...string) (*oauth2.Config, error) {
 	GCPOAuthCID := []byte(os.Getenv("GCPOAuthCID"))
-	if config, err := google.ConfigFromJSON([]byte(GCPOAuthCID), drive.DriveFileScope); err == nil {
+	if config, err := google.ConfigFromJSON([]byte(GCPOAuthCID), scopes...); err == nil {
 		return config, nil
 	} else {
 		return config, err

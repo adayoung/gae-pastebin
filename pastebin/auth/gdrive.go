@@ -10,6 +10,7 @@ import (
 
 	// Google OAuth2/Drive Packages
 	"golang.org/x/oauth2"
+	"google.golang.org/api/drive/v3"
 
 	// Local Packages
 	"github.com/adayoung/gae-pastebin/pastebin/models"
@@ -46,7 +47,7 @@ func authGDriveStart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if config, err := utils.OAuthConfigDance(); err == nil {
+	if config, err := utils.OAuthConfigDance(drive.DriveFileScope); err == nil {
 		authURL := config.AuthCodeURL(state_token, oauth2.AccessTypeOnline)
 		http.Redirect(w, r, authURL, http.StatusFound)
 	} else {
@@ -93,7 +94,7 @@ func authGDriveFinish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	config, cerr := utils.OAuthConfigDance()
+	config, cerr := utils.OAuthConfigDance(drive.DriveFileScope)
 	if cerr != nil {
 		log.Printf("ERROR: %v\n", cerr)
 		http.Error(w, "Meep! We were trying to do the OAuthConfigDance but something went wrong.", http.StatusInternalServerError)
