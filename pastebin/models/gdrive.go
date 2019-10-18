@@ -48,7 +48,7 @@ func SaveOAuthToken(w http.ResponseWriter, r *http.Request, token *oauth2.Token)
 	return nil
 }
 
-func GetOAuthToken(r *http.Request, user_id string) (*oauth2.Token, error) {
+func GetOAuthToken(r *http.Request) (*oauth2.Token, error) {
 	if session, err := sessionStore.Get(r, "_oauth2_gdrive"); err != nil {
 		return nil, err
 	} else {
@@ -61,8 +61,8 @@ func GetOAuthToken(r *http.Request, user_id string) (*oauth2.Token, error) {
 	return nil, nil
 }
 
-func GetOAuthClient(r *http.Request, user_id string) (*http.Client, error) {
-	if token, err := GetOAuthToken(r, user_id); err == nil {
+func GetOAuthClient(r *http.Request) (*http.Client, error) {
+	if token, err := GetOAuthToken(r); err == nil {
 		ctx := r.Context()
 
 		config, cerr := utils.OAuthConfigDance("-redirectURL-", drive.DriveFileScope)
@@ -114,7 +114,7 @@ func makePastebinFolder(client *http.Client) (string, error) {
 }
 
 func (p *Paste) saveToDrive(r *http.Request, paste_id string) error {
-	client, cerr := GetOAuthClient(r, p.UserID)
+	client, cerr := GetOAuthClient(r)
 	if cerr != nil {
 		return cerr
 	}

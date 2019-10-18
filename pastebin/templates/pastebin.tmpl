@@ -32,12 +32,12 @@
           <li><a href="https://github.com/adayoung/gae-pastebin/" target="_blank" rel="noopener">GitHub!</a></li>
           <!--
           <li><a href="/pastebin/api/v1/">API</a></li>
+          -->
           {{ if .user }}
-            <li><a href="/pastebin/auth/logout">Sign out ({{ .user.Email }})</a></li>
+            <li><a href="/pastebin/auth/logout">Sign out</a></li>
           {{ else }}
             <li><a href="/pastebin/auth/login">Sign in</a></li>
           {{ end }}
-          -->
         </ul>
         <div class="col-md-3 navbar-nav navbar-right">
           <div id="searchdiv">

@@ -24,7 +24,8 @@ func oauthStart(w http.ResponseWriter, r *http.Request, redirectURL string, scop
 	}
 
 	if config, err := utils.OAuthConfigDance(redirectURL, scopes...); err == nil {
-		authURL := config.AuthCodeURL(state_token, oauth2.AccessTypeOnline)
+		// var nonce oauth2.AuthCodeOption = oauth2.SetAuthURLParam("nonce", "meow!")
+		authURL := config.AuthCodeURL(state_token, oauth2.AccessTypeOnline) // , nonce)
 		http.Redirect(w, r, authURL, http.StatusFound)
 	} else {
 		log.Printf("ERROR: %v\n", err)
@@ -33,7 +34,6 @@ func oauthStart(w http.ResponseWriter, r *http.Request, redirectURL string, scop
 }
 
 func oauthFinish(w http.ResponseWriter, r *http.Request, scopes ...string) error {
-
 	var err error
 	if err = utils.ProcessForm(r); err != nil {
 		return err
