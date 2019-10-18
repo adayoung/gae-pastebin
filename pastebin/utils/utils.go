@@ -50,10 +50,15 @@ func ExtraSugar(f http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-var sessionStore = sessions.NewCookieStore([]byte(os.Getenv("CSRFAuthKey")))
+func sessionStore() *sessions.CookieStore {
+	CSRFAuthKey := []byte(os.Getenv("CSRFAuthKey"))
+	EncryptionK := []byte(os.Getenv("EncryptionK"))
+	ss := sessions.NewCookieStore(CSRFAuthKey, EncryptionK)
+	return ss
+}
 
 func UpdateSession(w http.ResponseWriter, r *http.Request, paste_id string, remove bool) error {
-	if session, err := sessionStore.Get(r, "_pb_session"); err != nil {
+	if session, err := sessionStore().Get(r, "_pb_session"); err != nil {
 		return err
 	} else {
 		session.Options = &sessions.Options{
@@ -81,16 +86,12 @@ func UpdateSession(w http.ResponseWriter, r *http.Request, paste_id string, remo
 			}
 		}
 
-		err = session.Save(r, w)
-		if err != nil {
-			return err
-		}
+		return session.Save(r, w)
 	}
-	return nil
 }
 
 func CheckSession(r *http.Request, paste_id string) (bool, error) {
-	if session, err := sessionStore.Get(r, "_pb_session"); err != nil {
+	if session, err := sessionStore().Get(r, "_pb_session"); err != nil {
 		return false, err
 	} else {
 		if session.Values[paste_id] != nil {
@@ -98,6 +99,33 @@ func CheckSession(r *http.Request, paste_id string) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+func InitAppSession(w http.ResponseWriter, r *http.Request, userID string) error {
+	if session, err := sessionStore().Get(r, "_app_session"); err != nil {
+		return err
+	} else {
+		session.Options = &sessions.Options{
+			Path:     "/pastebin/",
+			MaxAge:   86400 * 3,
+			HttpOnly: true,
+			Secure:   os.Getenv("CSRFSecureC") == "true",
+		}
+
+		session.Values["userID"] = userID
+		return session.Save(r, w)
+	}
+}
+
+func ClearOauthCookie(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{ // That was a HALF A KILO cookie!! :O
+		Path:     "/pastebin/",
+		Name:     "_oauth2_gdrive",
+		Value:    "",
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   os.Getenv("CSRFSecureC") == "true",
+	})
 }
 
 func ProcessForm(r *http.Request) error {

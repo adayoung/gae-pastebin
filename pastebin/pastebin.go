@@ -139,14 +139,7 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			HttpOnly: true,
 		})
 
-		http.SetCookie(w, &http.Cookie{ // That was a HALF A KILO cookie!! :O
-			Path:     "/pastebin/",
-			Name:     "_oauth2_gdrive",
-			Value:    "",
-			MaxAge:   -1,
-			HttpOnly: true,
-			Secure:   os.Getenv("CSRFSecureC") == "true",
-		})
+		utils.ClearOauthCookie(w)
 
 		if r.Header.Get("X-Requested-With") == "XMLHttpRequest" { // AJAX
 			w.Write([]byte("/pastebin/" + paste_id))

@@ -51,8 +51,6 @@ func authGoogle(w http.ResponseWriter, r *http.Request) {
 			}
 
 			if strData, ok := data.(string); ok { // wow, golang can be awkward!
-				log.Printf("INFO: strData -> %s", strData)
-
 				// https://github.com/googleapis/google-auth-library-python/blob/08272d89667a901d0dff6c4ba53d5b30fcc29e81/google/auth/jwt.py#L134
 				if strings.Count(strData, ".") != 2 {
 					http.Error(w, "Meep! We were trying to count the dots in your token but something went wrong.", http.StatusInternalServerError)
@@ -62,7 +60,13 @@ func authGoogle(w http.ResponseWriter, r *http.Request) {
 
 				if jsonData, err := base64.RawURLEncoding.DecodeString(encodedData); err == nil {
 					if json.Unmarshal([]byte(jsonData), &idToken); err == nil {
-						initSession(w, r, idToken.UserID)
+						if err = utils.InitAppSession(w, r, idToken.UserID); err == nil {
+							utils.ClearOauthCookie(w)
+							http.Redirect(w, r, "/pastebin/", http.StatusFound)
+						} else {
+							log.Printf("ERROR: %v\n", err)
+							http.Error(w, "Meep! We were trying to initialize your session but something went wrong.", http.StatusInternalServerError)
+						}
 					} else {
 						log.Printf("ERROR: %v\n", err)
 						http.Error(w, "Meep! We were trying to parse your token but something went wrong.", http.StatusInternalServerError)
@@ -83,8 +87,4 @@ func authGoogle(w http.ResponseWriter, r *http.Request) {
 		log.Printf("ERROR: %v\n", err)
 		http.Error(w, "Meep! We were trying to fetch your token but something went wrong.", http.StatusInternalServerError)
 	}
-}
-
-func initSession(w http.ResponseWriter, r *http.Request, userID string) {
-	// TODO: Init teh freaking session!@
 }
