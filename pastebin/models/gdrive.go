@@ -64,7 +64,8 @@ func GetOAuthToken(r *http.Request, user_id string) (*oauth2.Token, error) {
 func GetOAuthClient(r *http.Request, user_id string) (*http.Client, error) {
 	if token, err := GetOAuthToken(r, user_id); err == nil {
 		ctx := r.Context()
-		config, cerr := utils.OAuthConfigDance(drive.DriveFileScope)
+
+		config, cerr := utils.OAuthConfigDance("-redirectURL-", drive.DriveFileScope)
 		if cerr != nil {
 			return nil, cerr
 		}

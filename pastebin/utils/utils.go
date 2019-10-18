@@ -117,9 +117,10 @@ func SC() *securecookie.SecureCookie {
 	return sc
 }
 
-func OAuthConfigDance(scopes ...string) (*oauth2.Config, error) {
+func OAuthConfigDance(redirectURL string, scopes ...string) (*oauth2.Config, error) {
 	GCPOAuthCID := []byte(os.Getenv("GCPOAuthCID"))
 	if config, err := google.ConfigFromJSON([]byte(GCPOAuthCID), scopes...); err == nil {
+		config.RedirectURL = redirectURL
 		return config, nil
 	} else {
 		return config, err
