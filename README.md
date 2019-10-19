@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/adayoung/gae-pastebin.svg?branch=noGoogleBranch)](https://travis-ci.org/adayoung/gae-pastebin)
+[![Build Status](https://travis-ci.org/adayoung/gae-pastebin.svg)](https://travis-ci.org/adayoung/gae-pastebin)
+[![Go report](https://goreportcard.com/badge/adayoung/gae-pastebin)](https://goreportcard.com/report/adayoung/gae-pastebin)
 
 # gae-pastebin
 Hi! Here's a pastebin that runs ~on Google App Engine~ anywhere!
