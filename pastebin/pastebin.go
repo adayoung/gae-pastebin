@@ -166,11 +166,11 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 		return
 	} else {
 		showDeleteBtn := false
-		// if usr != nil {
-		// 	if paste.UserID == usr.ID || user.IsAdmin(c) {
-		// 		showDeleteBtn = true
-		// 	}
-		// }
+		if usr := r.Context().Value("userID"); usr != nil {
+			if paste.UserID == usr.(string) { // || user.IsAdmin(c) {
+				showDeleteBtn = true
+			}
+		}
 
 		if checkDelete, err := utils.CheckSession(r, paste_id); err != nil {
 			log.Printf("ERROR: %v\n", err)
@@ -183,7 +183,9 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 				HttpOnly: true,
 			})
 		} else {
-			showDeleteBtn = checkDelete
+			if !showDeleteBtn {
+				showDeleteBtn = checkDelete
+			}
 		}
 
 		p_count := counter.Count(paste_id)
@@ -309,17 +311,19 @@ func pastedelete(w http.ResponseWriter, r *http.Request) {
 	} else {
 		canDelete := false
 		// Check ownership and expire paste on the /delete route, POST is enforced here by the mux
-		// if usr := user.Current(c); usr != nil {
-		// 	if paste.UserID == usr.ID || user.IsAdmin(c) {
-		// 		canDelete = true
-		// 	}
-		// }
+		if usr := r.Context().Value("userID"); usr != nil {
+			if paste.UserID == usr.(string) { // || user.IsAdmin(c) {
+				canDelete = true
+			}
+		}
 
 		if checkDelete, err := utils.CheckSession(r, paste_id); err != nil {
 			log.Printf("ERROR: %v\n", err)
 			http.Error(w, "Meep! We were trying to get a session but something went wrong.", http.StatusInternalServerError)
 		} else {
-			canDelete = checkDelete
+			if !canDelete {
+				canDelete = checkDelete
+			}
 		}
 
 		if canDelete {

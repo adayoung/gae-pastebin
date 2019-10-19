@@ -203,9 +203,9 @@ func NewPaste(r *http.Request, score float64) (string, error) {
 
 	// TODO: we do some magic with the received score here :D
 
-	// if usr := user.Current(c); usr != nil {
-	// 	paste.UserID = usr.ID
-	// }
+	if usr := r.Context().Value("userID"); usr != nil {
+		paste.UserID = usr.(string)
+	}
 
 	paste.Title = r.Form.Get("title")
 	paste.uContent = r.Form.Get("content")
