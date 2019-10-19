@@ -34,6 +34,20 @@ func Http404(w http.ResponseWriter, r *http.Request) {
 func ExtraSugar(f http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := context.WithValue(r.Context(), "staticDomain", os.Getenv("StaticDomain"))
+
+		if session, err := sessionStore().Get(r, "_app_session"); err != nil {
+			log.Printf("WARNING: sessionStore.Get call failed for _app_session, %v", err)
+			ClearAppSession(w)
+		} else {
+			userID := session.Values["userID"]
+			if userID != nil {
+				ctx = context.WithValue(ctx, "userID", userID)
+				if err := InitAppSession(w, r, userID.(string)); err != nil {
+					log.Printf("WARNING: InitAppSession call failed in context, %v", err)
+				}
+			}
+		}
+
 		r = r.WithContext(ctx)
 
 		w.Header().Set("Ada", "*skips about* Hi! <3 ^_^")
@@ -115,6 +129,17 @@ func InitAppSession(w http.ResponseWriter, r *http.Request, userID string) error
 		session.Values["userID"] = userID
 		return session.Save(r, w)
 	}
+}
+
+func ClearAppSession(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{
+		Path:     "/pastebin/",
+		Name:     "_app_session",
+		Value:    "",
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   os.Getenv("CSRFSecureC") == "true",
+	})
 }
 
 func ClearOauthCookie(w http.ResponseWriter) {

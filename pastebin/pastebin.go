@@ -52,10 +52,9 @@ func InitRoutes(s *mux.Router) {
 }
 
 func about(w http.ResponseWriter, r *http.Request) {
-	// c := appengine.NewContext(r)
 	var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl", "pastebin/templates/about.tmpl"))
 	if err := tmpl.Execute(w, map[string]interface{}{
-		"user":         "", // user.Current(c),
+		"user":         r.Context().Value("userID"),
 		"rkey":         os.Getenv("ReCAPTCHAKey"),
 		"staticDomain": r.Context().Value("staticDomain"),
 	}); err != nil {
@@ -78,7 +77,7 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 		// http://www.gorillatoolkit.org/pkg/csrf
 		if err := tmpl.Execute(w, map[string]interface{}{
 			csrf.TemplateTag: csrf.TemplateField(r),
-			"user":           "", // user.Current(c),
+			"user":           r.Context().Value("userID"),
 			"dest":           destination,
 			"rkey":           os.Getenv("ReCAPTCHAKey"),
 			"staticDomain":   r.Context().Value("staticDomain"),
@@ -200,7 +199,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			"paste_id":       paste_id,
 			"paste":          paste,
 			"p_count":        p_count,
-			"user":           "", // usr,
+			"user":           r.Context().Value("userID"),
 			"deleteBtn":      showDeleteBtn,
 			"driveHosted":    driveHosted,
 			"sixMonthsAway":  time.Now().AddDate(0, 0, 180).Format("Monday, Jan _2, 2006"),
@@ -481,7 +480,7 @@ func search(w http.ResponseWriter, r *http.Request) {
 	} else {
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl", "pastebin/templates/search.tmpl"))
 		if err := tmpl.Execute(w, map[string]interface{}{
-			"user":         "", // usr,
+			"user":         r.Context().Value("userID"),
 			"rkey":         os.Getenv("ReCAPTCHAKey"),
 			"staticDomain": r.Context().Value("staticDomain"),
 		}); err != nil {

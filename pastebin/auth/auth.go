@@ -22,6 +22,7 @@ func InitRoutes(r *mux.Router) {
 
 	r.HandleFunc("/auth/login", utils.ExtraSugar(authLoginStart)).Methods("GET").Name("authLoginStart")
 	r.HandleFunc("/auth/google", utils.ExtraSugar(authGoogle)).Methods("GET").Name("authGoogle")
+	r.HandleFunc("/auth/logout", utils.ExtraSugar(authLogout)).Methods("GET").Name("authLogout")
 }
 
 func authLoginStart(w http.ResponseWriter, r *http.Request) {
@@ -87,4 +88,9 @@ func authGoogle(w http.ResponseWriter, r *http.Request) {
 		log.Printf("ERROR: %v\n", err)
 		http.Error(w, "Meep! We were trying to fetch your token but something went wrong.", http.StatusInternalServerError)
 	}
+}
+
+func authLogout(w http.ResponseWriter, r *http.Request) {
+	utils.ClearAppSession(w)
+	http.Redirect(w, r, "/pastebin/", http.StatusFound)
 }
