@@ -30,7 +30,7 @@ func authLoginStart(w http.ResponseWriter, r *http.Request) {
 }
 
 func authGoogle(w http.ResponseWriter, r *http.Request) {
-	err := oauthFinish(w, r, "openid", "profile")
+	stateNonce, err := oauthFinish(w, r, "openid", "profile")
 	if err != nil {
 		log.Printf("ERROR: %v\n", err)
 		http.Error(w, "Meep! We were trying to talk to Google but something went wrong.", http.StatusInternalServerError)
@@ -42,6 +42,7 @@ func authGoogle(w http.ResponseWriter, r *http.Request) {
 		if data != nil {
 			var idToken struct {
 				UserID string `json:"sub"`
+				Nonce  string `json:"nonce"`
 			}
 
 			if strData, ok := data.(string); ok { // wow, golang can be awkward!
@@ -54,7 +55,10 @@ func authGoogle(w http.ResponseWriter, r *http.Request) {
 
 				if jsonData, err := base64.RawURLEncoding.DecodeString(encodedData); err == nil {
 					if json.Unmarshal([]byte(jsonData), &idToken); err == nil {
-						if err = utils.InitAppSession(w, r, idToken.UserID); err == nil {
+						if idToken.Nonce != stateNonce {
+							log.Printf("WARNING: Nonce mismatch %s != %s", idToken.Nonce, stateNonce)
+							http.Error(w, "Meep! We were trying to validate your session but something went wrong (nonce mismatch).", http.StatusBadRequest)
+						} else if err = utils.InitAppSession(w, r, idToken.UserID); err == nil {
 							utils.ClearOauthCookie(w)
 							http.Redirect(w, r, "/pastebin/", http.StatusFound)
 						} else {

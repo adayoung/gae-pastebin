@@ -38,7 +38,7 @@ func authGDriveFinish(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Security-Policy", "default-src 'none'; script-src 'unsafe-inline'")
 
 	var result string
-	if err := oauthFinish(w, r, drive.DriveFileScope); err == nil {
+	if _, err := oauthFinish(w, r, drive.DriveFileScope); err == nil {
 		result = "success"
 	} else {
 		log.Printf("ERROR: %v\n", err)
