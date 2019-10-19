@@ -19,7 +19,9 @@ import (
 func oauthStart(w http.ResponseWriter, r *http.Request, redirectPath string, scopes ...string) {
 	redirectURL := "http://localhost:2019" // D:
 	if r.Host != "" {
-		redirectURL = "https://" + r.Host // FIXME: We just assume we're on https
+		if !strings.HasPrefix(r.Host, "localhost") {
+			redirectURL = "https://" + r.Host // FIXME: We just assume we're on https
+		}
 	}
 	redirectURL = redirectURL + redirectPath
 

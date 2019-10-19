@@ -50,6 +50,8 @@ type config struct {
 		PageURL  string
 		PurgeAPI string
 	}
+
+	AdaYoung string
 }
 
 func main() {
@@ -65,6 +67,7 @@ func main() {
 			os.Setenv("GCPOAuthCID", _config.GoogleDrive.GCPOAuthCID)
 			os.Setenv("ReCAPTCHAKey", _config.ReCAPTCHA.Key)
 			os.Setenv("ReCAPTCHASecrt", _config.ReCAPTCHA.Secret)
+			os.Setenv("AdaYoung", _config.AdaYoung)
 		} else {
 			log.Println("ERROR: Error with parsing config.yaml.")
 			log.Fatalf("ERROR: %v", err)
@@ -100,8 +103,4 @@ func main() {
 
 func index(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/pastebin/", http.StatusFound)
-	// var tmpl = template.Must(template.ParseFiles("templates/base.tmpl"))
-	// if err := tmpl.Execute(w, nil); err != nil {
-	// 	http.Error(w, "Meep! We were trying to make the 'base' page but something went wrong.", http.StatusInternalServerError)
-	// }
 }

@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 
@@ -35,6 +36,7 @@ func InitRoutes(s *mux.Router) {
 
 	r.HandleFunc("/", utils.ExtraSugar(pastebin)).Methods("GET", "POST").Name("pastebin")
 	r.HandleFunc("/about", utils.ExtraSugar(about)).Methods("GET").Name("about")
+	r.HandleFunc("/stats", utils.ExtraSugar(stats)).Methods("GET").Name("stats")
 	// r.HandleFunc("/clean", clean).Methods("GET").Name("pastecleanr") // Order is important! :o
 	r.HandleFunc("/search/", utils.ExtraSugar(search)).Methods("GET").Name("pastesearch")
 	r.HandleFunc("/{paste_id}", utils.ExtraSugar(pasteframe)).Methods("GET").Name("pasteframe")
@@ -61,6 +63,25 @@ func about(w http.ResponseWriter, r *http.Request) {
 		log.Printf("ERROR: %v\n", err)
 		http.Error(w, "Meep! We were trying to make the 'about' page but something went wrong.", http.StatusInternalServerError)
 	}
+}
+
+func stats(w http.ResponseWriter, r *http.Request) {
+	adaYoung := os.Getenv("AdaYoung")
+	if usr := r.Context().Value("userID"); usr != nil {
+		if usr.(string) == adaYoung {
+			pbStats := runtime.MemStats{}
+			runtime.ReadMemStats(&pbStats)
+
+			fmt.Fprintf(w, "Go: %s\n", runtime.Version())
+			fmt.Fprintf(w, "Memory used: %s / %s\n", humanize.Bytes(pbStats.Alloc), humanize.Bytes(pbStats.Sys))
+			fmt.Fprintf(w, "Garbage collected: %s\n", humanize.Bytes(pbStats.TotalAlloc))
+			fmt.Fprintf(w, "Concurrent tasks: %d\n", runtime.NumGoroutine())
+
+			return
+		}
+	}
+
+	http.Error(w, "Eep! Go awai~!@", http.StatusUnauthorized)
 }
 
 func pastebin(w http.ResponseWriter, r *http.Request) {
