@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	// Google OAuth2/Drive Packages
+	"github.com/google/uuid"
 	"golang.org/x/oauth2"
 
 	// Local Packages
@@ -30,8 +31,14 @@ func oauthStart(w http.ResponseWriter, r *http.Request, redirectPath string, sco
 	}
 
 	if config, err := utils.OAuthConfigDance(redirectURL, scopes...); err == nil {
-		// var nonce oauth2.AuthCodeOption = oauth2.SetAuthURLParam("nonce", "meow!")
-		authURL := config.AuthCodeURL(state_token, oauth2.AccessTypeOnline) // , nonce)
+		// https://developers.google.com/identity/protocols/OpenIDConnect#authenticationuriparameters
+		nonceStr := "-meow-"
+		if nonceUID, err := uuid.NewRandom(); err == nil {
+			nonceStr = nonceUID.String()
+		}
+
+		var nonce oauth2.AuthCodeOption = oauth2.SetAuthURLParam("nonce", nonceStr)
+		authURL := config.AuthCodeURL(state_token, oauth2.AccessTypeOnline, nonce)
 		http.Redirect(w, r, authURL, http.StatusFound)
 	} else {
 		log.Printf("ERROR: %v\n", err)

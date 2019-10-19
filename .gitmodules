@@ -28,3 +28,6 @@
 [submodule "vendor/github.com/gomodule/redigo"]
 	path = vendor/github.com/gomodule/redigo
 	url = https://github.com/gomodule/redigo
+[submodule "vendor/github.com/google/uuid"]
+	path = vendor/github.com/google/uuid
+	url = https://github.com/google/uuid
