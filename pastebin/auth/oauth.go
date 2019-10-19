@@ -15,7 +15,13 @@ import (
 	"github.com/adayoung/gae-pastebin/pastebin/utils"
 )
 
-func oauthStart(w http.ResponseWriter, r *http.Request, redirectURL string, scopes ...string) {
+func oauthStart(w http.ResponseWriter, r *http.Request, redirectPath string, scopes ...string) {
+	redirectURL := "http://localhost:2019" // D:
+	if r.Host != "" {
+		redirectURL = "https://" + r.Host // FIXME: We just assume we're on https
+	}
+	redirectURL = redirectURL + redirectPath
+
 	state_token, err := utils.SC().Encode("state-token", redirectURL)
 	if err != nil {
 		log.Printf("ERROR: %v\n", err)

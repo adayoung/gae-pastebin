@@ -30,17 +30,7 @@ const gDrive_response_template = `
 var gDriveResponseTemplate = template.Must(template.New("response").Parse(gDrive_response_template))
 
 func authGDriveStart(w http.ResponseWriter, r *http.Request) {
-	// We need to be able to serve an inline script on this route for window.opener.*
-	w.Header().Set("Content-Security-Policy", "default-src 'none'; script-src 'unsafe-inline'")
-
-	var redirectURL string
-	if r.URL.Scheme != "" && r.URL.Host != "" {
-		redirectURL = r.URL.Scheme + "://" + r.URL.Host
-	} else {
-		redirectURL = "http://localhost:2019" // D:
-	}
-	redirectURL = redirectURL + "/pastebin/auth/gdrive/finish"
-	oauthStart(w, r, redirectURL, drive.DriveFileScope)
+	oauthStart(w, r, "/pastebin/auth/gdrive/finish", drive.DriveFileScope)
 }
 
 func authGDriveFinish(w http.ResponseWriter, r *http.Request) {

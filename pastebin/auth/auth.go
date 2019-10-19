@@ -26,14 +26,7 @@ func InitRoutes(r *mux.Router) {
 }
 
 func authLoginStart(w http.ResponseWriter, r *http.Request) {
-	var redirectURL string
-	if r.URL.Scheme != "" && r.URL.Host != "" {
-		redirectURL = r.URL.Scheme + "://" + r.URL.Host
-	} else {
-		redirectURL = "http://localhost:2019" // D:
-	}
-	redirectURL = redirectURL + "/pastebin/auth/google"
-	oauthStart(w, r, redirectURL, "openid", "profile")
+	oauthStart(w, r, "/pastebin/auth/google", "openid", "profile")
 }
 
 func authGoogle(w http.ResponseWriter, r *http.Request) {
