@@ -55,8 +55,8 @@ func authGitHubFinish(w http.ResponseWriter, r *http.Request) {
 		if request, err := http.NewRequest("GET", "https://api.github.com/user", &responseData); err == nil {
 			request.Header.Set("Authorization", "token "+token.AccessToken)
 			if response, err := client.Do(request); err == nil {
+				defer response.Body.Close()
 				if response.StatusCode == 200 {
-					defer response.Body.Close()
 					var user struct {
 						ID int `json:"id"`
 					}
