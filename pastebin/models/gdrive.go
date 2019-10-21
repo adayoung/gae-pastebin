@@ -65,7 +65,7 @@ func GetOAuthClient(r *http.Request) (*http.Client, error) {
 	if token, err := GetOAuthToken(r); err == nil {
 		ctx := r.Context()
 
-		config, cerr := utils.OAuthConfigDance("-redirectURL-", drive.DriveFileScope)
+		config, cerr := utils.OAuthConfigDance("google", "-redirectURL-", drive.DriveFileScope)
 		if cerr != nil {
 			return nil, cerr
 		}

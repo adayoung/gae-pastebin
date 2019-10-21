@@ -16,7 +16,7 @@ import (
 	"github.com/adayoung/gae-pastebin/pastebin/utils"
 )
 
-func oauthStart(w http.ResponseWriter, r *http.Request, redirectPath string, scopes ...string) {
+func oauthStart(w http.ResponseWriter, r *http.Request, provider string, redirectPath string, scopes ...string) {
 	redirectURL := "http://localhost:2019" // D:
 	if r.Host != "" {
 		if !strings.HasPrefix(r.Host, "localhost") {
@@ -37,7 +37,7 @@ func oauthStart(w http.ResponseWriter, r *http.Request, redirectPath string, sco
 		return
 	}
 
-	if config, err := utils.OAuthConfigDance(redirectURL, scopes...); err == nil {
+	if config, err := utils.OAuthConfigDance(provider, redirectURL, scopes...); err == nil {
 		// https://developers.google.com/identity/protocols/OpenIDConnect#authenticationuriparameters
 		var nonce oauth2.AuthCodeOption = oauth2.SetAuthURLParam("nonce", nonceStr)
 		authURL := config.AuthCodeURL(state_token, oauth2.AccessTypeOnline, nonce)
@@ -48,7 +48,7 @@ func oauthStart(w http.ResponseWriter, r *http.Request, redirectPath string, sco
 	}
 }
 
-func oauthFinish(w http.ResponseWriter, r *http.Request, scopes ...string) (string, error) {
+func oauthFinish(w http.ResponseWriter, r *http.Request, provider string, scopes ...string) (string, error) {
 	var err error
 	if err = utils.ProcessForm(r); err != nil {
 		return "", err
@@ -72,7 +72,7 @@ func oauthFinish(w http.ResponseWriter, r *http.Request, scopes ...string) (stri
 	}
 	redirectURL, nonce := splitNonce[0], splitNonce[1]
 
-	config, err := utils.OAuthConfigDance(redirectURL, scopes...)
+	config, err := utils.OAuthConfigDance(provider, redirectURL, scopes...)
 	if err != nil {
 		return "", err
 	}

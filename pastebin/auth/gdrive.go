@@ -30,7 +30,7 @@ const gDrive_response_template = `
 var gDriveResponseTemplate = template.Must(template.New("response").Parse(gDrive_response_template))
 
 func authGDriveStart(w http.ResponseWriter, r *http.Request) {
-	oauthStart(w, r, "/pastebin/auth/gdrive/finish", drive.DriveFileScope)
+	oauthStart(w, r, "google", "/pastebin/auth/gdrive/finish", drive.DriveFileScope)
 }
 
 func authGDriveFinish(w http.ResponseWriter, r *http.Request) {
@@ -38,7 +38,7 @@ func authGDriveFinish(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Security-Policy", "default-src 'none'; script-src 'unsafe-inline'")
 
 	var result string
-	if _, err := oauthFinish(w, r, drive.DriveFileScope); err == nil {
+	if _, err := oauthFinish(w, r, "google", drive.DriveFileScope); err == nil {
 		result = "success"
 	} else {
 		log.Printf("ERROR: %v\n", err)

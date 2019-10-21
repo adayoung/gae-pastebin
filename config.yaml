@@ -5,8 +5,12 @@ webapp:
   StaticDomain: "localhost:2019"
   ListenPort: 2019
 
-googledrive:
+google:
   GCPOAuthCID: 'GCP Console > API Manager > Credentials > OAuth Client ID > Download JSON'
+
+github:
+  clientid: "Paste your GitHub ClientID here"
+  clientsecret: "Paste your GitHub Client Secret here"
 
 recaptcha:
   key: 'Paste your ReCaptcha v3 Site Key here'

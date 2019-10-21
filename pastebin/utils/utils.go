@@ -4,6 +4,7 @@ import (
 	// Go Builtin Packages
 	"context"
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -15,6 +16,7 @@ import (
 
 	// Google OAuth2/Drive Packages
 	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/github"
 	"golang.org/x/oauth2/google"
 
 	// The Gorilla Web Toolkit
@@ -170,14 +172,25 @@ func SC() *securecookie.SecureCookie {
 	return sc
 }
 
-func OAuthConfigDance(redirectURL string, scopes ...string) (*oauth2.Config, error) {
-	GCPOAuthCID := []byte(os.Getenv("GCPOAuthCID"))
-	if config, err := google.ConfigFromJSON([]byte(GCPOAuthCID), scopes...); err == nil {
-		config.RedirectURL = redirectURL
-		return config, nil
-	} else {
-		return config, err
+func OAuthConfigDance(provider string, redirectURL string, scopes ...string) (*oauth2.Config, error) {
+	if provider == "google" {
+		GCPOAuthCID := []byte(os.Getenv("GCPOAuthCID"))
+		if config, err := google.ConfigFromJSON([]byte(GCPOAuthCID), scopes...); err == nil {
+			config.RedirectURL = redirectURL
+			return config, nil
+		} else {
+			return config, err
+		}
+	} else if provider == "github" {
+		GitHubClientID := os.Getenv("GitHubClientID")
+		GitHubClientSecret := os.Getenv("GitHubClientSecret")
+		return &oauth2.Config{
+			ClientID:     GitHubClientID,
+			ClientSecret: GitHubClientSecret,
+			Endpoint:     github.Endpoint,
+		}, nil
 	}
+	return nil, fmt.Errorf("No provider specified for oauth config")
 }
 
 type reCaptchaResponse struct {

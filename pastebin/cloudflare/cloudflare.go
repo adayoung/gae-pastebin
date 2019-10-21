@@ -101,7 +101,7 @@ func doPurge(conn redis.Conn, doItNow bool) {
 					} else if response.StatusCode != 200 {
 						defer response.Body.Close()
 						if data, err := ioutil.ReadAll(response.Body); err != nil {
-							log.Print("ERROR: cloudflare.doPurge returned non-OK, data could not be read, %v\n", err)
+							log.Printf("ERROR: cloudflare.doPurge returned non-OK, data could not be read, %v\n", err)
 						} else {
 							log.Printf("ERROR: cloudflare.doPurge returned non-OK, %s\n", string(data))
 							// TODO: Requeue failed pasteIDs again for cache purge

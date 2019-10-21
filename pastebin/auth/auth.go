@@ -2,10 +2,13 @@ package auth
 
 import (
 	// Go Builtin Packages
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	// The Gorilla Web Toolkit
@@ -22,15 +25,82 @@ func InitRoutes(r *mux.Router) {
 
 	r.HandleFunc("/auth/login", utils.ExtraSugar(authLoginStart)).Methods("GET").Name("authLoginStart")
 	r.HandleFunc("/auth/google", utils.ExtraSugar(authGoogle)).Methods("GET").Name("authGoogle")
+
+	r.HandleFunc("/auth/github/start", utils.ExtraSugar(authGitHubStart)).Methods("GET").Name("authGitHubStart")
+	r.HandleFunc("/auth/github/finish", utils.ExtraSugar(authGitHubFinish)).Methods("GET").Name("authGitHubFinish")
+
 	r.HandleFunc("/auth/logout", utils.ExtraSugar(authLogout)).Methods("GET").Name("authLogout")
 }
 
 func authLoginStart(w http.ResponseWriter, r *http.Request) {
-	oauthStart(w, r, "/pastebin/auth/google", "openid", "profile")
+	oauthStart(w, r, "google", "/pastebin/auth/google", "openid", "profile")
+}
+
+func authGitHubStart(w http.ResponseWriter, r *http.Request) {
+	oauthStart(w, r, "github", "/pastebin/auth/github/finish")
+}
+
+func authGitHubFinish(w http.ResponseWriter, r *http.Request) {
+	_, err := oauthFinish(w, r, "github")
+	if err != nil {
+		log.Printf("ERROR: %v\n", err)
+		http.Error(w, "Meep! We were trying to talk to GitHub but something went wrong.", http.StatusInternalServerError)
+		return
+	}
+
+	if token, err := models.GetOAuthToken(r); err == nil {
+		client := &http.Client{}
+		var responseData bytes.Buffer
+		// https://developer.github.com/apps/building-oauth-apps/authorizing-oauth-apps/#3-use-the-access-token-to-access-the-api
+		if request, err := http.NewRequest("GET", "https://api.github.com/user", &responseData); err == nil {
+			request.Header.Set("Authorization", "token "+token.AccessToken)
+			if response, err := client.Do(request); err == nil {
+				if response.StatusCode == 200 {
+					defer response.Body.Close()
+					var user struct {
+						ID int `json:"id"`
+					}
+					if data, err := ioutil.ReadAll(response.Body); err == nil {
+						if err := json.Unmarshal([]byte(data), &user); err == nil {
+							if err = utils.InitAppSession(w, r, strconv.Itoa(user.ID)); err == nil {
+								utils.ClearOauthCookie(w)
+								http.Redirect(w, r, "/pastebin/", http.StatusFound)
+							} else {
+								log.Printf("ERROR: %v\n", err)
+								http.Error(w, "Meep! We were trying to initialize your session but something went wrong.", http.StatusInternalServerError)
+							}
+						} else {
+							log.Printf("ERROR: %v\n", err)
+							http.Error(w, "Meep! We were trying to parse your details but something went wrong.", http.StatusInternalServerError)
+						}
+					} else {
+						log.Printf("ERROR: %v\n", err)
+						http.Error(w, "Meep! We were trying to read your details but something went wrong.", http.StatusInternalServerError)
+					}
+				} else {
+					if data, err := ioutil.ReadAll(response.Body); err != nil {
+						log.Printf("ERROR: github returned non-OK, data could not be read, %v\n", err)
+					} else {
+						log.Printf("ERROR: github returned non-OK, %s\n", string(data))
+					}
+					http.Error(w, "Meep! We were trying to fetch your details but something isn't right.", response.StatusCode)
+				}
+			} else {
+				log.Printf("ERROR: %v\n", err)
+				http.Error(w, "Meep! We were trying to fetch your details but something went wrong.", http.StatusInternalServerError)
+			}
+		} else {
+			log.Printf("ERROR: %v\n", err)
+			http.Error(w, "Meep! We were trying to build a client for your token but something went wrong.", http.StatusInternalServerError)
+		}
+	} else {
+		log.Printf("ERROR: %v\n", err)
+		http.Error(w, "Meep! We were trying to fetch your token but something went wrong.", http.StatusInternalServerError)
+	}
 }
 
 func authGoogle(w http.ResponseWriter, r *http.Request) {
-	stateNonce, err := oauthFinish(w, r, "openid", "profile")
+	stateNonce, err := oauthFinish(w, r, "google", "openid", "profile")
 	if err != nil {
 		log.Printf("ERROR: %v\n", err)
 		http.Error(w, "Meep! We were trying to talk to Google but something went wrong.", http.StatusInternalServerError)
@@ -54,7 +124,7 @@ func authGoogle(w http.ResponseWriter, r *http.Request) {
 				encodedData := strings.Split(strData, ".")[1]
 
 				if jsonData, err := base64.RawURLEncoding.DecodeString(encodedData); err == nil {
-					if json.Unmarshal([]byte(jsonData), &idToken); err == nil {
+					if err := json.Unmarshal([]byte(jsonData), &idToken); err == nil {
 						if idToken.Nonce != stateNonce {
 							log.Printf("WARNING: Nonce mismatch %s != %s", idToken.Nonce, stateNonce)
 							http.Error(w, "Meep! We were trying to validate your session but something went wrong (nonce mismatch).", http.StatusBadRequest)

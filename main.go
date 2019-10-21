@@ -28,8 +28,13 @@ type config struct {
 		StaticDomain string `yaml:"StaticDomain"`
 	}
 
-	GoogleDrive struct {
+	Google struct {
 		GCPOAuthCID string `yaml:"GCPOAuthCID"`
+	}
+
+	GitHub struct {
+		ClientID     string
+		ClientSecret string
 	}
 
 	ReCAPTCHA struct {
@@ -64,7 +69,11 @@ func main() {
 			os.Setenv("CSRFSecureC", _config.WebApp.CSRFSecureC)
 			os.Setenv("EncryptionK", _config.WebApp.EncryptionK)
 			os.Setenv("StaticDomain", _config.WebApp.StaticDomain)
-			os.Setenv("GCPOAuthCID", _config.GoogleDrive.GCPOAuthCID)
+
+			os.Setenv("GCPOAuthCID", _config.Google.GCPOAuthCID)
+			os.Setenv("GitHubClientID", _config.GitHub.ClientID)
+			os.Setenv("GitHubClientSecret", _config.GitHub.ClientSecret)
+
 			os.Setenv("ReCAPTCHAKey", _config.ReCAPTCHA.Key)
 			os.Setenv("ReCAPTCHASecrt", _config.ReCAPTCHA.Secret)
 			os.Setenv("AdaYoung", _config.AdaYoung)
