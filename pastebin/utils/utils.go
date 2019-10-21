@@ -188,6 +188,7 @@ func OAuthConfigDance(provider string, redirectURL string, scopes ...string) (*o
 			ClientID:     GitHubClientID,
 			ClientSecret: GitHubClientSecret,
 			Endpoint:     github.Endpoint,
+			RedirectURL:  redirectURL,
 		}, nil
 	}
 	return nil, fmt.Errorf("No provider specified for oauth config")
