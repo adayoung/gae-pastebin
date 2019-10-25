@@ -72,21 +72,24 @@
     </noscript>
     <div class="container">
       {{ block "brandlogos" . }}
-      <div class="row hidden-xs">
-        <div class="col-md-12 img-bar">
-          <a href="https://www.achaea.com/" target="_blank" rel="noopener">
-            <img src="//{{ .staticDomain }}/pastebin/static/img/achaea.webp" alt="Play Achaea!">
-          </a>
-          <a href="https://www.lusternia.com/" target="_blank" rel="noopener">
-            <img src="//{{ .staticDomain }}/pastebin/static/img/lusternia.webp" alt="Play Lusternia!">
-          </a>
-          <a href="https://www.starmourn.com/" target="_blank" rel="noopener">
-            <img src="//{{ .staticDomain }}/pastebin/static/img/starmourn.webp" alt="Play Starmourn!">
-          </a>
-          <div class="pull-right">
-            <a href="https://www.mudlet.org/" target="_blank" rel="noopener">
-              <img src="//{{ .staticDomain }}/pastebin/static/img/mudlet.webp" alt="Play a MUD on Mudlet!">
+      <div class="row hidden-sm hidden-xs">
+        <div class="img-bar">
+          <div class="col-md-4">
+            <a href="https://www.ironrealms.com/" target="_blank" rel="noopener">
+              <img src="//{{ .staticDomain }}/pastebin/static/img/iregames.webp" title="Play IRE Games!" alt="IRE games logos">
             </a>
+          </div>
+          <div class="col-md-4 text-center">
+            <a href="https://getfirefox.com/" target="_blank" rel="noopener">
+              <img src="//{{ .staticDomain }}/pastebin/static/img/fflogo.webp" title="Get the fastest Firefox ever!" alt="Firefox logo">
+            </a>
+          </div>
+          <div class="col-md-4">
+            <div class="pull-right">
+              <a href="https://www.mudlet.org/" target="_blank" rel="noopener">
+                <img src="//{{ .staticDomain }}/pastebin/static/img/mudlet.webp" title="Play a MUD on Mudlet!" alt="Mudlet logo">
+              </a>
+            </div>
           </div>
         </div>
       </div>
