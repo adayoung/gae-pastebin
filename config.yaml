@@ -12,6 +12,10 @@ github:
   clientid: "Paste your GitHub ClientID here"
   clientsecret: "Paste your GitHub Client Secret here"
 
+discord:
+  clientid: "Paste your Discord ClientID here"
+  clientsecret: "Paste your Discord Client Secret here"
+
 recaptcha:
   key: 'Paste your ReCaptcha v3 Site Key here'
   secret: 'Paste your ReCaptcha v3 Secret Key here'

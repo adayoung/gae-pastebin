@@ -37,6 +37,11 @@ type config struct {
 		ClientSecret string
 	}
 
+	Discord struct {
+		ClientID     string
+		ClientSecret string
+	}
+
 	ReCAPTCHA struct {
 		Key    string
 		Secret string
@@ -73,6 +78,8 @@ func main() {
 			os.Setenv("GCPOAuthCID", _config.Google.GCPOAuthCID)
 			os.Setenv("GitHubClientID", _config.GitHub.ClientID)
 			os.Setenv("GitHubClientSecret", _config.GitHub.ClientSecret)
+			os.Setenv("DiscordClientID", _config.Discord.ClientID)
+			os.Setenv("DiscordClientSecret", _config.Discord.ClientSecret)
 
 			os.Setenv("ReCAPTCHAKey", _config.ReCAPTCHA.Key)
 			os.Setenv("ReCAPTCHASecrt", _config.ReCAPTCHA.Secret)

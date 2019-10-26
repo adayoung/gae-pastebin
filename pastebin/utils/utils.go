@@ -190,8 +190,22 @@ func OAuthConfigDance(provider string, redirectURL string, scopes ...string) (*o
 			Endpoint:     github.Endpoint,
 			RedirectURL:  redirectURL,
 		}, nil
+	} else if provider == "discord" {
+		DiscordClientID := os.Getenv("DiscordClientID")
+		DiscordClientSecret := os.Getenv("DiscordClientSecret")
+		return &oauth2.Config{
+			ClientID:     DiscordClientID,
+			ClientSecret: DiscordClientSecret,
+			// https://discordapp.com/developers/docs/topics/oauth2#shared-resources-oauth2-urls
+			Endpoint: oauth2.Endpoint{
+				AuthURL:  "https://discordapp.com/api/oauth2/authorize",
+				TokenURL: "https://discordapp.com/api/oauth2/token",
+			},
+			RedirectURL: redirectURL,
+			Scopes:      scopes,
+		}, nil
 	}
-	return nil, fmt.Errorf("No provider specified for oauth config")
+	return nil, fmt.Errorf("No supported provider specified for oauth config")
 }
 
 type reCaptchaResponse struct {

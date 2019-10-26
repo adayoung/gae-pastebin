@@ -29,6 +29,9 @@ func InitRoutes(r *mux.Router) {
 	r.HandleFunc("/auth/github/start", utils.ExtraSugar(authGitHubStart)).Methods("GET").Name("authGitHubStart")
 	r.HandleFunc("/auth/github/finish", utils.ExtraSugar(authGitHubFinish)).Methods("GET").Name("authGitHubFinish")
 
+	r.HandleFunc("/auth/discord/start", utils.ExtraSugar(authDiscordStart)).Methods("GET").Name("authDiscordStart")
+	r.HandleFunc("/auth/discord/finish", utils.ExtraSugar(authDiscordFinish)).Methods("GET").Name("authDiscordFinish")
+
 	r.HandleFunc("/auth/logout", utils.ExtraSugar(authLogout)).Methods("GET").Name("authLogout")
 }
 
@@ -38,6 +41,69 @@ func authLoginStart(w http.ResponseWriter, r *http.Request) {
 
 func authGitHubStart(w http.ResponseWriter, r *http.Request) {
 	oauthStart(w, r, "github", "/pastebin/auth/github/finish")
+}
+
+func authDiscordStart(w http.ResponseWriter, r *http.Request) {
+	oauthStart(w, r, "discord", "/pastebin/auth/discord/finish", "identify")
+}
+
+func authDiscordFinish(w http.ResponseWriter, r *http.Request) {
+	_, err := oauthFinish(w, r, "discord", "identify")
+	if err != nil {
+		log.Printf("ERROR: %v\n", err)
+		http.Error(w, "Meep! We were trying to talk to Discord but something went wrong.", http.StatusInternalServerError)
+		return
+	}
+
+	if token, err := models.GetOAuthToken(r); err == nil {
+		client := &http.Client{}
+		var responseData bytes.Buffer
+		// https://discordapp.com/developers/docs/resources/user#get-current-user
+		if request, err := http.NewRequest("GET", "https://discordapp.com/api/v6/users/@me", &responseData); err == nil {
+			request.Header.Set("Authorization", "Bearer "+token.AccessToken)
+			if response, err := client.Do(request); err == nil {
+				defer response.Body.Close()
+				if response.StatusCode == 200 {
+					var user struct {
+						ID string `json:"id"`
+					}
+					if data, err := ioutil.ReadAll(response.Body); err == nil {
+						if err := json.Unmarshal([]byte(data), &user); err == nil {
+							if err = utils.InitAppSession(w, r, user.ID); err == nil {
+								utils.ClearOauthCookie(w)
+								http.Redirect(w, r, "/pastebin/", http.StatusFound)
+							} else {
+								log.Printf("ERROR: %v\n", err)
+								http.Error(w, "Meep! We were trying to initialize your session but something went wrong.", http.StatusInternalServerError)
+							}
+						} else {
+							log.Printf("ERROR: %v\n", err)
+							http.Error(w, "Meep! We were trying to parse your details but something went wrong.", http.StatusInternalServerError)
+						}
+					} else {
+						log.Printf("ERROR: %v\n", err)
+						http.Error(w, "Meep! We were trying to read your details but something went wrong.", http.StatusInternalServerError)
+					}
+				} else {
+					if data, err := ioutil.ReadAll(response.Body); err != nil {
+						log.Printf("ERROR: discord returned non-OK, data could not be read, %v\n", err)
+					} else {
+						log.Printf("ERROR: discord returned non-OK, %s\n", string(data))
+					}
+					http.Error(w, "Meep! We were trying to fetch your details but something isn't right.", response.StatusCode)
+				}
+			} else {
+				log.Printf("ERROR: %v\n", err)
+				http.Error(w, "Meep! We were trying to fetch your details but something went wrong.", http.StatusInternalServerError)
+			}
+		} else {
+			log.Printf("ERROR: %v\n", err)
+			http.Error(w, "Meep! We were trying to build a client for your token but something went wrong.", http.StatusInternalServerError)
+		}
+	} else {
+		log.Printf("ERROR: %v\n", err)
+		http.Error(w, "Meep! We were trying to fetch your token but something went wrong.", http.StatusInternalServerError)
+	}
 }
 
 func authGitHubFinish(w http.ResponseWriter, r *http.Request) {
