@@ -35,7 +35,8 @@ func Http404(w http.ResponseWriter, r *http.Request) {
 // http://andyrees.github.io/2015/your-code-a-mess-maybe-its-time-to-bring-in-the-decorators/
 func ExtraSugar(f http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), "staticDomain", os.Getenv("StaticDomain"))
+		staticDomain := os.Getenv("StaticDomain")
+		ctx := context.WithValue(r.Context(), "staticDomain", staticDomain)
 
 		if session, err := sessionStore().Get(r, "_app_session"); err != nil {
 			log.Printf("WARNING: sessionStore.Get call failed for _app_session, %v", err)
@@ -54,7 +55,7 @@ func ExtraSugar(f http.HandlerFunc) http.HandlerFunc {
 
 		w.Header().Set("Ada", "*skips about* Hi! <3 ^_^")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
-		w.Header().Set("Content-Security-Policy", "default-src 'self' "+os.Getenv("StaticDomain")+"; font-src netdna.bootstrapcdn.com fonts.gstatic.com; script-src 'self' netdna.bootstrapcdn.com ajax.googleapis.com linkhelp.clients.google.com www.google-analytics.com cdnjs.cloudflare.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ "+os.Getenv("StaticDomain")+"; style-src 'self' netdna.bootstrapcdn.com cdnjs.cloudflare.com "+os.Getenv("StaticDomain")+" 'unsafe-inline'; img-src 'self' data: www.google-analytics.com stats.g.doubleclick.net "+os.Getenv("StaticDomain")+"; object-src 'none'; media-src 'none'; connect-src 'self' *.googleusercontent.com; frame-src 'self' "+os.Getenv("StaticDomain")+" blob: https://www.google.com/recaptcha/; frame-ancestors 'none'")
+		w.Header().Set("Content-Security-Policy", getCSP(staticDomain))
 		w.Header().Set("Strict-Transport-Security", "max-age=15552000")
 
 		if strings.Contains(strings.ToLower(r.UserAgent()), "msie") {
