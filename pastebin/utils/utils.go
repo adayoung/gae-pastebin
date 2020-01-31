@@ -3,6 +3,7 @@ package utils
 import (
 	// Go Builtin Packages
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -45,7 +46,7 @@ func ExtraSugar(f http.HandlerFunc) http.HandlerFunc {
 			userID := session.Values["userID"]
 			if userID != nil {
 				ctx = context.WithValue(ctx, "userID", userID)
-				if err := InitAppSession(w, r, userID.(string)); err != nil {
+				if err := InitAppSession(w, r, userID.(string), true); err != nil {
 					log.Printf("WARNING: InitAppSession call failed in context, %v", err)
 				}
 			}
@@ -118,7 +119,7 @@ func CheckSession(r *http.Request, paste_id string) (bool, error) {
 	return false, nil
 }
 
-func InitAppSession(w http.ResponseWriter, r *http.Request, userID string) error {
+func InitAppSession(w http.ResponseWriter, r *http.Request, userID string, refresh bool) error {
 	if session, err := sessionStore().Get(r, "_app_session"); err != nil {
 		return err
 	} else {
@@ -127,6 +128,10 @@ func InitAppSession(w http.ResponseWriter, r *http.Request, userID string) error
 			MaxAge:   86400 * 3,
 			HttpOnly: true,
 			Secure:   os.Getenv("CSRFSecureC") == "true",
+		}
+
+		if !refresh {
+			userID = fmt.Sprintf("%x", sha256.Sum256([]byte(userID)))
 		}
 
 		session.Values["userID"] = userID

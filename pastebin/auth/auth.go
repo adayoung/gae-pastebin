@@ -69,7 +69,7 @@ func authDiscordFinish(w http.ResponseWriter, r *http.Request) {
 					}
 					if data, err := ioutil.ReadAll(response.Body); err == nil {
 						if err := json.Unmarshal([]byte(data), &user); err == nil {
-							if err = utils.InitAppSession(w, r, user.ID); err == nil {
+							if err = utils.InitAppSession(w, r, user.ID, false); err == nil {
 								utils.ClearOauthCookie(w)
 								http.Redirect(w, r, "/pastebin/", http.StatusFound)
 							} else {
@@ -128,7 +128,7 @@ func authGitHubFinish(w http.ResponseWriter, r *http.Request) {
 					}
 					if data, err := ioutil.ReadAll(response.Body); err == nil {
 						if err := json.Unmarshal([]byte(data), &user); err == nil {
-							if err = utils.InitAppSession(w, r, strconv.Itoa(user.ID)); err == nil {
+							if err = utils.InitAppSession(w, r, strconv.Itoa(user.ID), false); err == nil {
 								utils.ClearOauthCookie(w)
 								http.Redirect(w, r, "/pastebin/", http.StatusFound)
 							} else {
@@ -194,7 +194,7 @@ func authGoogle(w http.ResponseWriter, r *http.Request) {
 						if idToken.Nonce != stateNonce {
 							log.Printf("WARNING: Nonce mismatch %s != %s", idToken.Nonce, stateNonce)
 							http.Error(w, "Meep! We were trying to validate your session but something went wrong (nonce mismatch).", http.StatusBadRequest)
-						} else if err = utils.InitAppSession(w, r, idToken.UserID); err == nil {
+						} else if err = utils.InitAppSession(w, r, idToken.UserID, false); err == nil {
 							utils.ClearOauthCookie(w)
 							http.Redirect(w, r, "/pastebin/", http.StatusFound)
 						} else {
