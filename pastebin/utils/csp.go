@@ -16,7 +16,6 @@ func getCSP(staticDomain string) string {
 		"script-src": {
 			"code.jquery.com",
 			"stackpath.bootstrapcdn.com",
-			"www.google-analytics.com",
 			"cdnjs.cloudflare.com",
 			"https://www.google.com/recaptcha/",
 			"https://www.gstatic.com/recaptcha/",
@@ -31,7 +30,6 @@ func getCSP(staticDomain string) string {
 		"img-src": {
 			"'self'",
 			"data:",
-			"www.google-analytics.com",
 			"stats.g.doubleclick.net",
 			staticDomain,
 		},
