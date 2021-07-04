@@ -1,33 +1,3 @@
 [submodule "static/js/PACE"]
 	path = static/js/PACE
 	url = https://github.com/HubSpot/PACE
-[submodule "vendor/github.com/gorilla/mux"]
-	path = vendor/github.com/gorilla/mux
-	url = https://github.com/gorilla/mux
-[submodule "vendor/github.com/gorilla/csrf"]
-	path = vendor/github.com/gorilla/csrf
-	url = https://github.com/gorilla/csrf
-[submodule "vendor/github.com/jmoiron/sqlx"]
-	path = vendor/github.com/jmoiron/sqlx
-	url = https://github.com/jmoiron/sqlx
-[submodule "vendor/github.com/lib/pq"]
-	path = vendor/github.com/lib/pq
-	url = https://github.com/lib/pq
-[submodule "vendor/github.com/gorilla/sessions"]
-	path = vendor/github.com/gorilla/sessions
-	url = https://github.com/gorilla/sessions
-[submodule "vendor/golang.org/x/oauth2"]
-	path = vendor/golang.org/x/oauth2
-	url = https://go.googlesource.com/oauth2
-[submodule "vendor/github.com/gorilla/securecookie"]
-	path = vendor/github.com/gorilla/securecookie
-	url = https://github.com/gorilla/securecookie
-[submodule "vendor/google.golang.org/api"]
-	path = vendor/google.golang.org/api
-	url = https://code.googlesource.com/google-api-go-client
-[submodule "vendor/github.com/gomodule/redigo"]
-	path = vendor/github.com/gomodule/redigo
-	url = https://github.com/gomodule/redigo
-[submodule "vendor/github.com/google/uuid"]
-	path = vendor/github.com/google/uuid
-	url = https://github.com/google/uuid
