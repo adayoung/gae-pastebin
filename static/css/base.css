@@ -1,6 +1,10 @@
+html {
+  scroll-behavior: smooth;
+}
+
 .back-to-top {
   position: fixed;
-  top: 2em;
+  top: 5em;
   right: 0px;
   text-decoration: none;
   color: #000000;
