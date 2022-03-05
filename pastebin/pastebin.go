@@ -49,7 +49,11 @@ func InitRoutes(s *mux.Router) {
 	auth.InitRoutes(r)
 
 	CSRFAuthKey := os.Getenv("CSRFAuthKey")
-	CSRF := csrf.Protect([]byte(CSRFAuthKey), csrf.Secure(os.Getenv("CSRFSecureC") == "true"))
+	CSRF := csrf.Protect(
+		[]byte(CSRFAuthKey),
+		csrf.SameSite(csrf.SameSiteStrictMode),
+		csrf.Secure(os.Getenv("CSRFSecureC") == "true"),
+	)
 	http.Handle("/pastebin/", CSRF(r))
 }
 
