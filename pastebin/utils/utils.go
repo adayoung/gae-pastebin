@@ -57,7 +57,7 @@ func ExtraSugar(f http.HandlerFunc) http.HandlerFunc {
 		w.Header().Set("Ada", "*skips about* Hi! <3 ^_^")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("Content-Security-Policy", getCSP(staticDomain))
-		w.Header().Set("Strict-Transport-Security", "max-age=15552000")
+		w.Header().Set("Strict-Transport-Security", "max-age=31536000")
 
 		if strings.Contains(strings.ToLower(r.UserAgent()), "msie") {
 			w.Header().Set("X-UA-Compatible", "IE=edge,chrome=1")
@@ -84,9 +84,10 @@ func UpdateSession(w http.ResponseWriter, r *http.Request, paste_id string, remo
 			MaxAge:   0,
 			HttpOnly: true,
 			Secure:   os.Getenv("CSRFSecureC") == "true",
+			SameSite: http.SameSiteStrictMode,
 		}
 
-		if remove == true {
+		if remove {
 			_paste_id := paste_id[1:]
 			delete(session.Values, _paste_id)
 		} else {
@@ -147,6 +148,7 @@ func ClearAppSession(w http.ResponseWriter) {
 		MaxAge:   -1,
 		HttpOnly: true,
 		Secure:   os.Getenv("CSRFSecureC") == "true",
+		SameSite: http.SameSiteStrictMode,
 	})
 }
 
@@ -158,6 +160,7 @@ func ClearOauthCookie(w http.ResponseWriter) {
 		MaxAge:   -1,
 		HttpOnly: true,
 		Secure:   os.Getenv("CSRFSecureC") == "true",
+		SameSite: http.SameSiteStrictMode,
 	})
 }
 

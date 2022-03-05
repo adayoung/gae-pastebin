@@ -152,6 +152,7 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 				MaxAge:   -1,
 				Secure:   os.Getenv("CSRFSecureC") == "true",
 				HttpOnly: true,
+				SameSite: http.SameSiteStrictMode,
 			})
 		}
 
@@ -161,6 +162,7 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			MaxAge:   0,
 			Secure:   os.Getenv("CSRFSecureC") == "true",
 			HttpOnly: true,
+			SameSite: http.SameSiteStrictMode,
 		})
 
 		utils.ClearOauthCookie(w)
@@ -206,6 +208,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 				MaxAge:   -1,
 				Secure:   os.Getenv("CSRFSecureC") == "true",
 				HttpOnly: true,
+				SameSite: http.SameSiteStrictMode,
 			})
 		} else {
 			if !showDeleteBtn {
