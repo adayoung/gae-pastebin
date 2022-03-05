@@ -57,6 +57,7 @@ func ExtraSugar(f http.HandlerFunc) http.HandlerFunc {
 		w.Header().Set("Ada", "*skips about* Hi! <3 ^_^")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("Content-Security-Policy", getCSP(staticDomain))
+		w.Header().Set("Referrer-Policy", "no-referrer-when-downgrade")
 		w.Header().Set("Strict-Transport-Security", "max-age=31536000")
 
 		if strings.Contains(strings.ToLower(r.UserAgent()), "msie") {
