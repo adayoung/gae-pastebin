@@ -7,16 +7,16 @@
 
     document.addEventListener('scroll', () => {
       if (!rateLimit) {
-        if (window.scrollY > offset) {
-          document.getElementById('back-to-top').classList.remove('d-none');
-        } else {
-          document.getElementById('back-to-top').classList.add('d-none');
-        }
+        window.requestAnimationFrame(function() {
+          if (window.scrollY > offset) {
+            document.getElementById('back-to-top').classList.remove('d-none');
+          } else {
+            document.getElementById('back-to-top').classList.add('d-none');
+          }
+          rateLimit = false;
+        });
 
         rateLimit = true;
-        setTimeout(() => {
-          rateLimit = false;
-        }, 150);
       }
     });
   });
