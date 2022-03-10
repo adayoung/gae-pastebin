@@ -10,12 +10,12 @@ func getCSP(staticDomain string) string {
 			staticDomain,
 		},
 		"font-src": {
-			"stackpath.bootstrapcdn.com",
+			"cdn.jsdelivr.net",
 			"fonts.gstatic.com",
 		},
 		"script-src": {
 			"code.jquery.com",
-			"stackpath.bootstrapcdn.com",
+			"cdn.jsdelivr.net",
 			"cdnjs.cloudflare.com",
 			"https://www.google.com/recaptcha/",
 			"https://www.gstatic.com/recaptcha/",
@@ -23,14 +23,13 @@ func getCSP(staticDomain string) string {
 		},
 		"style-src": {
 			"'unsafe-inline'",
-			"stackpath.bootstrapcdn.com",
+			"cdn.jsdelivr.net",
 			"cdnjs.cloudflare.com",
 			staticDomain,
 		},
 		"img-src": {
 			"'self'",
 			"data:",
-			"stats.g.doubleclick.net",
 			staticDomain,
 		},
 		"connect-src": {

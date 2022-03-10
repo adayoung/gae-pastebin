@@ -1,45 +1,32 @@
-@font-face {
-  font-family: 'Love Ya Like A Sister';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Love Ya Like A Sister Regular'), local('LoveYaLikeASister-Regular'), url(https://fonts.gstatic.com/s/loveyalikeasister/v7/LzkxWS-af0Br2Sk_YgSJY9N6oT7VVZB_kATuDWj1CMI.woff2) format('woff2');
-}
-
 body {
   background: url("/pastebin/static/img/bg.png") repeat fixed 0% 0% transparent;
-  font-size: 18px;
-}
-
-.spacer {
-  padding: 5px;
 }
 
 #pastebar {
-  margin-bottom: 10px;
-
-  -moz-border-radius: 5px;
-  -webkit-border-radius: 5px;
-  border-radius: 0px;
-
-  border-top: 0px;
-  border-left: 0px;
-  border-right: 0px;
-  background-color: transparent;
-
-  font-family: 'Love Ya Like A Sister', cursive;
+  background-color: transparent !important;
+  border-bottom: 1px solid #e7e7e7;
+  padding: 0;
 }
 
 #pastebar .navbar-brand {
-  font-size: 200%;
+  font-size: 2rem;
 }
 
-#searchdiv {
-  margin-top: 10px;
+.img-bar img {
+  max-height: 3.125rem;
 }
 
-#searchbox {
-  background-color:transparent;
-  color:#FFF;
+@media (max-width: 767px) {
+  #searchbox {
+    margin-bottom: 0.67rem;
+  }
+}
+
+/* paste form */
+input,
+textarea {
+  background-color: transparent !important;
+  color: #fff !important;
 }
 
 textarea#content {
@@ -47,102 +34,35 @@ textarea#content {
   height: 60vh;
 }
 
-.havejs {
-  display: none;
+#dest-group {
+  max-height: 2.375rem;
 }
 
-.tehcontrols {
-  display: none;
-}
-
-#spinner {
-  display: none;
-}
-
-#eep {
-  display: none;
-}
-
-#eepnokb {
-  display: none;
-  margin-bottom: 10px;
-}
-
-/* Sticky footer styles - http://getbootstrap.com/examples/sticky-footer/
--------------------------------------------------- */
-
-html,
-body {
-  height: 100%;
-  /* The html and body elements cannot have any padding or margin. */
-}
-
-/* Wrapper for page content to push down footer */
-#wrap {
-  min-height: 100%;
-  height: auto !important;
-  height: 100%;
-  /* Negative indent footer by its height */
-  margin: 0 auto -30px;
-  /* Pad bottom by footer height */
-  padding: 0 0 30px;
-}
-
-/* Set the fixed height of the footer here */
-#footer {
-  height: 30px;
-}
-
-/* paste.html */
+/* paste frame */
 pre {
-  border: 0px;
+  border: 0;
   white-space: pre-wrap;
   counter-reset: line-numbering 0;
 }
 
 pre .line::before {
-    content: counter(line-numbering);
-    counter-increment: line-numbering;
-    display: inline-block;
-    border-right: 1px solid #2e6ca2;
-    margin-right: 5px;
-    /* space after numbers */
-    width: 2.6em;
-    text-align: right;
-    opacity: 0.5;
-    user-select: none;
+  content: counter(line-numbering);
+  counter-increment: line-numbering;
+  display: inline-block;
+  border-right: 1px solid #2e6ca2;
+  margin-right: 0.5rem;
+  /* space after numbers */
+  width: 2.5rem;
+  text-align: right;
+  opacity: 0.5;
+  user-select: none;
 }
 
 article iframe {
-  border: 0px;
-
-  -moz-border-radius: 5px;
-  -webkit-border-radius: 5px;
-  border-radius: 5px;
+  border: 0;
+  border-radius: 0.25rem;
 
   width: 100%;
   min-height: 60vh;
   background: #fff;
-}
-
-.grecaptcha-badge {
-  margin-bottom: 40px;
-}
-
-.grecaptcha-text {
-  display: none;
-}
-
-@media (max-width: 900px) {
-  .grecaptcha-badge {
-    display: none;
-  }
-
-  .grecaptcha-text {
-    display: block;
-  }
-}
-
-.img-bar img {
-  max-height: 50px;
 }

@@ -1,48 +1,79 @@
-$(document).ready(function(){
-  $('.havejs').show();
+'use strict';
 
-  $('#loadmore').on('click', function(e) {
-    e.preventDefault();
+(function () {
+  window.addEventListener('DOMContentLoaded', () => {
+    // Javascript enabled features
+    document.getElementById('results').classList.remove('d-none');
+    document.getElementById('loadmore').classList.remove('d-none');
 
-    $(this).addClass('disabled');
-    $(this).text('Please wait ...');
+    document.getElementById('loadmore').addEventListener('click', function (e) {
+      e.preventDefault();
 
-    $.getJSON(location.href + '&c=' + $(this).data('cursor')).done(function(data) {
-      $('#loadmore').data('cursor', data.cursor);
-      $('#loadmore').attr('href', location.href + '&c=' + data.cursor);
+      this.classList.add('disabled');
+      this.textContent = "Please wait...";
 
-      if (data.paste.results == null) {
-        $('#loadmore').text('No more results ...');
-        $('#loadmore').fadeOut(1500);
-        return false;
-      }
-
-      var lastindex = parseInt($('#results tbody tr').last().find('td').html()) + 1 || 1;
-
-      for (var i = 0; i < data.paste.results.length; i++) {
-        var tags = data.paste.results[i].tags;
-        var htags = [];
-        for (var j=0; j < tags.length; j++) {
-          var label_class = data.paste.tags.indexOf(tags[j]) > -1 ? 'primary' : 'default';
-          htags.push('<a class="label label-' + label_class + '" href="/pastebin/search/?tags=' + tags[j] + '">' + tags[j] + '</a>');
+      let url = new URL(location.href);
+      url.searchParams.set('c', this.dataset.cursor);
+      fetch(url, {
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
         }
-        var title = data.paste.results[i].title || data.paste.results[i].paste_id;
-        $('#results tbody').append('<tr class="ajaxload"><td>' + parseInt(lastindex + i)  +  '</td><td><a href="/pastebin/' + data.paste.results[i].paste_id  + '">' + title + '</a></td><td title="' + data.paste.results[i].i_date + '">' + data.paste.results[i].date + '</td><td>' + htags.join(' ') +  '</td></tr>');
-      }
+      }).then(response => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          alert(`Oops, we couldn't get search results :( The following was encountered:\n\n${response.status}: ${response.statusText}`);
+          throw "-flails-";
+        }
+      }).then(result => {
+        this.dataset.cursor = result.cursor;
+        if (result.paste.results == null) {
+          this.textContent = "No more results ...";
+          this.classList.add('d-none');
+        } else {
+          this.href = url.toString();
+          this.textContent = "Load more results";
+          this.classList.remove('disabled');
 
-      if (data.paste.results.length < 10) {
-        $('#loadmore').text('No more results ...');
-        $('#loadmore').fadeOut(1500);
-      } else {
-        $('#loadmore').removeClass('disabled');
-        $('#loadmore').text('Load more results');
-      }
+          result.paste.results.forEach(item => {
+            let tags = [];
+            item.tags.forEach(tag => {
+              let colour = result.paste.tags.indexOf(tag) > -1 ? 'primary' : 'secondary';
+              tags.push(`
+                <a class="text-decoration-none" href="/pastebin/search/?tags=${tag}">
+                  <span class="badge bg-${colour} me-1">${tag}</span>
+                </a>
+              `);
+            });
 
-      $('.ajaxload').fadeIn();
-    }).fail(function(e){
-      alert("Oops, we couldn't get search results :( The following was encountered:\n\n" + e.status + " - " + e.statusText + '\n' + e.responseText);
+            if (item.title.length == 0) {
+              item.title = item.paste_id;
+            }
+
+            let row = `
+              <tr>
+                <td><a class="text-decoration-none" href="/pastebin/${item.paste_id}">${item.title}</a></td>
+                <td title="${item.i_date}">${item.date}</td>
+                <td>${tags.join('')}</td>
+              </tr>
+            `;
+            document.getElementById('results-body').insertAdjacentHTML("beforeend", row);
+
+            if (result.paste.results.length < 10) {
+              this.classList.add('d-none');
+            }
+          });
+        }
+      }).catch(error => {
+        if (error != "-flails-") {
+          alert("Oops, we couldn't get search results :( Maybe the network pipes aren't up?");
+        }
+
+        this.textContent = "Load more results";
+        this.classList.remove('disabled');
+      });
     });
-  });
 
-  $('#loadmore').click();
-});
+    document.getElementById('loadmore').click();
+  });
+})();

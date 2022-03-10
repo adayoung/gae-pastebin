@@ -2,19 +2,11 @@ html {
   scroll-behavior: smooth;
 }
 
-.back-to-top {
+#back-to-top {
+  border-radius: 0;
+
   position: fixed;
   top: 5em;
-  right: 0px;
-  text-decoration: none;
-  color: #000000;
-  background-color: rgba(235, 235, 235, 0.80);
-  font-size: 12px;
-  padding: 1em;
-  display: none;
+  right: 0;
   z-index: 999;
-}
-
-.back-to-top:hover {
-  background-color: rgba(135, 135, 135, 0.50);
 }

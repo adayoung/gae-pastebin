@@ -1,19 +1,22 @@
-$(document).ready(function(){
-  $('.tagbox').bind('input propertychange', function(){
-    var q = $(this).val().toLowerCase().replace(RegExp('[^a-z0-9 ]+', 'g'), '', 'g');
+'use strict';
 
-    q = q.split(' ');
-    var p = [];
+window.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.tagbox').forEach(element => {
+    element.addEventListener('input', function () {
+      this.value = this.value.toLowerCase().replace(RegExp('[^a-z0-9 ]+', 'g'), '', 'g');
+      this.value = this.value.replace(RegExp('[ ]+', 'g'), ' ', 'g');
 
-    for (var i=0; i < q.length; i++) {
-      if (q[i].length <= 15 && p.length < 15) {
-        if ($.inArray(q[i], p) < 0){
-          p.push(q[i]);
+      let tags = this.value.split(' ');
+      tags = Array.from(new Set(tags)); // remove duplicates
+      tags = tags.slice(0, 15); // tags max limit is 15 tags
+      tags = tags.map(e => { // tag max length is 15 characters
+        if (e.length > 15) {
+          e = e.substr(0, 15);
         }
-      }
-    }
+        return e
+      });
 
-    $(this).val(p.join(' ').replace(RegExp('[ ]+', 'g'), ' ', 'g'));
+      this.value = tags.join(' ');
+    });
   });
 });
-

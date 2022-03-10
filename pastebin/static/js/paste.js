@@ -1,107 +1,117 @@
-var scale_iframe = function(tehframe){
-  $(tehframe).css('overflow', 'hidden');
+'use strict';
 
-  // the lines below need to be jQuery'd :o
-  try {
-    if (tehframe.contentDocument.body) {
-      $(tehframe).css('height', tehframe.contentDocument.body.scrollHeight + 30);
-    }
-  } catch (e) {}
-};
+(function () {
+  window.addEventListener('DOMContentLoaded', () => {
+    // Fancy delete button
+    document.getElementById('deleteform').addEventListener('submit', function (e) {
+      e.preventDefault();
 
-$('iframe').on('load', function(){
-  scale_iframe(this);
-});
-
-var meep = function(l, f){
-  $(l).append("<span>.Meep! I couldn't get the content -flails- ("+f.responseText+")</span>");
-  console.log(f);
-}
-
-var loadContent = function(content_link, loader) {
-  if ($('input[name=format]').val() === "html") {
-    var content = document.createElement('iframe');
-    content.sandbox="allow-same-origin";
-    $('article').append(content);
-    $(content).on('load', function(){
-      scale_iframe(content);
+      document.getElementById('delete-btn').setAttribute('disabled', true);
+      let data = new FormData(this);
+      fetch(this.getAttribute('action'), {
+        body: data,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        method: this.getAttribute('method'),
+      }).then(response => {
+        if (response.ok) {
+          return response.text();
+        } else {
+          alert(`Oops, we couldn't delete this paste :( The following was encountered:\n\n${response.status}: ${response.statusText}`);
+          throw "-flails-";
+        }
+      }).then(result => {
+        alert("BAM!@ Okay! This paste is no longer available.");
+        location.replace(result);
+      }).catch(error => {
+        if (error != "-flails-") {
+          alert("Oops, we couldn't delete your paste :( Maybe the network pipes aren't up?");
+          document.getElementById('delete-btn').removeAttribute('disabled');
+        }
+      });
     });
 
-    if ($('#driveHosted').length > 0) {
-      $(loader).append("<span>.</span>");
-      $.get(content_link, function(data){
-        var blob = new Blob([data], {type: 'text/html'});
-        var url = URL.createObjectURL(blob);
-        content.src = url;
-        $(loader).append("<span>.done!</span>");
-        $(loader).slideUp();
-      }).fail(function(f){
-        meep(loader, f);
+    // Iframe auto-resize
+    document.getElementById('content-frame').addEventListener('load', function () {
+      try {
+        let height = this.contentDocument.body.scrollHeight;
+        this.style.height = height + 24 + "px";
+      } catch { };
+    });
+
+    // Fancy content fetch
+    let fetchContent = function(contentURL) {
+      fetch(contentURL).then(response => {
+        if (response.ok) {
+          if (document.getElementById('format').value == 'html') {
+            return response.blob();
+          } else {
+            return response.text();
+          }
+        } else {
+          document.getElementById('loader-result').textContent = `Meep! I couldn't get the content -flails- (${response.status}: ${response.statusText})`;
+          throw "-flails-";
+        }
+      }).then(result => {
+        if (document.getElementById('format').value == 'html') {
+          let blob = new Blob([result], { type: 'text/html' });
+          let url = URL.createObjectURL(blob);
+          document.getElementById('content-frame').src = url;
+          document.getElementById('content-frame').classList.remove('d-none');
+          document.getElementById('loader').classList.add('d-none');
+        } else {
+          document.getElementById('content-text').classList.remove('d-none');
+          // document.getElementById('content-text').textContent = result;
+          document.getElementById('content-text').innerHTML = result.replace(/^(.*)$/mg, "<span class=\"line\">$1</span>")
+
+          document.getElementById('loader').classList.add('d-none');
+        }
+      }).catch(error => {
+        if (error != "-flails-") {
+          document.getElementById('loader-result').textContent = "Meep! I couldn't get your content :( Maybe the network pipes aren't up?";
+        }
+
+        document.getElementById('loader').classList.remove('text-light');
+        document.getElementById('loader').classList.add('text-danger');
+      });
+    }
+
+    document.getElementById('loader').classList.remove('d-none');
+    let pasteID = document.getElementById('pasteID').value;
+    let contentURL = "/pastebinc/" + pasteID + "/content";
+    if (document.querySelectorAll('#driveHosted').length > 0) {
+      fetch("/pastebinc/" + pasteID + "/content/link").then(response => {
+        if (response.ok) {
+          return response.text();
+        } else {
+          document.getElementById('loader-result').textContent = `Meep! I couldn't get the content link -flails- (${response.status}: ${response.statusText})`;
+          throw "-flails-";
+        }
+      }).then(result => {
+        fetchContent(result);
+      }).catch(error => {
+        if (error != "-flails-") {
+          document.getElementById('loader-result').textContent = "Meep! I couldn't get your content :( Maybe the network pipes aren't up?";
+        }
+
+        document.getElementById('loader').classList.remove('text-light');
+        document.getElementById('loader').classList.add('text-danger');
       });
     } else {
-      content.src = content_link;
-      $(loader).append("<span>.done!</span>");
-      $(loader).slideUp();
+      if (document.getElementById('format').value == 'html') {
+        document.getElementById('content-frame').src = contentURL;
+        document.getElementById('content-frame').classList.remove('d-none');
+        document.getElementById('loader').classList.add('d-none');
+        return;
+      } else {
+        fetchContent(contentURL);
+      }
     }
-  } else {
-    var content = document.createElement('pre');
-    $(content).attr('id', 'content');
-    $('article').append(content);
-    $.get(content_link, function(data){
-      $(content).text(data);
-      $(content).html(function (index, html) {
-        return html.replace(/^(.*)$/mg, "<span class=\"line\">$1</span>")
-      });
-      $(loader).append("<span>.done!</span>");
-      $(loader).slideUp();
-    }).fail(function(e){
-      meep(loader, f);
-    });
-  }
-}
 
-$(document).ready(function(){
-  $.each($('.btn'), function(){
-    $(this).tooltip();
-  });
-
-  $('#deletebtn').on('click', function(event){
-    event.preventDefault();
-
-    $('#deletebtn').addClass('disabled');
-    $.post(location.href + "/delete", {
-      delete: "yes",
-      "gorilla.csrf.Token": $('input[name="gorilla.csrf.Token"]').val()
-    }).done(function(data) {
-      alert("BAM!@ Okay! This paste is no longer available.");
-      location.replace(data);
-    }).fail(function(e){
-      alert("Oops, we couldn't delete this paste :( The following was encountered:\n\n" + e.status + " - " + e.statusText);
-      location.reload();
-    }).always(function(e){
-      $('#deletebtn').removeClass('disabled');
+    grecaptcha.ready(function() {
+      let rkey = document.getElementById('recaptcha-key').value;
+      grecaptcha.execute(rkey, {action: 'cpaste'});
     });
   });
-
-  var paste_id = $('input[name="paste_id"]').val();
-
-  var loader = document.createElement('p');
-  $(loader).html('<span>Loading content.. Please wait.</span> <img alt="pretty spinner" src="/pastebin/static/img/spinner.gif">');
-  $('#not-article').append(loader);
-
-  if ($('#driveHosted').length > 0) {
-    $.get("/pastebinc/"+paste_id+"/content/link", function(src){
-      loadContent(src, loader);
-    }).fail(function(f){
-        meep(loader, f);
-        return; // bail out, we don't have a content_link
-    });
-  } else {
-    loadContent("/pastebinc/"+paste_id+"/content", loader);
-  }
-});
-
-grecaptcha.ready(function() {
-  var rkey = $('input[name="rkey"]').val();
-  grecaptcha.execute(rkey, {action: 'cpaste'});
-});
+})();

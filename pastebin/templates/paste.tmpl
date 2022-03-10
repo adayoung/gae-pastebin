@@ -3,94 +3,97 @@
 {{ end }}
 
 {{ block "title" . }}
-  {{ if .paste.Title }}
-    {{ .paste.Title }}
-  {{ else }}
-    {{ .paste_id }}
-  {{ end }}
+{{ if .paste.Title }}
+{{ .paste.Title }}
+{{ else }}
+{{ .paste_id }}
+{{ end }}
 {{ end }}
 
 {{ block "content" . }}
-<div class="row">
-  <div class="col-md-12">
-  <form action="/pastebin/{{ .paste_id }}/delete" method="post">
+<div class="row mb-3">
+    <div class="col">
+        <form class="d-flex align-items-center" id="deleteform" action="/pastebin/{{ .paste_id }}/delete" method="post">
+            <span>
+                {{ range .paste.Tags }}
+                <em><a class="text-decoration-none" href="/pastebin/search/?tags={{ . }}">{{ . }}</a></em>
+                {{ end }}
+            </span>
+            <span class="text-muted ms-auto">
+                <small>HITS - {{ .p_count }}</small>&nbsp;&nbsp;
+                <input name="format" type="hidden" value="{{ .paste.Format }}">
+                <a href="
+                    {{ if .paste.GDriveDL }}
+                        {{ .paste.GDriveDL }}
+                    {{ else }}
+                        /pastebinc/{{ .paste_id }}/download
+                    {{ end }}
+                    " class="btn btn-outline-secondary btn-sm" title="Download">
+                    <span class="bi bi-download"></span>
+                    <span class="visually-hidden">Download</span>
+                </a>
 
-    <span class="text-muted">
-      {{ range .paste.Tags }}
-        <em><a href="/pastebin/search/?tags={{ . }}">{{ . }}</a></em>
-      {{ end }}
-    </span>
+                {{ if .deleteBtn }}
+                {{ .csrfField }}
+                <button class="btn btn-outline-secondary btn-sm" id="delete-btn" title="Delete" type="submit">
+                    <span class="bi bi-trash3"></span>
+                    <span class="visually-hidden">Delete</span>
+                    {{ .csrfField }}
+                </button>
+                {{ end }}
 
-    <span class="text-muted pull-right">
-      <small>HITS - {{ .p_count }}</small>&nbsp;&nbsp;
-
-      <input name="format" type="hidden" value="{{ .paste.Format }}">
-
-      <a href="
-        {{ if .paste.GDriveDL }}
-          {{ .paste.GDriveDL }}
-        {{ else }}
-          /pastebinc/{{ .paste_id }}/download
-        {{ end }}
-      " class="btn btn-default btn-xs" title="Download">
-        <span class="glyphicon glyphicon-save"></span>
-        <span class="sr-only">Download</span>
-      </a>
-
-      {{ if .deleteBtn }}
-        {{ .csrfField }}
-        <button class="btn btn-default btn-xs" title="Delete" id="deletebtn" type="submit">
-          <span class="glyphicon glyphicon-trash"></span>
-          {{ .csrfField }}
-        </button>
-      {{ end }}
-
-      {{ if .driveHosted }}
-      <a href="/pastebin/about#PasteToGoogleDrive" class="btn btn-default btn-xs" title="Google Drive Hosted Content!" target="_blank">
-        <img src="//{{ .staticDomain }}/pastebin/static/img/drive.png" alt="Google Drive!">
-        <span id="driveHosted" class="sr-only">Google Drive Hosted Content!</span>
-      </a>
-      {{ end }}
-
-    </span>
-  </form>
-  </div>
-</div>
-<div class="spacer"></div>
-<div class="row">
-<div class="col-md-12">
-  <h1 class="sr-only">
-    {{ if .paste.Title }}
-      {{ .paste.Title }}
-    {{ else }}
-      {{ .paste_id }}
-    {{ end }}
-  </h1>
-  <article class="text-muted" role="main">
-    <noscript>
-      <iframe id="content" src="/pastebinc/{{ .paste_id }}/content" sandbox="allow-same-origin"></iframe>
-      {{ if .driveHosted }}
-      <p>Oops, we need Javascript to load this content. Alternatively, you may click <a href="{{ .paste.GDriveDL }}">here</a> to download it.</p>
-      {{ end }}
-    </noscript>
-  </article>
-  <div id="not-article"></div>
-</div>
-</div>
-  {{ if not .driveHosted }}
-  <div class="row">
-    <div class="col-md-12">
-      <p class="text-muted">
-        <small><em>This paste will expire on <a href="/pastebin/about#WhenDoesStuffExpire">{{ .sixMonthsAway }}</a>. Paste to <a href="/pastebin/about#PasteToGoogleDrive">Google Drive</a> if you'd rather not have it expire!</em></small>
-      </p>
+                {{ if .driveHosted }}
+                <a href="/pastebin/about#PasteToGoogleDrive" class="btn btn-outline-secondary btn-sm"
+                    title="Google Drive Hosted Content!" target="_blank">
+                    <img src="//{{ .staticDomain }}/pastebin/static/img/drive.png" alt="Google Drive!">
+                    <span id="driveHosted" class="visually-hidden">Google Drive Hosted Content!</span>
+                </a>
+                {{ end }}
+            </span>
+        </form>
     </div>
-  </div>
-  {{ end }}
+</div>
+<div class="row">
+    <div class="col">
+        <h1 class="visually-hidden">
+            {{ if .paste.Title }}
+            {{ .paste.Title }}
+            {{ else }}
+            {{ .paste_id }}
+            {{ end }}
+        </h1>
+        <article id="content" role="main">
+            <noscript>
+                <iframe src="/pastebinc/{{ .paste_id }}/content" sandbox></iframe>
+            </noscript>
+            <iframe class="d-none" id="content-frame" src="about:blank" sandbox="allow-same-origin"></iframe>
+            <pre class="d-none text-light" id="content-text"></pre>
+        </article>
+        <div class="d-none text-light" id="loader">
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Loading content, please wait ... <span id="loader-result"></span>
+        </div>
+    </div>
+</div>
+{{ if not .driveHosted }}
+<div class="row">
+    <div class="col">
+        <p class="text-muted">
+            <small><em>
+                    This paste will expire on <a class="text-decoration-none"
+                        href="/pastebin/about#WhenDoesStuffExpire">{{ .sixMonthsAway }}</a>.
+                    Paste to <a class="text-decoration-none" href="/pastebin/about#PasteToGoogleDrive">Google Drive</a>
+                    if you'd rather not have
+                    it expire!
+                </em></small>
+        </p>
+    </div>
+</div>
 {{ end }}
-{{ block "footer" . }}
-&nbsp;
 {{ end }}
-{{ block "evenmoretail" . }}
-<input type="hidden" name="paste_id" value="{{ .paste_id }}">
-<script src="//{{ .staticDomain }}/pastebin/static/js/20191009/paste.js"></script>
+
+{{ block "moretail" . }}
+<input type="hidden" id="pasteID" value="{{ .paste_id }}">
+<input type="hidden" id="format" value="{{ .paste.Format }}">
+<script src="//{{ .staticDomain }}/pastebin/static/js/20220310/paste.js"></script>
 {{ end }}

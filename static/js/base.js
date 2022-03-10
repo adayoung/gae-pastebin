@@ -1,35 +1,41 @@
-$(document).ready(function(){
-  /* http://www.developerdrive.com/2013/07/using-jquery-to-add-a-dynamic-back-to-top-floating-button-with-smooth-scroll/ */
-  var offset = 220;
-  var duration = 500;
-  $(window).scroll(function() {
-      if ($(this).scrollTop() > offset) {
-          $('.back-to-top').fadeIn(duration);
-      } else {
-          $('.back-to-top').fadeOut(duration);
+'use strict';
+
+(function () {
+  window.addEventListener('DOMContentLoaded', () => {
+    let offset = 220;
+    let rateLimit = false;
+
+    document.addEventListener('scroll', () => {
+      if (!rateLimit) {
+        if (window.scrollY > offset) {
+          document.getElementById('back-to-top').classList.remove('d-none');
+        } else {
+          document.getElementById('back-to-top').classList.add('d-none');
+        }
+
+        rateLimit = true;
+        setTimeout(() => {
+          rateLimit = false;
+        }, 150);
       }
+    });
   });
+})();
 
-  // jQuery('.back-to-top').click(function(event) {
-  //     event.preventDefault();
-  //     jQuery('html, body').animate({scrollTop: 0}, duration);
-  //     return false;
-  // });
-});
-
-window.addEventListener("load", function(){
-window.cookieconsent.initialise({
-  "palette": {
-    "popup": {
-      "background": "#edeff5",
-      "text": "#838391"
+window.addEventListener("load", function () {
+  window.cookieconsent.initialise({
+    "palette": {
+      "popup": {
+        "background": "#edeff5",
+        "text": "#838391"
+      },
+      "button": {
+        "background": "#4b81e8"
+      }
     },
-    "button": {
-      "background": "#4b81e8"
+    "theme": "edgeless",
+    "content": {
+      "href": "https://ada-young.com/pastebin/about#PrivacyPolicy"
     }
-  },
-  "theme": "edgeless",
-  "content": {
-    "href": "https://ada-young.com/pastebin/about#PrivacyPolicy"
-  }
-})});
+  })
+});

@@ -1,211 +1,193 @@
 {{ block "meta" . }}
-  <meta name="author" content="Ada Young">
-  <meta name="description" content="Ada's HTML Pastebin">
-  <meta name="application-name" content="Ada's HTML Pastebin">
-  <meta name="keywords" content="HTML,CSS,XML,Pastebin,simple,safe,private">
+<meta name="author" content="Ada Young">
+<meta name="description" content="Ada's HTML Pastebin">
+<meta name="application-name" content="Ada's HTML Pastebin">
+<meta name="keywords" content="HTML,CSS,XML,Pastebin,simple,safe,private">
 {{ end }}
 
 {{ block "morehead" . }}
-  <link href="//{{ .staticDomain }}/pastebin/static/css/20191006/pastebin.css" rel="stylesheet">
-  {{ block "evenmorehead" . }}
-  {{ end }}
+<link rel="stylesheet" href="//{{ .staticDomain }}/pastebin/static/css/20220310/pastebin.css">
+{{ block "evenmorehead" . }}
+{{ end }}
 {{ end }}
 
 {{ block "title" . }}Ada's HTML Pastebin{{ end }}
 
 {{ block "main" . }}
-  <div id="wrap">
-    <div class="navbar navbar-default" id="pastebar" role="navigation">
-      <div class="navbar-header">
-        <button class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse" type="button">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="sr-only">Expand/Collapse Navigation</span>
-        </button>
-        <a class="navbar-brand" href="/">Pastebin!!</a>
-      </div>
-      <div class="navbar-collapse collapse">
-        <ul class="nav navbar-nav">
-          <li><a href="/">Home</a></li>
-          <li><a href="/pastebin/about">About</a></li>
-          <li><a href="https://github.com/adayoung/gae-pastebin/" target="_blank" rel="noopener">GitHub!</a></li>
-          <!--
-          <li><a href="/pastebin/api/v1/">API</a></li>
-          -->
+<div id="wrap">
+  <nav class="navbar navbar-expand-md navbar-dark mb-3" id="pastebar">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">Pastebin!!</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a href="/" class="nav-link">Home</a>
+          </li>
+          <li class="nav-item"><a class="nav-link" href="/pastebin/about">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="https://github.com/adayoung/gae-pastebin/" target="_blank"
+              rel="noopener">GitHub!</a>
+          </li>
+
           {{ if .user }}
-            <li><a href="/pastebin/auth/logout">Sign out</a></li>
+          <li class="nav-item"><a class="nav-link" href="/pastebin/auth/logout">Sign out</a></li>
           {{ else }}
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Sign in <span class="caret"></span></a>
-              <ul class="dropdown-menu">
-                <li><a href="/pastebin/auth/login">
-                  <img src="data:image/webp;base64,UklGRlYBAABXRUJQVlA4IEoBAADwBwCdASoUABQAAMASJaQCdMoGv/tsBWT/xVz0WM7aLdkSmap5d/5PuAfqN/qOkA9GY+3/yeTkx6Zlr37dduaAK5FUnqtgyEAA/v/eu6hpwJ9ZEhexiz9lw3sg7Fjkh/+oUT8qB4WP9fQHz2TBmMhLB35tY+QyUtA8X/UHefj+yeouU3P1rsWOC2cQ5BVO96Imejfku5mEU4vT/QFgJDUDrdb3q9bbaF+/VFCX2XfrEaH7eIq+DXm/yEGHtmf2ZgwDxsIFB/MIOp1BXP++KwyHjzFkdU1o2+znldIDuwprU1GNp8vuDOf2ISA/0BHwEFBEj/IBw//1igL6UwH/qXUWBo7oxWu/KAxv1u1IuW9h9tV335mZyK9fi2O/9O57TrrSxn/pPZ8pGJuqN36Ph7f+sIc4vjFR70VwlaTe02t5rUVS9NRCBLFJQAA=" alt="Google">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
+              aria-expanded="false">
+              Sign in
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <li class="dropdown-item"><a class="text-decoration-none" href="/pastebin/auth/login">
+                  <img
+                    src="data:image/webp;base64,UklGRlYBAABXRUJQVlA4IEoBAADwBwCdASoUABQAAMASJaQCdMoGv/tsBWT/xVz0WM7aLdkSmap5d/5PuAfqN/qOkA9GY+3/yeTkx6Zlr37dduaAK5FUnqtgyEAA/v/eu6hpwJ9ZEhexiz9lw3sg7Fjkh/+oUT8qB4WP9fQHz2TBmMhLB35tY+QyUtA8X/UHefj+yeouU3P1rsWOC2cQ5BVO96Imejfku5mEU4vT/QFgJDUDrdb3q9bbaF+/VFCX2XfrEaH7eIq+DXm/yEGHtmf2ZgwDxsIFB/MIOp1BXP++KwyHjzFkdU1o2+znldIDuwprU1GNp8vuDOf2ISA/0BHwEFBEj/IBw//1igL6UwH/qXUWBo7oxWu/KAxv1u1IuW9h9tV335mZyK9fi2O/9O57TrrSxn/pPZ8pGJuqN36Ph7f+sIc4vjFR70VwlaTe02t5rUVS9NRCBLFJQAA="
+                    alt="Google">
                   Google
                 </a></li>
-                <li><a href="/pastebin/auth/github/start">
-                  <img src="data:image/webp;base64,UklGRlABAABXRUJQVlA4IEQBAAAQCACdASoUABQAAMASJaQC7B3rfy/8ObFD+iTQ/+0/kzqHOoY/zPo55xfnL2Bf0q/xnANfqqfb/+A/6izbnNTMNlcpekYBT/3AAP7/0W+4FfxgnNz7LobvI6RxnyVj7X6Vh5vfPfnb435839G1kpt65AeNMg5hmdYlJ/+FXf/6QJb5mDDWoWjGSuaMlTf6Nj7ru3KkKcppie4A87Nx8c//ytM3IO5JP5xdmsH8hXw+NvZW+JwODRCUaWN9hH+7p7R/eJ/dP4/2tYBfu/Os/TniQHb+oK/lt8LTp9EbkpwBe89kaOd6+O4Jhme6pn738vgb3ZTepmIV+1htmGjPpWC225LoJtABZK76WxPzYqe/aGLjNetPrJ4OnfA/s3R0iObhbTD/8aYRRn/9DRdgjvU5heIsQIxz9MQfV2Rj1etkN2BgAAA=" alt="GitHub">
+              <li class="dropdown-item"><a class="text-decoration-none" href="/pastebin/auth/github/start">
+                  <img
+                    src="data:image/webp;base64,UklGRlABAABXRUJQVlA4IEQBAAAQCACdASoUABQAAMASJaQC7B3rfy/8ObFD+iTQ/+0/kzqHOoY/zPo55xfnL2Bf0q/xnANfqqfb/+A/6izbnNTMNlcpekYBT/3AAP7/0W+4FfxgnNz7LobvI6RxnyVj7X6Vh5vfPfnb435839G1kpt65AeNMg5hmdYlJ/+FXf/6QJb5mDDWoWjGSuaMlTf6Nj7ru3KkKcppie4A87Nx8c//ytM3IO5JP5xdmsH8hXw+NvZW+JwODRCUaWN9hH+7p7R/eJ/dP4/2tYBfu/Os/TniQHb+oK/lt8LTp9EbkpwBe89kaOd6+O4Jhme6pn738vgb3ZTepmIV+1htmGjPpWC225LoJtABZK76WxPzYqe/aGLjNetPrJ4OnfA/s3R0iObhbTD/8aYRRn/9DRdgjvU5heIsQIxz9MQfV2Rj1etkN2BgAAA="
+                    alt="GitHub">
                   GitHub
                 </a></li>
-                <li><a href="/pastebin/auth/discord/start">
-                  <img src="data:image/webp;base64,UklGRhQBAABXRUJQVlA4IAgBAABQBQCdASoSABQAAMASJZwC07pgRrOZM4+j9dvYA/UIzK66SkS1N/x06IBFR0MjT5RSzkgA/vb5r5iad3ezeo1bMdvpHoL/tAef+6Z0txB82J+4vWkeQa3mKq39vP/0aMnoT5O6eZdzD/QP/quo1/Hv1+e2F/d/+bWDsJVPxw0mFP//Yx//Ie3d+27Gpjf/Nx//eMpsc+kSfTaHqzTWa/yZRgqVkeoH2MWRDVYYB9A99Fhz+N8hx1+vonMgot+ldBNJPNONf/5enmnUkgEWfZIErdlf/EV//7v4noh1hvHtcCj/VAtnLwUO4v/gvKAHfo9f773I5qzkXKo0QOf3zAzI2odKBA2IAAA=" alt="Discord">
+              <li class="dropdown-item"><a class="text-decoration-none" href="/pastebin/auth/discord/start">
+                  <img
+                    src="data:image/webp;base64,UklGRhQBAABXRUJQVlA4IAgBAABQBQCdASoSABQAAMASJZwC07pgRrOZM4+j9dvYA/UIzK66SkS1N/x06IBFR0MjT5RSzkgA/vb5r5iad3ezeo1bMdvpHoL/tAef+6Z0txB82J+4vWkeQa3mKq39vP/0aMnoT5O6eZdzD/QP/quo1/Hv1+e2F/d/+bWDsJVPxw0mFP//Yx//Ie3d+27Gpjf/Nx//eMpsc+kSfTaHqzTWa/yZRgqVkeoH2MWRDVYYB9A99Fhz+N8hx1+vonMgot+ldBNJPNONf/5enmnUkgEWfZIErdlf/EV//7v4noh1hvHtcCj/VAtnLwUO4v/gvKAHfo9f773I5qzkXKo0QOf3zAzI2odKBA2IAAA="
+                    alt="Discord">
                   Discord
                 </a></li>
-              </ul>
-            </li>
+            </ul>
+          </li>
           {{ end }}
         </ul>
-        <div class="col-md-3 navbar-nav navbar-right">
-          <div id="searchdiv">
-            <form action="/pastebin/search" method="get" role="search">
-              <label class="sr-only" for="searchbox">Search Tags</label>
-              <input
-                class="form-control tagbox"
-                id="searchbox"
-                name="tags"
-                placeholder="Search Tags"
-                type="search"
-              >
-            </form>
-          </div>
-        </div>
-      </div><!--/.nav-collapse -->
-    </div>
-    <noscript>
-      <p class="text-danger text-center">Oops, you have Javascript disabled. Some features are unavailable.</p>
-    </noscript>
-    <div class="container">
-      {{ block "brandlogos" . }}
-      <div class="row hidden-sm hidden-xs">
-        <div class="img-bar">
-          <div class="col-md-4">
-            <a href="https://www.ironrealms.com/" target="_blank" rel="noopener">
-              <img src="//{{ .staticDomain }}/pastebin/static/img/iregames.webp" title="Play IRE Games!" alt="IRE games logos">
-            </a>
-          </div>
-          <div class="col-md-4 text-center">
-            <a href="https://getfirefox.com/" target="_blank" rel="noopener">
-              <img src="//{{ .staticDomain }}/pastebin/static/img/fflogo.webp" title="Get the fastest Firefox ever!" alt="Firefox logo">
-            </a>
-          </div>
-          <div class="col-md-4">
-            <div class="pull-right">
-              <a href="https://www.mudlet.org/" target="_blank" rel="noopener">
-                <img src="//{{ .staticDomain }}/pastebin/static/img/mudlet.webp" title="Play a MUD on Mudlet!" alt="Mudlet logo">
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="spacer"></div>
-      {{ end }}
-      {{ block "content" . }}
-      <div class="not-a-row">
-        <h1 class="sr-only">Welcome to Ada's HTML Pastebin!</h1>
-        <div id="eepnokb" class="alert alert-danger" role="alert">Oops, umm ... the keyboard accelerators don't work well with opening popup windows yet. You'll need to click on the Paste it! below. Sorry!</div>
-        <form  enctype="multipart/form-data" method="post">
-          <fieldset>
-          <legend class="sr-only">Pastebin</legend>
-          <div class="row">
-            <div class="col-md-12">
-              <label class="sr-only" for="content">Content</label>
-              <textarea class="form-control" id="content" name="content" autocomplete="off" required spellcheck="false"></textarea>
-            </div>
-          </div>
-          <div class="spacer"></div>
-          <div class="row">
-            <div class="col-md-6">
-              <label class="sr-only" for="title">Title</label>
-              <input class="form-control noenter" id="title" maxlength="50" name="title" placeholder="Name / Title" type="text">
-            </div>
-            <div class="spacer visible-sm visible-xs"></div>
-            <div class="col-md-6">
-              <label class="sr-only" for="tags">Tags</label>
-              <input class="form-control tagbox noenter" id="tags" maxlength="250" name="tags" placeholder="Tags" type="text">
-            </div>
-          </div>
-          <div class="spacer"></div>
-          <div class="row">
-            <div class="col-md-12">
-              <label class="radio-inline text-muted nojs" for="plain_nojs">
-                <input checked="" id="plain_nojs" name="format" type="radio" value="plain"> Plain text
-              </label>
-              <label class="radio-inline text-muted nojs" for="html_nojs">
-                <input id="html_nojs" name="format" type="radio" value="html"> Colourful HTML
-              </label>
-
-              <div class="tehcontrols">
-
-                <div class="btn-group" data-toggle="buttons">
-                  <label class="btn btn-primary" for="plain" id="label_plain">
-                    <input id="plain" name="format" type="radio" value="plain"> Plain Text
-                  </label>
-                  <label class="btn btn-primary" for="html" id="label_html">
-                    <input id="html" name="format" type="radio" value="html"> Colourful HTML
-                  </label>
-                </div>
-
-                <div class="btn-group" data-toggle="buttons">
-                  <label class="btn btn-default" for="datastore" id="label_datastore" title="Paste to Datastore!">
-                    <input disabled
-                    {{ if eq .dest "datastore" }}
-                      checked=""
-                    {{ end }}
-                    id="datastore" name="destination" type="radio" value="datastore">
-                    <img src="//{{ .staticDomain }}/pastebin/static/img/datastore-symbol.png" alt="Paste to Datastore!" style="height:16px">
-                  </label>
-                  <label class="btn btn-default" for="gdrive" id="label_gdrive" title="Paste to Google Drive!">
-                    <input disabled
-                    {{ if eq .dest "gdrive" }}
-                      checked=""
-                    {{ end }}
-                    id="gdrive" name="destination" type="radio" value="gdrive">
-                    <img src="//{{ .staticDomain }}/pastebin/static/img/drive.png" alt="Paste to Google Drive!">
-                  </label>
-                  <a class="btn btn-default" href="/pastebin/about#PasteToGoogleDrive" id="about_btn" data-title="About" target="_blank"><i class="glyphicon glyphicon-question-sign"></i><span class="sr-only">About</span></a>
-                </div>
-
-              </div>
-              {{ .csrfField }}
-              &nbsp;
-              <button class="btn btn-primary" data-title="Ctrl-Enter to paste in plain, Alt-Enter to paste in HTML!" id="paste_btn" type="submit">Paste it!</button>
-              <img alt="pretty spinner" id="spinner" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" height="24" width="24" data-src="//{{ .staticDomain }}/pastebin/static/img/spinner.gif">
-              <em><span class="pull-right text-muted havejs" id="noc_wrap"><span id="noc">0</span> characters.</span> <span class="help-block grecaptcha-text">Protected by reCAPTCHA. <a href="https://www.google.com/intl/en/policies/privacy/" target="_blank" rel="noopener">Privacy</a>. <a href="https://www.google.com/intl/en/policies/terms/" target="_blank" rel="noopener">Terms</a>.</span></em>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <span class="text-danger" id="eep">
-                <strong>Eep! Paste is too long!</strong>
-                <em>Will attempt compression!</em>
-              </span>
-            </div>
-          </div>
-          </fieldset>
+        <form class="ms-auto" action="/pastebin/search" method="get" role="search">
+          <label class="visually-hidden" for="searchbox">Search Tags</label>
+          <input class="form-control tagbox" id="searchbox" name="tags" type="search" placeholder="Search Tags"
+            maxlength="250" aria-label="Search">
         </form>
       </div>
-      {{ end }}
     </div>
-  </div>
+  </nav>
+  <div class="container">
+    {{ block "brandlogos" . }}
+    <div class="d-none d-md-block mb-3">
+      <div class="row img-bar">
+        <div class="col">
+          <a href="https://www.ironrealms.com/" target="_blank" rel="noopener">
+            <img src="//{{ .staticDomain }}/pastebin/static/img/iregames.webp" title="Play IRE Games!"
+              alt="IRE games logos">
+          </a>
+        </div>
+        <div class="col text-center">
+          <a href="https://getfirefox.com/" target="_blank" rel="noopener">
+            <img src="//{{ .staticDomain }}/pastebin/static/img/fflogo.webp" title="Get the fastest Firefox ever!"
+              alt="Firefox logo">
+          </a>
+        </div>
+        <div class="col text-end">
+          <a href="https://www.mudlet.org/" target="_blank" rel="noopener">
+            <img src="//{{ .staticDomain }}/pastebin/static/img/mudlet.webp" title="Play a MUD on Mudlet!"
+              alt="Mudlet logo">
+          </a>
+        </div>
+      </div>
+    </div>
+    {{ end }}
+    {{ block "content" . }}
+    <noscript>
+      <p class="text-center text-danger" role="alert">
+        Oops, you have Javascript disabled. Some features are unavailable.
+      </p>
+    </noscript>
+    <h1 class="visually-hidden">Welcome to Ada's HTML Pastebin!</h1>
+    <form action="/pastebin/" id="pasteform" enctype="multipart/form-data" method="post">
+      <fieldset id="pasteform-fields">
+        {{ .csrfField }}
+        <legend class="visually-hidden">Pastebin</legend>
+        <div class="row mb-3">
+          <div class="col">
+            <label class="visually-hidden" for="content">Content</label>
+            <textarea class="form-control" id="content" name="content" required autocomplete="off"
+              spellcheck="false"></textarea>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col">
+            <label class="visually-hidden" for="title">Title</label>
+            <input class="form-control" id="title" maxlength="50" name="title" placeholder="Name / Title" type="text">
+          </div>
+          <div class="col">
+            <label class="visually-hidden" for="tags">Tags</label>
+            <input class="form-control tagbox" id="tags" maxlength="250" name="tags" placeholder="Tags" type="text">
+          </div>
+        </div>
+        <div class="d-flex flex-wrap mb-3">
+          <div class="me-3 pb-3">
+            <div class="btn-group" role="group" aria-label="Select content format">
+              <input class="btn-check" id="plain" name="format" type="radio" value="plain" checked>
+              <label class="btn btn-outline-primary" for="plain">Plain Text</label>
 
-  <div id="footer">
-    {{ block "footer" . }}
-    <!--
-    <div class="pull-right">
-      <a href="https://cloud.google.com/products/app-engine/" target="_blank" rel="noopener">
-        <img alt="Powered by Google App Engine" id="appengine" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" height="30" width="120" data-src="//{{ .staticDomain }}/static/img/appengine-noborder-120x30.gif">
-      </a>
-    </div>
-    -->
+              <input class="btn-check" id="html" name="format" type="radio" value="html">
+              <label class="btn btn-outline-primary" for="html">Colourful HTML</label>
+            </div>
+          </div>
+          <div class="me-3 pb-3">
+            <div class="btn-group" id="dest-group" role="group" aria-label="Select content destination">
+              <input class="btn-check" id="datastore" name="destination" type="radio" value="datastore"
+                {{ if eq .dest "datastore" }} checked="" {{ end }}>
+              <label class="btn btn-outline-primary" for="datastore" data-bs-toggle="tooltip"
+                title="Paste to Datastore!">
+                <img class="img-fluid" src="//{{ .staticDomain }}/pastebin/static/img/datastore-symbol.png"
+                  alt="Paste to Datastore!">
+              </label>
+
+              <input class="btn-check" id="gdrive" name="destination" type="radio" value="gdrive"
+                {{ if eq .dest "gdrive" }} checked="" {{ end }} disabled>
+              <label class="btn btn-outline-primary" for="gdrive" data-bs-toggle="tooltip"
+                title="Paste to Google Drive!">
+                <img class="img-fluid" src="//{{ .staticDomain }}/pastebin/static/img/drive.png"
+                  alt="Paste to Google Drive!">
+              </label>
+
+              <button type="button" class="btn btn-outline-primary" style="padding:0">
+                <a class="btn btn-default" href="/pastebin/about#PasteToGoogleDrive"
+                  data-bs-toggle="tooltip" title="About pasting to Google Drive"
+                  target="_blank"><i class="bi bi-question-circle text-light"></i><span
+                    class="visually-hidden">About</span></a>
+              </button>
+            </div>
+          </div>
+          <div class="me-3 pb-3">
+            <button class="btn btn-primary" id="pastebtn" data-bs-toggle="tooltip"
+              title="Ctrl-Enter to paste in plain, Alt-Enter to paste in HTML!" type="submit">
+              <span id="pastebtn-ready">Paste it!</span>
+              <span class="d-none" id="pastebtn-loading"><span class="spinner-border spinner-border-sm" role="status"
+                  aria-hidden="true"></span> Please wait ...</span>
+              <span class="d-none" id="pastebin-error">
+                <i class="bi bi-exclamation-triangle"></i>
+                <span id="pastebin-error-text"></span>
+              </span>
+            </button>
+          </div>
+          <div id="noc-text" class="text-primary d-none ms-auto pb-3">
+            <em><span id="noc">0</span> characters.</em>
+          </div>
+        </div>
+      </fieldset>
+    </form>
     {{ end }}
   </div>
+</div>
 {{ end }}
 
+{{ block "tail" . }}
+<script src="//{{ .staticDomain }}/pastebin/static/js/20220310/common.js"></script>
+<input type="hidden" id="recaptcha-key" value="{{ .rkey }}">
+<script src="https://www.google.com/recaptcha/api.js?render={{ .rkey }}"></script>
 {{ block "moretail" . }}
-  <script src="//{{ .staticDomain }}/pastebin/static/js/common.js"></script>
-  <input type="hidden" name="rkey" value="{{ .rkey }}">
-  <script src="https://www.google.com/recaptcha/api.js?render={{ .rkey }}"></script>
-  {{ block "evenmoretail" . }}
-    <script src="//{{ .staticDomain }}/pastebin/static/js/20190206/pastebin.js"></script>
-  {{ end }}
+<script src="//{{ .staticDomain }}/pastebin/static/js/20220310/pastebin.js"></script>
+{{ end }}
 {{ end }}
