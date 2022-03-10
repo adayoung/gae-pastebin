@@ -62,7 +62,10 @@
           document.getElementById('loader').classList.add('d-none');
         } else {
           document.getElementById('content-text').classList.remove('d-none');
-          // document.getElementById('content-text').textContent = result;
+          // I have no idea how this works -hides-
+          let theGreateEscaper = document.createElement("p");
+          theGreateEscaper.appendChild(document.createTextNode(result));
+          result = theGreateEscaper.innerHTML;
           document.getElementById('content-text').innerHTML = result.replace(/^(.*)$/mg, "<span class=\"line\">$1</span>")
 
           document.getElementById('loader').classList.add('d-none');
