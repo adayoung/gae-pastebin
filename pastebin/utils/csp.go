@@ -6,8 +6,26 @@ import (
 
 func getCSP(staticDomain string) string {
 	var CSP = map[string][]string{
+		"connect-src": {
+			"'self'",
+			"cloudflareinsights.com",
+			"*.googleusercontent.com",
+		},
 		"default-src": {
 			staticDomain,
+		},
+		"img-src": {
+			"'self'",
+			"data:",
+			staticDomain,
+		},
+		"frame-ancestors": {
+			"'none'",
+		},
+		"frame-src": {
+			"'self'",
+			"blob:",
+			"https://www.google.com/recaptcha/",
 		},
 		"font-src": {
 			"cdn.jsdelivr.net",
@@ -17,6 +35,7 @@ func getCSP(staticDomain string) string {
 			"code.jquery.com",
 			"cdn.jsdelivr.net",
 			"cdnjs.cloudflare.com",
+			"static.cloudflareinsights.com",
 			"https://www.google.com/recaptcha/",
 			"https://www.gstatic.com/recaptcha/",
 			staticDomain,
@@ -26,23 +45,6 @@ func getCSP(staticDomain string) string {
 			"cdn.jsdelivr.net",
 			"cdnjs.cloudflare.com",
 			staticDomain,
-		},
-		"img-src": {
-			"'self'",
-			"data:",
-			staticDomain,
-		},
-		"connect-src": {
-			"'self'",
-			"*.googleusercontent.com",
-		},
-		"frame-src": {
-			"'self'",
-			"blob:",
-			"https://www.google.com/recaptcha/",
-		},
-		"frame-ancestors": {
-			"'none'",
 		},
 	}
 

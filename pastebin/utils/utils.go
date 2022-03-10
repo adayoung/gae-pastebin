@@ -130,7 +130,7 @@ func InitAppSession(w http.ResponseWriter, r *http.Request, userID string, refre
 			MaxAge:   86400 * 3,
 			HttpOnly: true,
 			Secure:   os.Getenv("CSRFSecureC") == "true",
-			SameSite: http.SameSiteStrictMode,
+			SameSite: http.SameSiteLaxMode,
 		}
 
 		if !refresh {
