@@ -1,3 +1,7 @@
+html, body {
+  height: 100%;
+}
+
 body {
   background: url("/pastebin/static/img/bg.png") repeat fixed 0% 0% transparent;
 }
@@ -20,6 +24,11 @@ body {
   #searchbox {
     margin-bottom: 0.67rem;
   }
+}
+
+#wrap {
+  min-height: 100%;
+  height: auto !important;
 }
 
 /* paste form */
