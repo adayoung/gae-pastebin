@@ -14,6 +14,8 @@
             document.getElementById('back-to-top').classList.add('d-none');
           }
           rateLimit = false;
+        }, {
+          passive: true
         });
 
         rateLimit = true;
