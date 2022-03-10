@@ -448,8 +448,6 @@ func clean(w http.ResponseWriter, r *http.Request) {
 */
 
 func search(w http.ResponseWriter, r *http.Request) {
-	// usr := user.Current(c)
-
 	if r.Header.Get("X-Requested-With") == "XMLHttpRequest" { // AJAX
 
 		cursor := r.URL.Query().Get("c")

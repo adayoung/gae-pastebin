@@ -11,16 +11,19 @@ import (
 )
 
 const gDrive_response_template = `
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-	<title>OAuth2 Response Handler</title>
+	<title>OAuth2 Response Handler - ada-young.com</title>
 </head>
 <body>
 	<p>This window should close on its own! Close it if it doesn't :o</p>
 	<script>
 		try {
 			window.opener.HandleGAuthComplete("{{ . }}");
-		} catch(e) {}
+		} catch(e) {
+			// TODO: handle errors if any
+		}
 		window.close();
 	</script>
 </body>

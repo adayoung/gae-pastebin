@@ -36,6 +36,7 @@ func SaveOAuthToken(w http.ResponseWriter, r *http.Request, token *oauth2.Token)
 			MaxAge:   0,
 			HttpOnly: true,
 			Secure:   os.Getenv("CSRFSecureC") == "true",
+			SameSite: http.SameSiteStrictMode,
 		}
 
 		session.Values["gdrive"] = token
