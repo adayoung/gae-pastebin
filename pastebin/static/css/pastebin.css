@@ -20,15 +20,25 @@ body {
   max-height: 3.125rem;
 }
 
+#wrap {
+  min-height: 100%;
+  height: auto !important;
+}
+
+.grecaptcha-badge {
+  margin-bottom: 2.5rem;
+}
+
+@media (max-width: 900px) {
+  .grecaptcha-badge {
+    display: none;
+  }
+}
+
 @media (max-width: 767px) {
   #searchbox {
     margin-bottom: 0.67rem;
   }
-}
-
-#wrap {
-  min-height: 100%;
-  height: auto !important;
 }
 
 /* paste form */
