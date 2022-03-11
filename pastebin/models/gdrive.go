@@ -59,7 +59,6 @@ func GetOAuthToken(r *http.Request) (*oauth2.Token, error) {
 			return nil, fmt.Errorf("Invalid type for oauth2.Token.")
 		}
 	}
-	return nil, nil
 }
 
 func GetOAuthClient(r *http.Request) (*http.Client, error) {
@@ -76,9 +75,6 @@ func GetOAuthClient(r *http.Request) (*http.Client, error) {
 	} else {
 		return nil, err
 	}
-
-	log.Printf("ERROR: Oops, it's an error to arrive here just to return a nil client O_o")
-	return nil, nil
 }
 
 func makePastebinFolder(client *http.Client) (string, error) {
@@ -111,7 +107,6 @@ func makePastebinFolder(client *http.Client) (string, error) {
 			}
 		}
 	}
-	return "", nil
 }
 
 func (p *Paste) saveToDrive(r *http.Request, paste_id string) error {

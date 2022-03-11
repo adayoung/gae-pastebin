@@ -54,6 +54,7 @@ func InitRoutes(s *mux.Router) {
 		csrf.SameSite(csrf.SameSiteStrictMode),
 		csrf.Secure(os.Getenv("CSRFSecureC") == "true"),
 	)
+
 	http.Handle("/pastebin/", CSRF(r))
 }
 
@@ -152,7 +153,7 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 				MaxAge:   -1,
 				Secure:   os.Getenv("CSRFSecureC") == "true",
 				HttpOnly: true,
-				SameSite: http.SameSiteStrictMode,
+				SameSite: http.SameSiteLaxMode,
 			})
 		}
 
@@ -162,7 +163,7 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			MaxAge:   0,
 			Secure:   os.Getenv("CSRFSecureC") == "true",
 			HttpOnly: true,
-			SameSite: http.SameSiteStrictMode,
+			SameSite: http.SameSiteLaxMode,
 		})
 
 		utils.ClearOauthCookie(w)
@@ -208,7 +209,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 				MaxAge:   -1,
 				Secure:   os.Getenv("CSRFSecureC") == "true",
 				HttpOnly: true,
-				SameSite: http.SameSiteStrictMode,
+				SameSite: http.SameSiteLaxMode,
 			})
 		} else {
 			if !showDeleteBtn {

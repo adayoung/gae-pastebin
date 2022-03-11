@@ -85,7 +85,7 @@ func UpdateSession(w http.ResponseWriter, r *http.Request, paste_id string, remo
 			MaxAge:   0,
 			HttpOnly: true,
 			Secure:   os.Getenv("CSRFSecureC") == "true",
-			SameSite: http.SameSiteStrictMode,
+			SameSite: http.SameSiteLaxMode,
 		}
 
 		if remove {
@@ -150,7 +150,7 @@ func ClearAppSession(w http.ResponseWriter) {
 		MaxAge:   -1,
 		HttpOnly: true,
 		Secure:   os.Getenv("CSRFSecureC") == "true",
-		SameSite: http.SameSiteStrictMode,
+		SameSite: http.SameSiteLaxMode,
 	})
 }
 
