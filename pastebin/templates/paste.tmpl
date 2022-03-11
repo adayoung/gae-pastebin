@@ -1,4 +1,11 @@
 {{ block "meta" . }}
+<meta name="description" content="
+{{ if .paste.Title }}
+{{ .paste.Title }}
+{{ else }}
+{{ .paste_id }}
+{{ end }}
+">
 <meta name="paste_id" content="{{ .paste_id }}">
 {{ end }}
 
