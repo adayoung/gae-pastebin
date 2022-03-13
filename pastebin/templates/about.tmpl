@@ -24,8 +24,7 @@
     <article class="text-light p-3 mb-3" id="content" role="main">
       <div class="row">
         <div class="col-md-8">
-          <h1 class="text-decoration-underline">About</h1>
-          <br>
+          <h1 class="text-decoration-underline mb-5">About</h1>
           <p>Hi! This is a pastebin application just like pastebin.com except here you can paste colourful html content
             as
             well.</p>
@@ -48,7 +47,7 @@
         </div>
         <div class="d-none d-md-block col-md-4">
           <img class="img-fluid rounded" src="//{{ .staticDomain }}/pastebin/static/img/vU1OJdC.jpg"
-            height="400" width="400" alt="Tesha and Ada - drawn by Tibitha">
+            height="400" width="400" alt="Tesha and Ada - drawn by Tibitha" loading="lazy">
           <p class="text-center">
             <small><em>Lookie Ada and Tesha as drawn by Tibitha!</em></small>
           </p>
@@ -86,7 +85,6 @@
         expiry schedule.
       </p>
 
-
       <h3>I pasted in html but I'm seeing the html source?</h3>
       <p>You need to click on the 'Colourful HTML' button to flag your paste as html content before pasting.</p>
 
@@ -123,7 +121,7 @@
         </li>
         <li>
           Select the Google Drive datastore option (<img src="//{{ .staticDomain }}/pastebin/static/img/drive.png"
-            alt="Google Drive">) and click Paste it!
+            height="16" width="16" alt="Google Drive" loading="lazy">) and click Paste it!
         </li>
         <li>
           This will open a window asking for your consent, you need a Google Account to sign in.
@@ -132,12 +130,13 @@
           <div>The consent screen would have the following permission listed in there:</div>
           <ul>
             <li><img class="img-fluid rounded" src="//{{ .staticDomain }}/pastebin/static/img/drive_rfp.png"
-              height="74" width="420" alt="Google Drive permissions"></li>
+              height="74" width="420" alt="Google Drive permissions" loading="lazy"></li>
           </ul>
           <div>
             This permission grants the application access to files and folders it created <em>itself</em> only. You can
             read more about it <a href="https://developers.google.com/drive/v3/web/about-auth"
-              title="About Authorization &nbsp;|&nbsp; Drive REST API &nbsp;|&nbsp; Google Developers">here</a>!
+              title="About Authorization &nbsp;|&nbsp; Drive REST API &nbsp;|&nbsp; Google Developers"
+              target="_blank" rel="noopener">here</a>!
           </div>
           <div>
             Sometimes you may see an permission called 'Have Offline Access', that's a thing with Google APIs when you
@@ -152,7 +151,8 @@
         </li>
         <li>
           You can disconnect your Google Drive any time by going to Settings &gt; Manage Apps or from your <a
-            href="https://myaccount.google.com/intro/security#connectedapps">My Account page</a>. Disconnecting the
+            href="https://myaccount.google.com/intro/security#connectedapps" target="_blank" rel="noopener">
+            My Account page</a>. Disconnecting the
           application does not remove content from you Google Drive unless you delete it yourself.
         </li>
       </ol>
@@ -205,30 +205,45 @@
       <h3>I deleted it from Trash as well but it's still appearing in the application?!</h3>
       <p class="mb-3">
         Oops, it's probably still in the <a href="https://www.cloudflare.com/learning/cdn/what-is-caching/"
-          title="What is Caching? | How is a Website Cached?">cache</a>! Give it a few hours and it'll poof from there
-        as
-        well on its own.
+          title="What is Caching? | How is a Website Cached?" target="_blank" rel="noopener">cache</a>! Give
+          it a few hours and it'll poof from there as well on its own.
       </p>
 
       <hr>
       <h1 id="PrivacyPolicy">Cookie and Privacy Policy!</h1>
-      <br>
-      <p>This application uses cookies for the following purposes:</p>
-
-      <p>
-      <ol>
-        <li>Protection against Cross Site Request Forgery (Required)</li>
-        <li>Remembering your paste destination (AEDatastore/Google Drive)</li>
-        <li>Remembering your last ten pastes and giving you the delete button for them</li>
-        <li>If you elect to sign in, cookies are used to grant a notion of 'ownership' to all pastes made while signed
-          in,
-          further giving you the option to delete them regardless of the last-ten facility</li>
-        <li>Temporary storage of Google Drive credentials, they're removed after one use. Pasting to Google Drive does
-          not
-          require signing in and it does not tell your email or uniquely identify you to the application</li>
-      </ol>
+      <p>This application uses cookies for the following purposes:
+        <ol>
+          <li>Protection against Cross Site Request Forgery (Required)</li>
+          <li>Remembering your paste destination (AEDatastore/Google Drive)</li>
+          <li>Remembering your last ten pastes and giving you the delete button for them</li>
+          <li>
+            If you elect to sign in, cookies are used to maintain sessions that grant a notion of 'ownership' to all
+            pastes made while signed in, further giving you the option to delete them regardless of the last-ten
+            facility. Signing in does not reveal your email to the application
+          </li>
+          <li>
+            Temporary storage of Google Drive credentials, they're removed after one use. Pasting to Google Drive does
+            not require signing in and it does not reveal your email or uniquely identify you to the application
+          </li>
+        </ol>
       </p>
-
+      <p>We have the following third party cookies as well:
+        <ol>
+          <li>
+            We use Cloudflare for security and performance and they may occasionally place a cookie to enable the various
+            anti-spam and protection measures they implement. They have a <a
+            href="https://developers.cloudflare.com/fundamentals/get-started/cloudflare-cookies/"
+            title="Cloudflare Cookie Policy" target="_blank" rel="noopener">Cookies Document</a> describing the cookies in
+            use and their purpose
+          </li>
+          <li>
+            The Google ReCAPTCHA service may place cookies and measure various metrics to help fight against spam. It is
+            governed by their own <a href="https://policies.google.com/terms" title="Terms of Service - Google"
+            target="_blank" rel="noopener">Terms</a> and <a href="https://policies.google.com/privacy"
+            title="Privacy Policy - Google" target="_blank" rel="noopener">Privacy Policy</a>
+          </li>
+        </ol>
+      </p>
     </article>
   </div>
 </div>

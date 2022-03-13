@@ -78,19 +78,19 @@
         <div class="col">
           <a href="https://www.ironrealms.com/" target="_blank" rel="noopener">
             <img src="//{{ .staticDomain }}/pastebin/static/img/iregames.webp" title="Play IRE Games!"
-              height="50" width="294.5" alt="IRE games logos">
+              height="50" width="294.5" alt="IRE games logos" loading="lazy">
           </a>
         </div>
         <div class="col text-center">
           <a href="https://getfirefox.com/" target="_blank" rel="noopener">
             <img src="//{{ .staticDomain }}/pastebin/static/img/fflogo.webp" title="Get the fastest Firefox ever!"
-              height="50" width="150" alt="Firefox logo">
+              height="50" width="150" alt="Firefox logo" loading="lazy">
           </a>
         </div>
         <div class="col text-end">
           <a href="https://www.mudlet.org/" target="_blank" rel="noopener">
             <img src="//{{ .staticDomain }}/pastebin/static/img/mudlet.webp" title="Play a MUD on Mudlet!"
-              height="50" width="180" alt="Mudlet logo">
+              height="50" width="180" alt="Mudlet logo" loading="lazy">
           </a>
         </div>
       </div>
@@ -141,7 +141,7 @@
               <label class="btn btn-outline-primary" for="datastore" data-bs-toggle="tooltip"
                 title="Paste to Datastore!">
                 <img class="img-fluid" src="//{{ .staticDomain }}/pastebin/static/img/datastore-symbol.png"
-                  height="20" width="32" alt="Paste to Datastore!">
+                  height="20" width="32" alt="Paste to Datastore!" loading="lazy">
               </label>
 
               <input class="btn-check" id="gdrive" name="destination" type="radio" value="gdrive"
@@ -149,7 +149,7 @@
               <label class="btn btn-outline-primary" for="gdrive" data-bs-toggle="tooltip"
                 title="Paste to Google Drive!">
                 <img class="img-fluid" src="//{{ .staticDomain }}/pastebin/static/img/drive.png"
-                  height="16" width="16" alt="Paste to Google Drive!">
+                  height="16" width="16" alt="Paste to Google Drive!" loading="lazy">
               </label>
 
               <button type="button" class="btn btn-outline-primary" style="padding:0">
@@ -181,6 +181,12 @@
     {{ end }}
   </div>
 </div>
+
+<footer class="text-muted text-center" id="grecaptcha-text">
+  This site is protected by reCAPTCHA and the Google
+    <a class="text-decoration-none" href="https://policies.google.com/privacy" target="_blank" rel="noopener">Privacy Policy</a> and
+    <a class="text-decoration-none" href="https://policies.google.com/terms" target="_blank" rel="noopener">Terms of Service</a> apply.
+</footer>
 {{ end }}
 
 {{ block "tail" . }}

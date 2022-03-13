@@ -51,6 +51,7 @@ func InitRoutes(s *mux.Router) {
 	CSRFAuthKey := os.Getenv("CSRFAuthKey")
 	CSRF := csrf.Protect(
 		[]byte(CSRFAuthKey),
+		csrf.MaxAge(0),
 		csrf.SameSite(csrf.SameSiteStrictMode),
 		csrf.Secure(os.Getenv("CSRFSecureC") == "true"),
 	)

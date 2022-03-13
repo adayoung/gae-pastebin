@@ -23,15 +23,25 @@ body {
 #wrap {
   min-height: 100%;
   height: auto !important;
+  margin-bottom: -1.5rem;
+  padding-bottom: 1.5rem;
 }
 
 .grecaptcha-badge {
   margin-bottom: 2.5rem;
 }
 
-@media (max-width: 900px) {
+#grecaptcha-text {
+  display: none;
+}
+
+@media (max-width: 1100px) {
   .grecaptcha-badge {
-    display: none;
+    visibility: hidden;
+  }
+
+  #grecaptcha-text {
+    display: block;
   }
 }
 

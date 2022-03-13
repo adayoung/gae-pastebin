@@ -17,8 +17,8 @@ discord:
   clientsecret: "Paste your Discord Client Secret here"
 
 recaptcha:
-  key: 'Paste your ReCaptcha v3 Site Key here'
-  secret: 'Paste your ReCaptcha v3 Secret Key here'
+  key: '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'
+  secret: '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'
 
 database:
   connection: "user=ada password=ada dbname=ada-bot sslmode=disable"

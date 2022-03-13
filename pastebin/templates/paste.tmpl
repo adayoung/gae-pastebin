@@ -29,6 +29,12 @@
             <span class="d-none d-md-block text-muted ms-auto">
                 <small>HITS - {{ .p_count }}</small>&nbsp;&nbsp;
                 <input name="format" type="hidden" value="{{ .paste.Format }}">
+
+                <button class="d-none btn btn-outline-secondary btn-sm" id="share-btn" title="Share">
+                    <span class="bi bi-share"></span>
+                    <span class="visually-hidden">Share</span>
+                </button>
+
                 <a href="
                     {{ if .paste.GDriveDL }}
                         {{ .paste.GDriveDL }}
@@ -45,14 +51,14 @@
                 <button class="btn btn-outline-secondary btn-sm" id="delete-btn" title="Delete" type="submit">
                     <span class="bi bi-trash3"></span>
                     <span class="visually-hidden">Delete</span>
-                    {{ .csrfField }}
                 </button>
                 {{ end }}
 
                 {{ if .driveHosted }}
                 <a href="/pastebin/about#PasteToGoogleDrive" class="btn btn-outline-secondary btn-sm"
                     title="Google Drive Hosted Content!" target="_blank">
-                    <img src="//{{ .staticDomain }}/pastebin/static/img/drive.png" alt="Google Drive!">
+                    <img src="//{{ .staticDomain }}/pastebin/static/img/drive.png"
+                        height="16" width="16" alt="Google Drive!" loading="lazy">
                     <span id="driveHosted" class="visually-hidden">Google Drive Hosted Content!</span>
                 </a>
                 {{ end }}
