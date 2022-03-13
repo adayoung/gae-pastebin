@@ -1,4 +1,5 @@
 webapp:
+  CookiePrefix: '' # make this __Secure- in production!
   CSRFAuthKey: 'u<:>ZoTv3d<45!Bn?ionCt4*4&t;SpV;'
   CSRFSecureC: false # keep this 'false' for local development
   EncryptionK: '&y"c5B[YnZpV.$dFfCu53ij/Dya[Bu?L'

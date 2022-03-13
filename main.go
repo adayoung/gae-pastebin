@@ -21,6 +21,7 @@ import (
 
 type config struct {
 	WebApp struct {
+		CookiePrefix string `yaml:"CookiePrefix"`
 		CSRFAuthKey  string `yaml:"CSRFAuthKey"`
 		CSRFSecureC  string `yaml:"CSRFSecureC"`
 		EncryptionK  string `yaml:"EncryptionK"`
@@ -70,6 +71,7 @@ func main() {
 	if data, err := ioutil.ReadFile("config.yaml"); err == nil {
 		if err = yaml.Unmarshal([]byte(data), &_config); err == nil {
 			// FIXME: os.Setenv may emit an error which is currently unhandled
+			os.Setenv("CookiePrefix", _config.WebApp.CookiePrefix)
 			os.Setenv("CSRFAuthKey", _config.WebApp.CSRFAuthKey)
 			os.Setenv("CSRFSecureC", _config.WebApp.CSRFSecureC)
 			os.Setenv("EncryptionK", _config.WebApp.EncryptionK)

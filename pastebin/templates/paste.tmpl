@@ -80,11 +80,11 @@
                 {{ if .driveHosted }}
                 <p class="text-light">Oops, we need Javascript to load this content. Alternatively, you may click <a class="text-decoration-none" href="{{ .paste.GDriveDL }}">here</a> to download it.</p>
                 {{ else }}
-                <iframe src="/pastebinc/{{ .paste_id }}/content" sandbox></iframe>
+                <iframe src="/pastebinc/{{ .paste_id }}/content" sandbox title="content-frame"></iframe>
                 {{ end }}
             </noscript>
-            <iframe class="d-none" id="content-frame" src="about:blank" sandbox="allow-same-origin"></iframe>
-            <pre class="d-none text-light" id="content-text"></pre>
+            <iframe class="d-none" id="content-frame" src="about:blank" sandbox="allow-same-origin" title="content-html"></iframe>
+            <pre class="d-none text-light" id="content-text" title="content-text"></pre>
         </article>
         <div class="d-none text-light" id="loader">
             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>

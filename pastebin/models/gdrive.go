@@ -28,7 +28,7 @@ func init() {
 var sessionStore = sessions.NewCookieStore([]byte(os.Getenv("CSRFAuthKey")))
 
 func SaveOAuthToken(w http.ResponseWriter, r *http.Request, token *oauth2.Token) error {
-	if session, err := sessionStore.Get(r, "_oauth2_gdrive"); err != nil {
+	if session, err := sessionStore.Get(r, os.Getenv("CookiePrefix")+"_oauth2_gdrive"); err != nil {
 		return err
 	} else {
 		session.Options = &sessions.Options{
@@ -50,13 +50,13 @@ func SaveOAuthToken(w http.ResponseWriter, r *http.Request, token *oauth2.Token)
 }
 
 func GetOAuthToken(r *http.Request) (*oauth2.Token, error) {
-	if session, err := sessionStore.Get(r, "_oauth2_gdrive"); err != nil {
+	if session, err := sessionStore.Get(r, os.Getenv("CookiePrefix")+"_oauth2_gdrive"); err != nil {
 		return nil, err
 	} else {
 		if token, ok := session.Values["gdrive"].(*oauth2.Token); ok {
 			return token, nil
 		} else {
-			return nil, fmt.Errorf("Invalid type for oauth2.Token.")
+			return nil, fmt.Errorf("invalid type for oauth2.Token")
 		}
 	}
 }

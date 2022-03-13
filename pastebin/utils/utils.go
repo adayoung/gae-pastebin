@@ -39,7 +39,7 @@ func ExtraSugar(f http.HandlerFunc) http.HandlerFunc {
 		staticDomain := os.Getenv("StaticDomain")
 		ctx := context.WithValue(r.Context(), "staticDomain", staticDomain)
 
-		if session, err := sessionStore().Get(r, "_app_session"); err != nil {
+		if session, err := sessionStore().Get(r, os.Getenv("CookiePrefix")+"_app_session"); err != nil {
 			log.Printf("WARNING: sessionStore.Get call failed for _app_session, %v", err)
 			ClearAppSession(w)
 		} else {
@@ -77,7 +77,7 @@ func sessionStore() *sessions.CookieStore {
 }
 
 func UpdateSession(w http.ResponseWriter, r *http.Request, paste_id string, remove bool) error {
-	if session, err := sessionStore().Get(r, "_pb_session"); err != nil {
+	if session, err := sessionStore().Get(r, os.Getenv("CookiePrefix")+"_pb_session"); err != nil {
 		return err
 	} else {
 		session.Options = &sessions.Options{
@@ -111,7 +111,7 @@ func UpdateSession(w http.ResponseWriter, r *http.Request, paste_id string, remo
 }
 
 func CheckSession(r *http.Request, paste_id string) (bool, error) {
-	if session, err := sessionStore().Get(r, "_pb_session"); err != nil {
+	if session, err := sessionStore().Get(r, os.Getenv("CookiePrefix")+"_pb_session"); err != nil {
 		return false, err
 	} else {
 		if session.Values[paste_id] != nil {
@@ -122,7 +122,7 @@ func CheckSession(r *http.Request, paste_id string) (bool, error) {
 }
 
 func InitAppSession(w http.ResponseWriter, r *http.Request, userID string, refresh bool) error {
-	if session, err := sessionStore().Get(r, "_app_session"); err != nil {
+	if session, err := sessionStore().Get(r, os.Getenv("CookiePrefix")+"_app_session"); err != nil {
 		return err
 	} else {
 		session.Options = &sessions.Options{
@@ -145,7 +145,7 @@ func InitAppSession(w http.ResponseWriter, r *http.Request, userID string, refre
 func ClearAppSession(w http.ResponseWriter) {
 	http.SetCookie(w, &http.Cookie{
 		Path:     "/pastebin/",
-		Name:     "_app_session",
+		Name:     os.Getenv("CookiePrefix")+"_app_session",
 		Value:    "",
 		MaxAge:   -1,
 		HttpOnly: true,
@@ -157,7 +157,7 @@ func ClearAppSession(w http.ResponseWriter) {
 func ClearOauthCookie(w http.ResponseWriter) {
 	http.SetCookie(w, &http.Cookie{ // That was a HALF A KILO cookie!! :O
 		Path:     "/pastebin/",
-		Name:     "_oauth2_gdrive",
+		Name:     os.Getenv("CookiePrefix")+"_oauth2_gdrive",
 		Value:    "",
 		MaxAge:   -1,
 		HttpOnly: true,

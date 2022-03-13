@@ -1,5 +1,20 @@
 'use strict';
 
+// https://developers.google.com/recaptcha/docs/loading#loading_recaptcha_asynchronously
+if(typeof grecaptcha === 'undefined') {
+  var grecaptcha = {};
+}
+
+grecaptcha.ready = function(cb){
+  if(typeof grecaptcha.execute === 'undefined') {
+    const c = '___grecaptcha_cfg';
+    window[c] = window[c] || {};
+    (window[c]['fns'] = window[c]['fns']||[]).push(cb);
+  } else {
+    cb();
+  }
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.tagbox').forEach(element => {
     element.addEventListener('input', function () {
