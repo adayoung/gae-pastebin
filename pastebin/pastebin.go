@@ -238,6 +238,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			"sixMonthsAway":  time.Now().AddDate(0, 0, 180).Format("Monday, Jan _2, 2006"),
 			"rkey":           os.Getenv("ReCAPTCHAKey"),
 			"staticDomain":   r.Context().Value("staticDomain"),
+			"fullPath":       "https://"+r.Host+r.URL.String(),
 		}); err != nil {
 			log.Printf("ERROR: %v\n", err)
 			http.Error(w, "Meep! We were trying to assemble this paste but something went wrong.", http.StatusInternalServerError)

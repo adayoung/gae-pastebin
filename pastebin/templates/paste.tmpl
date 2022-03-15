@@ -27,13 +27,20 @@
                 {{ end }}
             </span>
             <span class="d-none d-md-block text-muted ms-auto">
-                <small>HITS - {{ .p_count }}</small>&nbsp;&nbsp;
+                <small class="me-2">VIEWS - {{ .p_count }}</small>
                 <input name="format" type="hidden" value="{{ .paste.Format }}">
 
                 <button class="d-none btn btn-outline-secondary btn-sm" id="share-btn" title="Share">
                     <span class="bi bi-share"></span>
                     <span class="visually-hidden">Share</span>
                 </button>
+
+                <a class="btn btn-outline-secondary btn-sm"
+                    href="https://twitter.com/intent/tweet?text=Check%20out%20my%20adventure%21&url={{ .fullPath }}"
+                    title="Tweet!" target="_blank" rel="noopener">
+                    <span class="bi bi-twitter"></span>
+                    <span class="visually-hidden">Tweet!</span>
+                </a>
 
                 <a href="
                     {{ if .paste.GDriveDL }}
@@ -96,13 +103,13 @@
 <div class="row">
     <div class="col">
         <p class="text-muted">
-            <small><em>
-                    This paste will expire on <a class="text-decoration-none"
-                        href="/pastebin/about#WhenDoesStuffExpire">{{ .sixMonthsAway }}</a>.
-                    Paste to <a class="text-decoration-none" href="/pastebin/about#PasteToGoogleDrive">Google Drive</a>
-                    if you'd rather not have
-                    it expire!
-                </em></small>
+            <small>
+                <em>
+                    This paste will expire on <a class="text-decoration-none" href="/pastebin/about#WhenDoesStuffExpire">
+                    {{ .sixMonthsAway }}</a>. Paste to <a class="text-decoration-none" href="/pastebin/about#PasteToGoogleDrive">
+                    Google Drive</a> if you'd rather not have it expire!
+                </em>
+            </small>
         </p>
     </div>
 </div>
