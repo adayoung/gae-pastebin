@@ -1,3 +1,4 @@
+[![Go](https://github.com/adayoung/gae-pastebin/actions/workflows/go.yml/badge.svg?branch=master)](https://github.com/adayoung/gae-pastebin/actions/workflows/go.yml)
 [![Go report](https://goreportcard.com/badge/adayoung/gae-pastebin)](https://goreportcard.com/report/adayoung/gae-pastebin)
 
 # gae-pastebin
