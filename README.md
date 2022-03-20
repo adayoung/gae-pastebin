@@ -1,4 +1,3 @@
-[![Build Status](https://travis-ci.org/adayoung/gae-pastebin.svg)](https://travis-ci.org/adayoung/gae-pastebin)
 [![Go report](https://goreportcard.com/badge/adayoung/gae-pastebin)](https://goreportcard.com/report/adayoung/gae-pastebin)
 
 # gae-pastebin
@@ -22,11 +21,10 @@ Hi! Here's a pastebin that runs ~on Google App Engine~ anywhere!
 
 ## Building with Docker
 
- Use the following command to build with the latest version of Go:  
+ Use the following command to build with the latest version of Go:
   * `cd <path to repository>`
   * `docker run --rm -v $PWD:/go/src/github.com/adayoung/gae-pastebin -w /go/src/github.com/adayoung/gae-pastebin -v $GOPATH:/go -e "CGO_ENABLED=0" golang:latest go build -v -ldflags "-s -w" .`
 
-_Oh, make sure to update static/js/base.js with your own GA user id!_  
 _And keys.yaml to change the CSRFAuthKey and EncryptionK as well!_
 
 _P.S.: This [used to](https://github.com/adayoung/gae-pastebin/releases/tag/v2019-09-29) run on Google App Engine and there's probably a bunch of stuff about it that still lingers on. I'll eventually clean it up :open_mouth:_
