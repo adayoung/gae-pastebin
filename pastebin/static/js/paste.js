@@ -82,7 +82,8 @@
           let theGreateEscaper = document.createElement("p");
           theGreateEscaper.appendChild(document.createTextNode(result));
           result = theGreateEscaper.innerHTML;
-          document.getElementById('content-text').innerHTML = result.replace(/^(.*)$/mg, "<span class=\"line\">$1</span>")
+          result = result.replace(/\r\n/g, '\n');
+          document.getElementById('content-text').innerHTML = result.replace(/^(.*)$/mg, "<span class=\"line\">$1</span>");
 
           document.getElementById('loader').classList.add('d-none');
         }

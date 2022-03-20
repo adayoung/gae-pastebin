@@ -85,7 +85,7 @@
         <article id="content" role="main">
             <noscript>
                 {{ if .driveHosted }}
-                <p class="text-light">Oops, we need Javascript to load this content. Alternatively, you may click <a class="text-decoration-none" href="{{ .paste.GDriveDL }}">here</a> to download it.</p>
+                <p class="alert alert-secondary text-center text-dark">Oops, we need Javascript to load this content. Alternatively, you may click <a class="text-decoration-none" href="{{ .paste.GDriveDL }}">here</a> to download it.</p>
                 {{ else }}
                 <iframe src="/pastebinc/{{ .paste_id }}/content" sandbox title="content-frame"></iframe>
                 {{ end }}
@@ -119,5 +119,5 @@
 {{ block "moretail" . }}
 <input type="hidden" id="pasteID" value="{{ .paste_id }}">
 <input type="hidden" id="format" value="{{ .paste.Format }}">
-<script src="//{{ .staticDomain }}/pastebin/static/js/20220310/paste.js"></script>
+<script src="//{{ .staticDomain }}/pastebin/static/js/20220320/paste.js"></script>
 {{ end }}
