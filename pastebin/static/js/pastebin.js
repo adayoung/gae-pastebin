@@ -57,6 +57,10 @@ function HandleGAuthComplete(result) {
         grecaptcha.execute(rkey, {
           action: 'paste'
         }).then(token => {
+          if (document.getElementById('pasteform-fields').getAttribute('disabled') === "true") {
+            return; // bail out if it's already in progress
+          }
+
           let form = document.getElementById('pasteform');
           let data = new FormData(form);
           data.set('token', token);
