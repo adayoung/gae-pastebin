@@ -2,6 +2,7 @@
 
 var authWindow = null; // Yech!
 var gDriveAuthPending = true;
+var pasteInProgress = false;
 function HandleGAuthComplete(result) {
   if (result === "success") {
     if (document.getElementById('pasteform').reportValidity()) {
@@ -54,9 +55,14 @@ function HandleGAuthComplete(result) {
 
       let rkey = document.getElementById('recaptcha-key').value;
       grecaptcha.ready(() => {
+        if (pasteInProgress == true) {
+          return;
+        }
+
         grecaptcha.execute(rkey, {
           action: 'paste'
         }).then(token => {
+          pasteInProgress = true;
           let form = document.getElementById('pasteform');
           let data = new FormData(form);
           data.set('token', token);
@@ -85,6 +91,7 @@ function HandleGAuthComplete(result) {
 
             document.getElementById('pasteform-fields').removeAttribute('disabled');
             document.getElementById('content').focus();
+            pasteInProgress = false;
           });
         });
       });
