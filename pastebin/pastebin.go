@@ -123,7 +123,7 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var score float64
-		if score, err = utils.ValidateCaptcha(r.Form.Get("token"), r.RemoteAddr); err != nil {
+		if score, err = utils.ValidateCaptcha(r.Form.Get("token"), r.RemoteAddr, "paste"); err != nil {
 			log.Printf("ERROR: %v\n", err)
 			http.Error(w, "Meep! We were trying to validate the posted data but something went wrong.", http.StatusInternalServerError)
 			return

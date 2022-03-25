@@ -220,11 +220,13 @@ func OAuthConfigDance(provider string, redirectURL string, scopes ...string) (*o
 }
 
 type reCaptchaResponse struct {
-	Success bool    `json:"success"`
-	Score   float64 `json:"score,number"`
+	Success  bool    `json:"success"`
+	Score    float64 `json:"score,number"`
+	Action   string  `json:"action"`
+	Hostname string  `json:"hostname"`
 }
 
-func ValidateCaptcha(recaptchaResponse string, remoteip string) (float64, error) {
+func ValidateCaptcha(recaptchaResponse string, remoteip string, action string) (float64, error) {
 	gRecaptchaRequest := url.Values{}
 	gRecaptchaRequest.Add("secret", os.Getenv("ReCAPTCHASecrt"))
 	gRecaptchaRequest.Add("response", recaptchaResponse)
@@ -241,7 +243,7 @@ func ValidateCaptcha(recaptchaResponse string, remoteip string) (float64, error)
 		if rContent, err := ioutil.ReadAll(response.Body); err == nil {
 			rvResponse := &reCaptchaResponse{}
 			if err := json.Unmarshal(rContent, &rvResponse); err == nil {
-				if rvResponse.Success {
+				if rvResponse.Success && rvResponse.Action == action {
 					return rvResponse.Score, nil
 				} else {
 					log.Println("WARNING: invalid reCAPTCHA token")

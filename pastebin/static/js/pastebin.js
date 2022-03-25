@@ -53,7 +53,7 @@ function HandleGAuthComplete(result) {
       }
 
       let rkey = document.getElementById('recaptcha-key').value;
-      grecaptcha.ready(() => {
+      // grecaptcha.ready(() => {
         grecaptcha.execute(rkey, {
           action: 'paste'
         }).then(token => {
@@ -91,7 +91,7 @@ function HandleGAuthComplete(result) {
             document.getElementById('content').focus();
           });
         });
-      });
+      // });
     });
 
     // Keyboard accelerators
