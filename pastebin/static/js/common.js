@@ -1,17 +1,18 @@
 'use strict';
 
 // https://developers.google.com/recaptcha/docs/loading#loading_recaptcha_asynchronously
-if(typeof grecaptcha === 'undefined') {
-  var grecaptcha = {};
+try {
+  document.getElementById('pasteform-fields').setAttribute('disabled', true);
+} catch(error) {
+  // Do nothing, we're not on the pastebin form
 }
 
-grecaptcha.ready = function(cb){
-  if(typeof grecaptcha.execute === 'undefined') {
-    const c = '___grecaptcha_cfg';
-    window[c] = window[c] || {};
-    (window[c]['fns'] = window[c]['fns']||[]).push(cb);
-  } else {
-    cb();
+function helloCaptcha() {
+  try {
+    document.getElementById('pasteform-fields').removeAttribute('disabled');
+    document.getElementById('content').focus();
+  } catch(error) {
+    // Do nothing, we're not on the pastebin form
   }
 }
 
