@@ -6,7 +6,7 @@
 {{ end }}
 
 {{ block "morehead" . }}
-<link rel="stylesheet" href="//{{ .staticDomain }}/pastebin/static/css/20220310/pastebin.css">
+<link rel="stylesheet" href="//{{ .staticDomain }}/pastebin/static/css/20220325/pastebin.css">
 <!-- https://developers.google.com/recaptcha/docs/loading#using_resource_hints -->
 <link rel="preconnect" href="https://www.google.com">
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
@@ -197,6 +197,6 @@
 <script src="//{{ .staticDomain }}/pastebin/static/js/20220325/common.js"></script>
 <script async src="https://www.google.com/recaptcha/api.js?render={{ .rkey }}&onload=helloCaptcha"></script>
 {{ block "moretail" . }}
-<script src="//{{ .staticDomain }}/pastebin/static/js/20220310/pastebin.js"></script>
+<script src="//{{ .staticDomain }}/pastebin/static/js/20220325/pastebin.js"></script>
 {{ end }}
 {{ end }}
