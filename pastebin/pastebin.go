@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -123,10 +124,15 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var score float64
-		if score, err = utils.ValidateCaptcha(r.Form.Get("token"), r.RemoteAddr, "paste"); err != nil {
-			log.Printf("ERROR: %v\n", err)
-			http.Error(w, "Meep! We were trying to validate the posted data but something went wrong.", http.StatusInternalServerError)
-			return
+
+		if !(strings.Contains(r.Host, "localhost") || strings.Contains(r.Host, "127.0.0.1")) {
+			if score, err = utils.ValidateCaptcha(r.Form.Get("token"), r.RemoteAddr, "paste"); err != nil {
+				log.Printf("ERROR: %v\n", err)
+				http.Error(w, "Meep! We were trying to validate the posted data but something went wrong.", http.StatusInternalServerError)
+				return
+			}
+		} else {
+			score = 9.87
 		}
 
 		paste_id, err := models.NewPaste(r, score)
@@ -270,7 +276,7 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 		// TODO: detect 404s and remove metadata here as well
 		if cl := strings.Split(r.URL.Path, "/"); cl[len(cl)-1] == "link" {
 			if len(paste.GDriveDL) > 0 {
-				fl_link, ferr := paste.LinkFromDrive(r)
+				fl_link, ferr := paste.LinkFromDrive(r, nil)
 				if ferr != nil {
 					fl_link = ferr.Error()
 					w.WriteHeader(500) // Umm.. it just needs to go to .fail() O_o
@@ -312,6 +318,29 @@ func pastecontent(w http.ResponseWriter, r *http.Request) {
 
 			dl_disposition = fmt.Sprintf("attachment; filename=\"%s.%s\"", p_title, p_extn)
 			w.Header().Set("Content-Disposition", dl_disposition)
+		}
+
+		if len(paste.GDriveDL) > 0 {
+			// Fetch content from Google Drive and send it down the pipe
+			client := &http.Client{}
+			fl_link, ferr := paste.LinkFromDrive(r, client)
+			if ferr != nil {
+				http.Error(w, ferr.Error(), 500)
+				return
+			}
+
+			dr, derr := client.Get(fl_link)
+			if derr != nil {
+				http.Error(w, derr.Error(), 500)
+				return
+			}
+			defer dr.Body.Close()
+
+			_, err := io.Copy(w, dr.Body)
+			if err != nil {
+				http.Error(w, err.Error(), 500)
+			}
+			return
 		}
 
 		err := paste.ZContent(r, w)

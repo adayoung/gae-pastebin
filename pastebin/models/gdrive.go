@@ -175,10 +175,17 @@ func (p *Paste) saveToDrive(r *http.Request, paste_id string) error {
 	return nil
 }
 
-func (p *Paste) LinkFromDrive(r *http.Request) (string, error) {
+func (p *Paste) LinkFromDrive(r *http.Request, c *http.Client) (string, error) {
 	fl_link := "" // yay empty string
 
-	fl_call := &http.Client{}
+	var fl_call *http.Client
+
+	if c == nil {
+		fl_call = &http.Client{}
+	} else {
+		fl_call = c
+	}
+
 	fl_call.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		// return http.ErrUseLastResponse // <-- FIXME: Huh? Undefined? O_o
 		return fmt.Errorf("net/http: use last response")

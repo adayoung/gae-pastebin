@@ -67,6 +67,9 @@
           }
         } else {
           document.getElementById('loader-result').textContent = `Meep! I couldn't get the content -flails- (${response.status}: ${response.statusText})`;
+          if (document.querySelectorAll('#driveHosted').length > 0) {
+            document.getElementById('drive-failure').classList.remove('d-none');
+          }
           throw "-flails-";
         }
       }).then(result => {

@@ -66,7 +66,9 @@
                     title="Google Drive Hosted Content!" target="_blank">
                     <img src="//{{ .staticDomain }}/pastebin/static/img/drive.png"
                         height="16" width="16" alt="Google Drive!" loading="lazy">
+                    <!--
                     <span id="driveHosted" class="visually-hidden">Google Drive Hosted Content!</span>
+                    -->
                 </a>
                 {{ end }}
             </span>
@@ -85,7 +87,7 @@
         <article id="content" role="main">
             <noscript>
                 {{ if .driveHosted }}
-                <p class="alert alert-secondary text-center text-dark">Oops, we need Javascript to load this content. Alternatively, you may click <a class="text-decoration-none" href="{{ .paste.GDriveDL }}">here</a> to download it.</p>
+                <p class="alert alert-secondary text-center text-dark">Oops, we need Javascript to load this content. Alternatively, you may click <a class="text-decoration-none" href="{{ .paste.GDriveDL }}" target="_blank" rel="noopener">here</a> to download it.</p>
                 {{ else }}
                 <iframe src="/pastebinc/{{ .paste_id }}/content" sandbox title="content-frame"></iframe>
                 {{ end }}
@@ -96,6 +98,9 @@
         <div class="d-none text-light" id="loader">
             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
             Loading content, please wait ... <span id="loader-result"></span>
+            <p class="d-none" id="drive-failure">
+                Try downloading it from here instead: <a class="text-decoration-none" href="{{ .paste.GDriveDL }}" target="_blank" rel="noopener">{{ .paste.GDriveDL }}</a>
+            </p>
         </div>
     </div>
 </div>
@@ -119,5 +124,5 @@
 {{ block "moretail" . }}
 <input type="hidden" id="pasteID" value="{{ .paste_id }}">
 <input type="hidden" id="format" value="{{ .paste.Format }}">
-<script src="//{{ .staticDomain }}/pastebin/static/js/20220325/paste.js"></script>
+<script src="//{{ .staticDomain }}/pastebin/static/js/20220325-b/paste.js"></script>
 {{ end }}
