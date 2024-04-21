@@ -76,6 +76,10 @@ func sessionStore() *sessions.CookieStore {
 	return ss
 }
 
+func SessionStore() *sessions.CookieStore {
+	return sessionStore()
+}
+
 func UpdateSession(w http.ResponseWriter, r *http.Request, paste_id string, remove bool) error {
 	if session, err := sessionStore().Get(r, os.Getenv("CookiePrefix")+"_pb_session"); err != nil {
 		return err
