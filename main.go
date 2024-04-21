@@ -27,6 +27,7 @@ type config struct {
 		EncryptionK  string `yaml:"EncryptionK"`
 		ListenPort   string `yaml:"ListenPort"`
 		StaticDomain string `yaml:"StaticDomain"`
+		Debug        bool   `yaml:"Debug"`
 	}
 
 	Google struct {
@@ -86,6 +87,10 @@ func main() {
 			os.Setenv("ReCAPTCHAKey", _config.ReCAPTCHA.Key)
 			os.Setenv("ReCAPTCHASecrt", _config.ReCAPTCHA.Secret)
 			os.Setenv("AdaYoung", _config.AdaYoung)
+
+			if _config.WebApp.Debug {
+				log.SetFlags(log.Ldate | log.Ltime | log.Llongfile)
+			}
 		} else {
 			log.Println("ERROR: Error with parsing config.yaml.")
 			log.Fatalf("ERROR: %v", err)

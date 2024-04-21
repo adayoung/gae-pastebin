@@ -5,6 +5,7 @@ webapp:
   EncryptionK: '&y"c5B[YnZpV.$dFfCu53ij/Dya[Bu?L'
   StaticDomain: "localhost:2019"
   ListenPort: 2019
+  Debug: true # set this to false in production!
 
 google:
   GCPOAuthCID: 'GCP Console > API Manager > Credentials > OAuth Client ID > Download JSON'
