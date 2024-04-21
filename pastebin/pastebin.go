@@ -96,7 +96,7 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 		var tmpl = template.Must(template.ParseFiles("templates/base.tmpl", "pastebin/templates/pastebin.tmpl"))
 
 		destination := "datastore" // default destination
-		if d_cookie, err := r.Cookie(os.Getenv("CookiePrefix")+"dest"); err == nil {
+		if d_cookie, err := r.Cookie(os.Getenv("CookiePrefix") + "dest"); err == nil {
 			if d_cookie.Value == "datastore" || d_cookie.Value == "gdrive" {
 				destination = d_cookie.Value
 			}
@@ -150,7 +150,7 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 			log.Printf("WARNING: %v", err)
 			http.SetCookie(w, &http.Cookie{
 				Path:     "/pastebin/",
-				Name:     os.Getenv("CookiePrefix")+"_pb_session",
+				Name:     os.Getenv("CookiePrefix") + "_pb_session",
 				Value:    "",
 				MaxAge:   -1,
 				Secure:   os.Getenv("CSRFSecureC") == "true",
@@ -160,7 +160,7 @@ func pastebin(w http.ResponseWriter, r *http.Request) {
 		}
 
 		http.SetCookie(w, &http.Cookie{
-			Name:     os.Getenv("CookiePrefix")+"dest",
+			Name:     os.Getenv("CookiePrefix") + "dest",
 			Value:    r.Form.Get("destination"),
 			MaxAge:   0,
 			Secure:   os.Getenv("CSRFSecureC") == "true",
@@ -206,7 +206,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			log.Printf("ERROR: %v\n", err)
 			http.SetCookie(w, &http.Cookie{
 				Path:     "/pastebin/",
-				Name:     os.Getenv("CookiePrefix")+"_pb_session",
+				Name:     os.Getenv("CookiePrefix") + "_pb_session",
 				Value:    "",
 				MaxAge:   -1,
 				Secure:   os.Getenv("CSRFSecureC") == "true",
@@ -238,7 +238,7 @@ func pasteframe(w http.ResponseWriter, r *http.Request) {
 			"sixMonthsAway":  time.Now().AddDate(0, 0, 180).Format("Monday, Jan _2, 2006"),
 			"rkey":           os.Getenv("ReCAPTCHAKey"),
 			"staticDomain":   r.Context().Value("staticDomain"),
-			"fullPath":       "https://"+r.Host+r.URL.String(),
+			"fullPath":       "https://" + r.Host + r.URL.String(),
 		}); err != nil {
 			log.Printf("ERROR: %v\n", err)
 			http.Error(w, "Meep! We were trying to assemble this paste but something went wrong.", http.StatusInternalServerError)

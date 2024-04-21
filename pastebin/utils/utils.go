@@ -145,7 +145,7 @@ func InitAppSession(w http.ResponseWriter, r *http.Request, userID string, refre
 func ClearAppSession(w http.ResponseWriter) {
 	http.SetCookie(w, &http.Cookie{
 		Path:     "/pastebin/",
-		Name:     os.Getenv("CookiePrefix")+"_app_session",
+		Name:     os.Getenv("CookiePrefix") + "_app_session",
 		Value:    "",
 		MaxAge:   -1,
 		HttpOnly: true,
@@ -157,7 +157,7 @@ func ClearAppSession(w http.ResponseWriter) {
 func ClearOauthCookie(w http.ResponseWriter) {
 	http.SetCookie(w, &http.Cookie{ // That was a HALF A KILO cookie!! :O
 		Path:     "/pastebin/",
-		Name:     os.Getenv("CookiePrefix")+"_oauth2_gdrive",
+		Name:     os.Getenv("CookiePrefix") + "_oauth2_gdrive",
 		Value:    "",
 		MaxAge:   -1,
 		HttpOnly: true,
